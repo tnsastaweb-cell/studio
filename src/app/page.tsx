@@ -82,18 +82,6 @@ export default function Home() {
                 </Alert>
               </CardContent>
             </Card>
-
-            <Card className="bg-card">
-              <CardHeader>
-                <CardTitle className="text-primary">Send Us Feedback</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-4">
-                  <Textarea placeholder="Your feedback helps us improve..." className="bg-background"/>
-                  <Button type="submit" className="w-full">Submit Feedback</Button>
-                </form>
-              </CardContent>
-            </Card>
           </aside>
         </div>
       </main>
