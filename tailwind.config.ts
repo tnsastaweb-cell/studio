@@ -19,6 +19,7 @@ export default {
       fontFamily: {
         body: ['"PT Sans"', 'sans-serif'],
         headline: ['"PT Sans"', 'sans-serif'],
+        impact: ['Impact', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
