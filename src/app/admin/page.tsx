@@ -10,7 +10,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, PlusCircle } from "lucide-react";
 
-import { MOCK_USERS, User, ROLES } from '@/services/users';
+import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { cn } from "@/lib/utils";
@@ -66,6 +66,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/use-auth';
 
 
 const userFormSchema = z.object({
@@ -81,12 +82,11 @@ const userFormSchema = z.object({
 type UserFormValues = z.infer<typeof userFormSchema>;
 
 export default function AdminPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const { users, addUser, updateUser, deleteUser } = useUsers();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  // To-do: Replace with real authentication state
-  const [isSignedIn, setIsSignedIn] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -100,7 +100,7 @@ export default function AdminPage() {
   });
 
   const handleDeleteUser = (userId: number) => {
-    setUsers(users.filter(user => user.id !== userId));
+    deleteUser(userId);
      toast({
       title: "User Deleted",
       description: "The user has been successfully deleted.",
@@ -138,23 +138,17 @@ export default function AdminPage() {
   const onSubmit = (values: UserFormValues) => {
     if (editingUser) {
         // Update existing user
-        const updatedUsers = users.map(user => 
-            user.id === editingUser.id ? { ...user, ...values, dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd'), status: user.status } : user
-        );
-        setUsers(updatedUsers);
+        updateUser({ ...editingUser, ...values, dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd')});
         toast({
             title: "User Updated",
             description: "The user details have been successfully updated.",
         });
     } else {
         // Add new user
-        const newUser: User = {
-            id: Math.max(...users.map(u => u.id), 0) + 1, // Simple ID generation
+        addUser({
             ...values,
             dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd'),
-            status: 'active'
-        };
-        setUsers([newUser, ...users]);
+        });
          toast({
             title: "User Added",
             description: "The new user has been successfully created.",
@@ -164,11 +158,28 @@ export default function AdminPage() {
     setEditingUser(null);
   }
 
+  if (user?.designation !== 'ADMIN') {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <MainNavigation />
+            <main className="flex-1 container mx-auto px-4 py-8 text-center">
+                <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
+                <p className="mt-4">You do not have permission to view this page.</p>
+                <Button asChild className="mt-6">
+                    <Link href="/">Back to Home</Link>
+                </Button>
+            </main>
+            <Footer />
+        </div>
+    )
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
-      <MainNavigation isSignedIn={isSignedIn} />
+      <Header />
+      <MainNavigation />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-primary">Admin Panel - Master Data</h1>

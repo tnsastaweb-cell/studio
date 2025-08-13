@@ -1,17 +1,30 @@
 
-
 "use client";
 
 import Link from "next/link";
-import { Mountain } from "lucide-react";
+import { Mountain, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
-interface HeaderProps {
-    isSignedIn: boolean;
-    setIsSignedIn: (isSignedIn: boolean) => void;
-}
 
-export function Header({ isSignedIn, setIsSignedIn }: HeaderProps) {
+export function Header() {
+  const { user, signOut, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    signOut();
+    router.push('/');
+  }
+
   return (
     <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
       <Link href="/" className="flex items-center gap-3" prefetch={false}>
@@ -24,19 +37,52 @@ export function Header({ isSignedIn, setIsSignedIn }: HeaderProps) {
         </div>
       </Link>
       <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
-        <Button asChild variant="link" className="text-primary hidden sm:inline-flex">
-          <Link href="/admin" prefetch={false}>
-            Admin Panel
-          </Link>
-        </Button>
-        <Button onClick={() => setIsSignedIn(!isSignedIn)} size="sm" variant="ghost">
-            {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
-        </Button>
-        <Button asChild>
-          <Link href="/signup" prefetch={false}>
-            Sign Up
-          </Link>
-        </Button>
+        {user?.designation === 'ADMIN' && (
+          <Button asChild variant="link" className="text-primary hidden sm:inline-flex">
+            <Link href="/admin" prefetch={false}>
+              Admin Panel
+            </Link>
+          </Button>
+        )}
+        
+        {isSignedIn ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2">
+                <UserCircle className="h-5 w-5" />
+                <span>{user?.name}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                 <Link href="/reset-password">Change Password</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <>
+            <Button asChild variant="ghost">
+              <Link href="/signin" prefetch={false}>
+                Sign In
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/signup" prefetch={false}>
+                Sign Up
+              </Link>
+            </Button>
+          </>
+        )}
       </nav>
     </header>
   );

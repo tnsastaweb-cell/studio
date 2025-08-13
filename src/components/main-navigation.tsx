@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
@@ -126,11 +127,9 @@ const signedInMenuItems = [
     },
 ];
 
-interface MainNavigationProps {
-    isSignedIn: boolean;
-}
-
-export function MainNavigation({ isSignedIn }: MainNavigationProps) {
+export function MainNavigation() {
+  const { isSignedIn } = useAuth();
+  
   return (
     <nav className="bg-secondary w-full flex flex-col items-center py-2 shadow-md sticky top-[80px] z-40">
       <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">

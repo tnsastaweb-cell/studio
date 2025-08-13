@@ -1,5 +1,7 @@
 
 
+'use client';
+
 /**
  * @fileOverview User and Role management service.
  * This file contains the data models and mock data for users and roles
@@ -10,6 +12,7 @@
  * - ROLES: A constant array of all available roles.
  * - MOCK_USERS: A list of sample users for development and testing.
  */
+import { useState, useEffect, useCallback } from 'react';
 
 // Defines the set of user roles available in the application.
 export type Role =
@@ -549,6 +552,55 @@ export const MOCK_USERS: User[] = [
   { id: 496, name: 'K.Sivakumar', employeeCode: 'TN-717', designation: 'BRP', mobileNumber: '9488392913', dateOfBirth: '1982-06-15', password: 'password123', status: 'active' }
 ];
 
+// In a real application, this would be a persistent store like localStorage or a database.
+let userStore: User[] = [...MOCK_USERS];
+let isInitialized = false;
 
+// This function simulates fetching users and provides methods to manipulate the user list.
+export const useUsers = () => {
+  const [users, setUsers] = useState<User[]>(userStore);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    // This effect ensures that the userStore is only initialized once.
+    if (!isInitialized) {
+        // You could also load this from localStorage for better demo persistence
+        userStore = [...MOCK_USERS];
+        isInitialized = true;
+    }
+    setUsers(userStore);
+    setLoading(false);
+  }, []);
 
+  const addUser = useCallback((user: Omit<User, 'id' | 'status'>) => {
+    setUsers(prevUsers => {
+      const newUser = {
+        ...user,
+        id: prevUsers.length + 1,
+        status: 'active' as const,
+      };
+      userStore = [...prevUsers, newUser];
+      return userStore;
+    });
+  }, []);
+
+  const updateUser = useCallback((updatedUser: User) => {
+    setUsers(prevUsers => {
+      const newUsers = prevUsers.map(user =>
+        user.id === updatedUser.id ? updatedUser : user
+      );
+      userStore = newUsers;
+      return newUsers;
+    });
+  }, []);
+
+  const deleteUser = useCallback((userId: number) => {
+    setUsers(prevUsers => {
+       const newUsers = prevUsers.filter(user => user.id !== userId);
+       userStore = newUsers;
+       return newUsers;
+    });
+  }, []);
+
+  return { users, loading, addUser, updateUser, deleteUser };
+};

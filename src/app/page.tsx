@@ -20,10 +20,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
-  // To-do: Replace with real authentication state
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const { isSignedIn } = useAuth();
 
   const whatsNewItems = [
     {
@@ -51,8 +51,8 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollingAnnouncementBar />
-      <Header isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
-      <MainNavigation isSignedIn={isSignedIn} />
+      <Header />
+      <MainNavigation />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
