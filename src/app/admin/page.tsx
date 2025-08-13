@@ -74,7 +74,7 @@ const userFormSchema = z.object({
     designation: z.enum(ROLES),
     mobileNumber: z.string().regex(/^\d{10}$/, { message: "Mobile number must be 10 digits." }),
     dateOfBirth: z.date({ required_error: "Date of birth is required." }),
-    email: z.string().email({ message: "Invalid email address." }).optional(),
+    email: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
@@ -177,7 +177,13 @@ export default function AdminPage() {
           </Link>
         </div>
 
-         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+         <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+            setIsFormOpen(isOpen);
+            if (!isOpen) {
+              setEditingUser(null);
+              form.reset();
+            }
+         }}>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -394,7 +400,7 @@ export default function AdminPage() {
                                   <TableCell>{user.employeeCode}</TableCell>
                                   <TableCell>{user.designation}</TableCell>
                                   <TableCell>{user.mobileNumber}</TableCell>
-                                  <TableCell>{new Date(user.dateOfBirth).toLocaleDateString()}</TableCell>
+                                  <TableCell>{format(new Date(user.dateOfBirth), 'dd/MM/yyyy')}</TableCell>
                                   <TableCell>{user.email}</TableCell>
                                   <TableCell>
                                     <Badge variant="outline">********</Badge>

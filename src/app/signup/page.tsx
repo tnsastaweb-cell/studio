@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from "date-fns";
-import { Check, X } from 'lucide-react';
+import { Check, X, CalendarIcon } from 'lucide-react';
 
 import { MOCK_USERS, User, ROLES } from '@/services/users';
 import { cn } from "@/lib/utils";
@@ -108,6 +108,14 @@ export default function SignUpPage() {
         // In a real app, you would send this data to your backend to create a new user
         // and update the password. For this demo, we'll just show a success toast.
         console.log("Form Submitted:", values);
+        
+        // This is where you would update the master user list.
+        // For now, it's just a mock.
+        const userIndex = MOCK_USERS.findIndex(u => u.employeeCode === values.employeeCode);
+        if (userIndex !== -1) {
+            MOCK_USERS[userIndex].email = values.email;
+            MOCK_USERS[userIndex].password = values.password; // Remember to hash in a real app!
+        }
         
         toast({
             title: "Sign Up Successful!",
@@ -232,7 +240,7 @@ export default function SignUpPage() {
                                                      <FormControl>
                                                         <Input 
                                                             placeholder="Date of Birth" 
-                                                            value={field.value ? format(field.value, "PPP") : ''} 
+                                                            value={field.value ? format(field.value, "dd/MM/yyyy") : ''} 
                                                             readOnly 
                                                             className="bg-muted"
                                                         />
@@ -295,4 +303,3 @@ export default function SignUpPage() {
         </div>
     );
 }
-
