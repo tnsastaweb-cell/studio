@@ -13,17 +13,38 @@ import { MainNavigation } from "@/components/main-navigation";
 import { Footer } from "@/components/footer";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { GalleryHighlights } from "@/components/gallery-highlights";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function Home() {
   // To-do: Replace with real authentication state
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const whatsNewItems = [
-    { title: "Urgent Actions for Today" },
-    { title: "This Week's Key Priorities" },
-    { title: "Upcoming Month's Focus" },
-    { title: "Recent Changes & Updates" },
-    { title: "Important Notes & Reminders" },
+    {
+      title: "Urgent Actions for Today",
+      content: "Details about urgent actions go here.",
+    },
+    {
+      title: "This Week's Key Priorities",
+      content: "Details about this week's key priorities go here.",
+    },
+    {
+      title: "Upcoming Month's Focus",
+      content: "Details about the upcoming month's focus go here.",
+    },
+    {
+      title: "Recent Changes & Updates",
+      content: "Details about recent changes and updates go here.",
+    },
+    {
+      title: "Important Notes & Reminders",
+      content: "Details about important notes and reminders go here.",
+    },
   ];
 
   return (
@@ -52,12 +73,17 @@ export default function Home() {
                     <span>WHAT'S NEW?</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  <ul className="list-disc list-inside text-sm font-normal text-foreground/90 space-y-1">
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
                     {whatsNewItems.map((item) => (
-                      <li key={item.title}>{item.title}</li>
+                      <AccordionItem value={item.title} key={item.title}>
+                        <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
+                        <AccordionContent className="font-normal text-foreground/90 pl-2">
+                          {item.content}
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </ul>
+                  </Accordion>
                 </CardContent>
               </Card>
             )}
