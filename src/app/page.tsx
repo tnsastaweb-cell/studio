@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, BellRing, Star } from "lucide-react";
+import { Search, BellRing } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollingAnnouncementBar } from "@/components/scrolling-announcement-bar";
@@ -69,7 +69,7 @@ export default function Home() {
               <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
-                    <Star className="h-5 w-5" />
+                    <BellRing className="h-5 w-5" />
                     <span>WHAT'S NEW?</span>
                   </CardTitle>
                 </CardHeader>
@@ -90,30 +90,6 @@ export default function Home() {
           </div>
           
           <aside className="space-y-8 lg:col-span-1">
-            {!isSignedIn && (
-              <Card className="bg-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <BellRing className="h-5 w-5" />
-                    <span>Important Updates</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Alert className="border-accent bg-background">
-                    <AlertTitle className="font-bold">Seasonal Sale is Live!</AlertTitle>
-                    <AlertDescription>
-                      Get up to 70% off on selected items. Limited time offer.
-                    </AlertDescription>
-                  </Alert>
-                  <Alert className="border-accent bg-background">
-                    <AlertTitle className="font-bold">New Return Policy</AlertTitle>
-                    <AlertDescription>
-                      We've updated our return policy for a hassle-free experience.
-                    </AlertDescription>
-                  </Alert>
-                </CardContent>
-              </Card>
-            )}
           </aside>
         </div>
       </main>
