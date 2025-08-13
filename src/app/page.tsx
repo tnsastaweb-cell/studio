@@ -65,13 +65,13 @@ export default function Home() {
 
         {isSignedIn && (
           <Card className="bg-card">
-            <CardHeader className="bg-secondary rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-primary">
+            <CardHeader className="bg-primary rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-primary-foreground">
                 <BellRing className="h-5 w-5" />
                 <span>WHAT'S NEW?</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
+            <CardContent className="p-4 md:p-6 bg-card">
               <Accordion type="single" collapsible className="w-full bg-white rounded-md p-4 border">
                 {whatsNewItems.map((item, index) => (
                   <AccordionItem value={item.title} key={item.title} className={cn(index === whatsNewItems.length - 1 && "border-b-0")}>
