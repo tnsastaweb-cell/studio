@@ -1,65 +1,44 @@
 "use client";
-import * as React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
 
-const menuItems = [
-  {
-    title: "Men",
-    subItems: ["T-Shirts", "Shirts", "Jeans", "Trousers", "Footwear"],
-  },
-  {
-    title: "Women",
-    subItems: ["Dresses", "Tops", "Skirts", "Leggings", "Handbags"],
-  },
-  {
-    title: "Kids",
-    subItems: ["Boys' Clothing", "Girls' Clothing", "Toys", "Footwear"],
-  },
-  {
-    title: "Home & Living",
-    subItems: ["Bed Linen", "Home Decor", "Kitchen", "Storage", "Lighting"],
-  },
-  {
-    title: "Beauty",
-    subItems: ["Makeup", "Skincare", "Fragrances", "Hair Care"],
-  },
+const guestMenuItems = [
+  { title: "HOME", href: "/" },
+  { title: "ABOUT US", href: "/about" },
+  { title: "SCHEMES", href: "/schemes" },
+  { title: "CALENDAR", href: "/calendar" },
+  { title: "GALLERY", href: "/gallery" },
+  { title: "SA REPORTS", href: "/sa-reports" },
+  { title: "LIBRARY", href: "/library" },
+  { title: "GRIEVANCES", href: "/grievances" },
+];
+
+const signedInMenuItems = [
+  ...guestMenuItems,
+  { title: "REGISTRATION", href: "/registration" },
+  { title: "DATA ENTRY", href: "/data-entry" },
+  { title: "DAILY ACTIVITIES", href: "/daily-activities" },
+  { title: "REPORTS", href: "/reports" },
 ];
 
 export function MainNavigation() {
+  // To-do: Replace with real authentication state
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const menuItems = isSignedIn ? signedInMenuItems : guestMenuItems;
+
   return (
     <nav className="bg-secondary w-full flex justify-center py-2 shadow-md sticky top-[80px] z-40">
-      <div className="flex items-center gap-2 flex-wrap justify-center">
+      <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
         {menuItems.map((item) => (
-          <DropdownMenu key={item.title}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="text-primary hover:bg-accent font-bold text-base px-4 py-2 flex items-center gap-1">
-                {item.title}
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-card border-none shadow-lg mt-2">
-              {item.subItems.map((subItem, subIndex) => (
-                <React.Fragment key={subItem}>
-                  <DropdownMenuItem asChild>
-                    <Link href="#" className="font-bold cursor-pointer focus:bg-accent">{subItem}</Link>
-                  </DropdownMenuItem>
-                  {subIndex < item.subItems.length - 1 && (
-                    <DropdownMenuSeparator className="my-1 h-0 bg-transparent border-b border-dotted border-white" />
-                  )}
-                </React.Fragment>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-bold text-xs sm:text-base px-2 sm:px-4 py-2">
+            <Link href={item.href}>{item.title}</Link>
+          </Button>
         ))}
+        {/* This button is for demonstrating the menu change. You should remove it and use your actual authentication logic. */}
+        <Button onClick={() => setIsSignedIn(!isSignedIn)} className="absolute right-4" size="sm">
+          {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
+        </Button>
       </div>
     </nav>
   );
