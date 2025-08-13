@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -28,11 +29,13 @@ export function Header({ isSignedIn, setIsSignedIn }: HeaderProps) {
             Admin Panel
           </Link>
         </Button>
-        <Button onClick={() => setIsSignedIn(!isSignedIn)} size="sm">
+        <Button onClick={() => setIsSignedIn(!isSignedIn)} size="sm" variant="ghost">
             {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
         </Button>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-          Sign Up
+        <Button asChild>
+          <Link href="/signup" prefetch={false}>
+            Sign Up
+          </Link>
         </Button>
       </nav>
     </header>

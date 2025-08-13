@@ -31,6 +31,7 @@ export interface User {
   designation: Role;
   mobileNumber: string;
   dateOfBirth: string; // Format: 'YYYY-MM-DD'
+  email?: string;
   password: string; // In a real app, this should be a securely stored hash.
   status: 'active' | 'inactive';
 }
@@ -547,6 +548,7 @@ export const MOCK_USERS: User[] = [
   { id: 495, name: 'M.Kumaravel', employeeCode: 'TN-725', designation: 'BRP', mobileNumber: '9790113755', dateOfBirth: '1976-06-03', password: 'password123', status: 'active' },
   { id: 496, name: 'K.Sivakumar', employeeCode: 'TN-717', designation: 'BRP', mobileNumber: '9488392913', dateOfBirth: '1982-06-15', password: 'password123', status: 'active' }
 ];
+
 
 
 

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -73,6 +74,7 @@ const userFormSchema = z.object({
     designation: z.enum(ROLES),
     mobileNumber: z.string().regex(/^\d{10}$/, { message: "Mobile number must be 10 digits." }),
     dateOfBirth: z.date({ required_error: "Date of birth is required." }),
+    email: z.string().email({ message: "Invalid email address." }).optional(),
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
@@ -93,6 +95,7 @@ export default function AdminPage() {
         employeeCode: "",
         mobileNumber: "",
         password: "",
+        email: "",
     },
   });
 
@@ -112,6 +115,7 @@ export default function AdminPage() {
         designation: user.designation,
         mobileNumber: user.mobileNumber,
         dateOfBirth: new Date(user.dateOfBirth),
+        email: user.email || "",
         password: user.password,
     });
     setIsFormOpen(true);
@@ -125,6 +129,7 @@ export default function AdminPage() {
         designation: undefined,
         mobileNumber: "",
         dateOfBirth: undefined,
+        email: "",
         password: "password123", // Default password for new users
     });
     setIsFormOpen(true);
@@ -288,6 +293,19 @@ export default function AdminPage() {
                             />
                              <FormField
                                 control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="user@example.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
@@ -362,6 +380,7 @@ export default function AdminPage() {
                                 <TableHead>Designation</TableHead>
                                 <TableHead>Mobile Number</TableHead>
                                 <TableHead>Date of Birth</TableHead>
+                                <TableHead>Email</TableHead>
                                 <TableHead>Password</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
@@ -376,6 +395,7 @@ export default function AdminPage() {
                                   <TableCell>{user.designation}</TableCell>
                                   <TableCell>{user.mobileNumber}</TableCell>
                                   <TableCell>{new Date(user.dateOfBirth).toLocaleDateString()}</TableCell>
+                                  <TableCell>{user.email}</TableCell>
                                   <TableCell>
                                     <Badge variant="outline">********</Badge>
                                   </TableCell>
