@@ -5,13 +5,14 @@ import Image from "next/image";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, BellRing } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollingAnnouncementBar } from "@/components/scrolling-announcement-bar";
 import { Header } from "@/components/header";
 import { MainNavigation } from "@/components/main-navigation";
 import { Footer } from "@/components/footer";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { GalleryHighlights } from "@/components/gallery-highlights";
+import { SignedInMenu } from "@/components/signed-in-menu";
 import {
   Accordion,
   AccordionContent,
@@ -61,6 +62,8 @@ export default function Home() {
           />
         </div>
         
+        {isSignedIn && <SignedInMenu />}
+
         <GalleryHighlights />
 
         {isSignedIn && (

@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
@@ -14,13 +13,6 @@ const guestMenuItems = [
   { title: "SA REPORTS", href: "/sa-reports" },
   { title: "LIBRARY", href: "/library" },
   { title: "GRIEVANCES", href: "/grievances" },
-];
-
-const signedInOnlyMenuItems = [
-  { title: "REGISTRATION", href: "/registration" },
-  { title: "DATA ENTRY", href: "/data-entry" },
-  { title: "DAILY ACTIVITIES", href: "/daily-activities" },
-  { title: "REPORTS", href: "/reports" },
 ];
 
 interface MainNavigationProps {
@@ -38,18 +30,7 @@ export function MainNavigation({ isSignedIn, setIsSignedIn }: MainNavigationProp
           </Button>
         ))}
       </div>
-      {isSignedIn && (
-        <div className="w-full">
-            <Separator className="my-2 bg-border" />
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-                {signedInOnlyMenuItems.map((item) => (
-                <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                    <Link href={item.href}>{item.title}</Link>
-                </Button>
-                ))}
-            </div>
-        </div>
-      )}
+      
       {/* This button is for demonstrating the menu change. You should remove it and use your actual authentication logic. */}
       <Button onClick={() => setIsSignedIn(!isSignedIn)} className="absolute right-4" size="sm">
         {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}

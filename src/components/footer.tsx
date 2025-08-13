@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mountain, ArrowRight } from "lucide-react";
+import { Mountain, ArrowRight, Phone, Mail, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -18,23 +18,35 @@ export function Footer() {
                 <span className="text-xs text-primary-foreground/80 font-semibold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
               </div>
             </Link>
-            <p className="text-sm text-primary-foreground/80 font-normal">
-              Quality products at affordable prices. Your one-stop shop for everything you need.
-            </p>
+            <div className="flex flex-col gap-2 text-sm text-primary-foreground/80 font-normal">
+               <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>SASTA, Chennai, Tamil Nadu</span>
+               </div>
+               <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span>+91 12345 67890</span>
+               </div>
+               <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span>contact@sasta.tn.gov.in</span>
+               </div>
+            </div>
           </div>
           <div className="flex flex-col gap-3">
             <h3 className="font-bold text-lg">Quick Links</h3>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>About Us</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Contact</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>FAQ</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Shipping & Returns</Link>
+            <Link href="/" className="text-sm hover:underline font-normal" prefetch={false}>Home</Link>
+            <Link href="/about" className="text-sm hover:underline font-normal" prefetch={false}>About Us</Link>
+            <Link href="/schemes" className="text-sm hover:underline font-normal" prefetch={false}>Schemes</Link>
+            <Link href="/gallery" className="text-sm hover:underline font-normal" prefetch={false}>Gallery</Link>
+            <Link href="/sa-reports" className="text-sm hover:underline font-normal" prefetch={false}>SA Reports</Link>
           </div>
           <div className="flex flex-col gap-3">
-            <h3 className="font-bold text-lg">Shop</h3>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Men</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Women</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Kids</Link>
-            <Link href="#" className="text-sm hover:underline font-normal" prefetch={false}>Home</Link>
+            <h3 className="font-bold text-lg">User Actions</h3>
+            <Link href="/grievances" className="text-sm hover:underline font-normal" prefetch={false}>Grievances</Link>
+            <Link href="/registration" className="text-sm hover:underline font-normal" prefetch={false}>Registration</Link>
+             <Link href="/data-entry" className="text-sm hover:underline font-normal" prefetch={false}>Data Entry</Link>
+             <Link href="/reports" className="text-sm hover:underline font-normal" prefetch={false}>Reports</Link>
           </div>
           <div className="flex flex-col gap-3">
             <h3 className="font-bold text-lg">Newsletter</h3>
