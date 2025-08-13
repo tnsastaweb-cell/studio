@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
@@ -14,8 +15,7 @@ const guestMenuItems = [
   { title: "GRIEVANCES", href: "/grievances" },
 ];
 
-const signedInMenuItems = [
-  ...guestMenuItems,
+const signedInOnlyMenuItems = [
   { title: "REGISTRATION", href: "/registration" },
   { title: "DATA ENTRY", href: "/data-entry" },
   { title: "DAILY ACTIVITIES", href: "/daily-activities" },
@@ -25,21 +25,32 @@ const signedInMenuItems = [
 export function MainNavigation() {
   // To-do: Replace with real authentication state
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const menuItems = isSignedIn ? signedInMenuItems : guestMenuItems;
 
   return (
-    <nav className="bg-secondary w-full flex justify-center py-2 shadow-md sticky top-[80px] z-40">
+    <nav className="bg-secondary w-full flex flex-col items-center py-2 shadow-md sticky top-[80px] z-40">
       <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-        {menuItems.map((item) => (
-          <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-bold text-xs sm:text-base px-2 sm:px-4 py-2">
+        {guestMenuItems.map((item) => (
+          <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
             <Link href={item.href}>{item.title}</Link>
           </Button>
         ))}
-        {/* This button is for demonstrating the menu change. You should remove it and use your actual authentication logic. */}
-        <Button onClick={() => setIsSignedIn(!isSignedIn)} className="absolute right-4" size="sm">
-          {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
-        </Button>
       </div>
+      {isSignedIn && (
+        <div className="w-full">
+            <Separator className="my-2 bg-border" />
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
+                {signedInOnlyMenuItems.map((item) => (
+                <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                    <Link href={item.href}>{item.title}</Link>
+                </Button>
+                ))}
+            </div>
+        </div>
+      )}
+      {/* This button is for demonstrating the menu change. You should remove it and use your actual authentication logic. */}
+      <Button onClick={() => setIsSignedIn(!isSignedIn)} className="absolute right-4" size="sm">
+        {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
+      </Button>
     </nav>
   );
 }
