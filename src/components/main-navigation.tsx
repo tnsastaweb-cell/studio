@@ -84,10 +84,46 @@ const guestMenuItems = [
 ];
 
 const signedInMenuItems = [
-    { title: "REGISTRATION", href: "/registration" },
-    { title: "DATA ENTRY", href: "/data-entry" },
-    { title: "DAILY ACTIVITES", href: "/daily-activities" },
-    { title: "REPORTS", href: "/reports" },
+    { 
+      title: "REGISTRATION", 
+      href: "/registration",
+      children: [
+        { title: "DISTRICT OFFICE REGISTRATION", href: "/registration/district-office" },
+        { title: "STAFF REGISTRATION", href: "/registration/staff" },
+        { title: "VRP REGISTRATION", href: "/registration/vrp" },
+      ]
+    },
+    { 
+      title: "DATA ENTRY", 
+      href: "/data-entry",
+      children: [
+        { title: "MGNREGS", href: "/data-entry/mgnregs" },
+        { title: "PAMY-G", href: "/data-entry/pamy-g" },
+        { title: "NSAP", href: "/data-entry/nsap" },
+        { title: "NMP", href: "/data-entry/nmp" },
+        { title: "FFCG", href: "/data-entry/ffcg" },
+        { title: "DSJE", href: "/data-entry/dsje" },
+        { title: "HLC", href: "/data-entry/hlc" },
+        { title: "STATE/DISTRICT ASSEMBLY", href: "/data-entry/assembly" },
+      ]
+    },
+    { 
+      title: "DAILY ACTIVITES", 
+      href: "/daily-activities",
+      children: [
+        { title: "DAILY ATTENDENCE", href: "/daily-activities/attendance" },
+        { title: "TOUR DAIRY", href: "/daily-activities/tour-diary" },
+        { title: "MOVEMENT REGISTER", href: "/daily-activities/movement-register" },
+      ]
+    },
+    { 
+      title: "REPORTS", 
+      href: "/reports",
+      children: [
+        { title: "WEEKLY REPORTS", href: "/reports/weekly" },
+        { title: "OTHERS", href: "/reports/others" },
+      ]
+    },
 ];
 
 interface MainNavigationProps {
@@ -132,9 +168,26 @@ export function MainNavigation({ isSignedIn, setIsSignedIn }: MainNavigationProp
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center mt-2">
             {signedInMenuItems.map((item, index) => (
                 <React.Fragment key={item.title}>
-                    <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                        <Link href={item.href}>{item.title}</Link>
-                    </Button>
+                    {item.children ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                            {item.title}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {item.children.map((child) => (
+                            <DropdownMenuItem key={child.title} asChild>
+                              <Link href={child.href}>{child.title}</Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                          <Link href={item.href}>{item.title}</Link>
+                      </Button>
+                    )}
                     {index < signedInMenuItems.length - 1 && (
                         <div className="h-4 w-px bg-primary/20" />
                     )}
