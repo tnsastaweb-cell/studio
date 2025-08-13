@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
@@ -31,19 +32,29 @@ export function MainNavigation({ isSignedIn, setIsSignedIn }: MainNavigationProp
   return (
     <nav className="bg-secondary w-full flex flex-col items-center py-2 shadow-md sticky top-[80px] z-40">
       <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-        {guestMenuItems.map((item) => (
-          <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-            <Link href={item.href}>{item.title}</Link>
-          </Button>
+        {guestMenuItems.map((item, index) => (
+            <React.Fragment key={item.title}>
+                <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                    <Link href={item.href}>{item.title}</Link>
+                </Button>
+                {index < guestMenuItems.length - 1 && (
+                    <div className="h-4 w-px bg-primary/20" />
+                )}
+            </React.Fragment>
         ))}
       </div>
       
       {isSignedIn && (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center mt-2">
-            {signedInMenuItems.map((item) => (
-            <Button key={item.title} asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                <Link href={item.href}>{item.title}</Link>
-            </Button>
+            {signedInMenuItems.map((item, index) => (
+                <React.Fragment key={item.title}>
+                    <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                        <Link href={item.href}>{item.title}</Link>
+                    </Button>
+                    {index < signedInMenuItems.length - 1 && (
+                        <div className="h-4 w-px bg-primary/20" />
+                    )}
+                </React.Fragment>
             ))}
         </div>
       )}
