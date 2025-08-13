@@ -2,14 +2,13 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Search, BellRing } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollingAnnouncementBar } from "@/components/scrolling-announcement-bar";
 import { Header } from "@/components/header";
 import { MainNavigation } from "@/components/main-navigation";
 import { Footer } from "@/components/footer";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { GalleryHighlights } from "@/components/gallery-highlights";
 
 export default function Home() {
   return (
@@ -28,35 +27,8 @@ export default function Home() {
               />
             </div>
             
-            <section>
-              <h2 className="text-3xl font-bold text-primary mb-6">Featured Products</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[
-                  { src: "https://placehold.co/600x400.png", hint: "men fashion", title: "Men's Casual Shirt" },
-                  { src: "https://placehold.co/600x400.png", hint: "women dress", title: "Women's Summer Dress" },
-                  { src: "https://placehold.co/600x400.png", hint: "kid toy", title: "Wooden Blocks Set" },
-                  { src: "https://placehold.co/600x400.png", hint: "home decor", title: "Ceramic Vase" },
-                  { src: "https://placehold.co/600x400.png", hint: "skincare product", title: "Organic Face Cream" },
-                  { src: "https://placehold.co/600x400.png", hint: "running shoes", title: "Unisex Sport Sneakers" },
-                ].map((item, index) => (
-                  <Card key={index} className="overflow-hidden bg-card hover:shadow-xl transition-shadow duration-300">
-                    <CardContent className="p-0">
-                      <Image
-                        src={item.src}
-                        alt={item.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-auto object-cover"
-                        data-ai-hint={item.hint}
-                      />
-                    </CardContent>
-                    <CardFooter className="p-4 bg-secondary">
-                      <h3 className="font-bold text-primary">{item.title}</h3>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </section>
+            <GalleryHighlights />
+
           </div>
           
           <aside className="space-y-8">
