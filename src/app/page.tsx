@@ -51,41 +51,39 @@ export default function Home() {
       <ScrollingAnnouncementBar />
       <Header />
       <MainNavigation isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
-      <main className="flex-1 container mx-auto px-4 py-8 pb-24">
-        <div className="space-y-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search for menus"
-              className="pl-10 w-full text-base bg-white"
-            />
-          </div>
-          
-          <GalleryHighlights />
-
-          {isSignedIn && (
-            <Card className="bg-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <BellRing className="h-5 w-5" />
-                  <span>WHAT'S NEW?</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {whatsNewItems.map((item) => (
-                    <AccordionItem value={item.title} key={item.title}>
-                      <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
-                      <AccordionContent className="font-normal text-foreground/90 pl-2">
-                        {item.content}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          )}
+      <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search for menus"
+            className="pl-10 w-full text-base bg-white"
+          />
         </div>
+        
+        <GalleryHighlights />
+
+        {isSignedIn && (
+          <Card className="bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <BellRing className="h-5 w-5" />
+                <span>WHAT'S NEW?</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                {whatsNewItems.map((item) => (
+                  <AccordionItem value={item.title} key={item.title}>
+                    <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
+                    <AccordionContent className="font-normal text-foreground/90 pl-2">
+                      {item.content}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        )}
       </main>
       <Footer />
       <BottomNavigation />
