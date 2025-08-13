@@ -3,17 +3,84 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
-  { title: "ABOUT US", href: "/about" },
-  { title: "SCHEMES", href: "/schemes" },
-  { title: "CALENDAR", href: "/calendar" },
+  {
+    title: "ABOUT US",
+    href: "/about",
+    children: [
+      { title: "Social Audit Unit", href: "/about/social-audit-unit" },
+      { title: "Who is who", href: "/about/who-is-who" },
+      { title: "Governing Body", href: "/about/governing-body" },
+      { title: "Executive Committee", href: "/about/executive-committee" },
+      { title: "Legal Documents (GOs, Registration)", href: "/about/legal-documents" },
+    ],
+  },
+  {
+    title: "SCHEMES",
+    href: "/schemes",
+    children: [
+        { title: "MGNREGS", href: "/schemes/mgnregs" },
+        { title: "PAMY-G", href: "/schemes/pamy-g" },
+        { title: "NSAP", href: "/schemes/nsap" },
+        { title: "NMP", href: "/schemes/nmp" },
+        { title: "FFCG", href: "/schemes/ffcg" },
+        { title: "DSJE", href: "/schemes/dsje" },
+        { title: "OTHERS", href: "/schemes/others" },
+    ]
+  },
+  {
+    title: "CALENDAR",
+    href: "/calendar",
+     children: [
+        { title: "MGNREGS", href: "/calendar/mgnregs" },
+        { title: "PAMY-G", href: "/calendar/pamy-g" },
+        { title: "NSAP", href: "/calendar/nsap" },
+        { title: "NMP", href: "/calendar/nmp" },
+        { title: "FFCG", href: "/calendar/ffcg" },
+        { title: "DSJE", href: "/calendar/dsje" },
+        { title: "OTHERS", href: "/calendar/others" },
+    ]
+  },
   { title: "GALLERY", href: "/gallery" },
-  { title: "SA REPORTS", href: "/sa-reports" },
-  { title: "LIBRARY", href: "/library" },
-  { title: "GRIEVANCES", href: "/grievances" },
+  {
+    title: "SA REPORTS",
+    href: "/sa-reports",
+    children: [
+        { title: "Individual Social Audit Reports", href: "/sa-reports/individual" },
+        { title: "Consolidated Reports", href: "/sa-reports/consolidated" },
+        { title: "Annual Reports", href: "/sa-reports/annual" },
+        { title: "Reports in MGNREGS website", href: "/sa-reports/mgnregs-reports" },
+        { title: "Reports in MSJE website", href: "/sa-reports/msje-reports" },
+    ]
+  },
+  {
+    title: "LIBRARY",
+    href: "/library",
+    children: [
+        { title: "Media", href: "/library/media" },
+        { title: "Careers", href: "/library/careers" },
+        { title: "Blog", href: "/library/blog" },
+        { title: "RTI", href: "/library/rti" },
+        { title: "Case Studies", href: "/library/case-studies" },
+    ]
+  },
+  {
+    title: "GRIEVANCES",
+    href: "/grievances",
+    children: [
+        { title: "Apply for Grievance", href: "/grievances/apply" },
+        { title: "Grievance Status", href: "/grievances/status" },
+        { title: "Grievance Summary", href: "/grievances/summary" },
+    ]
+  },
 ];
 
 const signedInMenuItems = [
@@ -34,9 +101,26 @@ export function MainNavigation({ isSignedIn, setIsSignedIn }: MainNavigationProp
       <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
         {guestMenuItems.map((item, index) => (
             <React.Fragment key={item.title}>
-                <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                    <Link href={item.href}>{item.title}</Link>
-                </Button>
+                {item.children ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                        {item.title}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {item.children.map((child) => (
+                        <DropdownMenuItem key={child.title} asChild>
+                          <Link href={child.href}>{child.title}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                      <Link href={item.href}>{item.title}</Link>
+                  </Button>
+                )}
                 {index < guestMenuItems.length - 1 && (
                     <div className="h-4 w-px bg-primary/20" />
                 )}
