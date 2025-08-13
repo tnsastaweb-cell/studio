@@ -23,12 +23,29 @@ import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   // To-do: Replace with real authentication state
   const [isSignedIn, setIsSignedIn] = useState(true);
+
+  const handleDeleteUser = (userId: number) => {
+    setUsers(users.filter(user => user.id !== userId));
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -81,6 +98,7 @@ export default function AdminPage() {
                                 <TableHead>Date of Birth</TableHead>
                                 <TableHead>Password</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead>Actions</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -99,6 +117,29 @@ export default function AdminPage() {
                                     <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
                                       {user.status}
                                     </Badge>
+                                  </TableCell>
+                                  <TableCell className="space-x-2">
+                                    <Button variant="outline" size="sm">Edit</Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="sm">Delete</Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the user
+                                            and remove their data from our servers.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                                            Continue
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                   </TableCell>
                                 </TableRow>
                               ))}
