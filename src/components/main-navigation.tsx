@@ -1,5 +1,6 @@
+
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -22,10 +23,12 @@ const signedInOnlyMenuItems = [
   { title: "REPORTS", href: "/reports" },
 ];
 
-export function MainNavigation() {
-  // To-do: Replace with real authentication state
-  const [isSignedIn, setIsSignedIn] = useState(false);
+interface MainNavigationProps {
+    isSignedIn: boolean;
+    setIsSignedIn: (isSignedIn: boolean) => void;
+}
 
+export function MainNavigation({ isSignedIn, setIsSignedIn }: MainNavigationProps) {
   return (
     <nav className="bg-secondary w-full flex flex-col items-center py-2 shadow-md sticky top-[80px] z-40">
       <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
