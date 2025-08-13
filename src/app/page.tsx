@@ -51,8 +51,8 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollingAnnouncementBar />
-      <Header />
-      <MainNavigation isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
+      <Header isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
+      <MainNavigation isSignedIn={isSignedIn} />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

@@ -1,8 +1,16 @@
+
+"use client";
+
 import Link from "next/link";
 import { Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function Header() {
+interface HeaderProps {
+    isSignedIn: boolean;
+    setIsSignedIn: (isSignedIn: boolean) => void;
+}
+
+export function Header({ isSignedIn, setIsSignedIn }: HeaderProps) {
   return (
     <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
       <Link href="#" className="flex items-center gap-3" prefetch={false}>
@@ -20,8 +28,8 @@ export function Header() {
             Admin Panel
           </Link>
         </Button>
-        <Button variant="ghost" className="text-primary hover:bg-accent hover:text-accent-foreground">
-          Sign In
+        <Button onClick={() => setIsSignedIn(!isSignedIn)} size="sm">
+            {isSignedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
         </Button>
         <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           Sign Up
