@@ -414,7 +414,7 @@ export default function AdminPage() {
                                   <TableCell>{format(new Date(user.dateOfBirth), 'dd/MM/yyyy')}</TableCell>
                                   <TableCell>{user.email}</TableCell>
                                   <TableCell>
-                                    <Badge variant="outline">********</Badge>
+                                    {user.password}
                                   </TableCell>
                                   <TableCell>
                                     <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
