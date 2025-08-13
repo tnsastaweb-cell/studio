@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, BellRing } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollingAnnouncementBar } from "@/components/scrolling-announcement-bar";
 import { Header } from "@/components/header";
 import { MainNavigation } from "@/components/main-navigation";
@@ -53,44 +52,39 @@ export default function Home() {
       <Header />
       <MainNavigation isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search for menus"
-                className="pl-10 w-full text-base bg-white"
-              />
-            </div>
-            
-            <GalleryHighlights />
-
-            {isSignedIn && (
-              <Card className="bg-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <BellRing className="h-5 w-5" />
-                    <span>WHAT'S NEW?</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
-                    {whatsNewItems.map((item) => (
-                      <AccordionItem value={item.title} key={item.title}>
-                        <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
-                        <AccordionContent className="font-normal text-foreground/90 pl-2">
-                          {item.content}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
-            )}
+        <div className="space-y-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Search for menus"
+              className="pl-10 w-full text-base bg-white"
+            />
           </div>
           
-          <aside className="space-y-8 lg:col-span-1">
-          </aside>
+          <GalleryHighlights />
+
+          {isSignedIn && (
+            <Card className="bg-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <BellRing className="h-5 w-5" />
+                  <span>WHAT'S NEW?</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                  {whatsNewItems.map((item) => (
+                    <AccordionItem value={item.title} key={item.title}>
+                      <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
+                      <AccordionContent className="font-normal text-foreground/90 pl-2">
+                        {item.content}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
       <Footer />
