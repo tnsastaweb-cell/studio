@@ -1,9 +1,6 @@
 export function ScrollingAnnouncementBar() {
   const announcements = [
-    "Special Offer: Free Shipping on Orders Over $50!",
-    "New Arrivals: Check out the latest summer collection.",
-    "Follow us on social media for updates.",
-    "Customer Support available 24/7.",
+    "Website is in beta version and under progress. Please report any issues or feedback. This is a sample scrolling text for demonstration.",
   ];
   const fullText = announcements.join(" • ");
 
