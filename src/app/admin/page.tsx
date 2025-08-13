@@ -1,7 +1,13 @@
 
 'use client';
 
-import { MOCK_USERS, User } from '@/services/users';
+import { useState } from 'react';
+import Link from 'next/link';
+
+import { MOCK_USERS, User, ROLES } from '@/services/users';
+import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
+import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+
 import {
   Table,
   TableHeader,
@@ -15,8 +21,9 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
-import { useState } from 'react';
-import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
@@ -29,41 +36,143 @@ export default function AdminPage() {
       <MainNavigation isSignedIn={isSignedIn} />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-primary">Admin Panel - User Management</h1>
-            <Link href="/" className="text-sm text-primary hover:underline">
-                &larr; Back to Home
-            </Link>
+          <h1 className="text-3xl font-bold text-primary">Admin Panel - Master Data</h1>
+          <Link href="/" className="text-sm text-primary hover:underline">
+            &larr; Back to Home
+          </Link>
         </div>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Employee Code</TableHead>
-                <TableHead>Designation</TableHead>
-                <TableHead>Mobile Number</TableHead>
-                <TableHead>Date of Birth</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.employeeCode}</TableCell>
-                  <TableCell>{user.designation}</TableCell>
-                  <TableCell>{user.mobileNumber}</TableCell>
-                  <TableCell>{new Date(user.dateOfBirth).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+
+        <Tabs defaultValue="signup-details" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="roles">Roles</TabsTrigger>
+                <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
+                <TabsTrigger value="schemes">Schemes</TabsTrigger>
+                <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
+            </TabsList>
+            <TabsContent value="roles">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>User Roles</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                           {ROLES.map(role => (
+                                <Badge key={role} variant="secondary" className="text-lg">{role}</Badge>
+                           ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="signup-details">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>User Management</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>S.No</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Employee Code</TableHead>
+                                <TableHead>Designation</TableHead>
+                                <TableHead>Mobile Number</TableHead>
+                                <TableHead>Date of Birth</TableHead>
+                                <TableHead>Password</TableHead>
+                                <TableHead>Status</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {users.map((user) => (
+                                <TableRow key={user.id}>
+                                  <TableCell>{user.id}</TableCell>
+                                  <TableCell className="font-medium">{user.name}</TableCell>
+                                  <TableCell>{user.employeeCode}</TableCell>
+                                  <TableCell>{user.designation}</TableCell>
+                                  <TableCell>{user.mobileNumber}</TableCell>
+                                  <TableCell>{new Date(user.dateOfBirth).toLocaleDateString()}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">{user.password}</Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
+                                      {user.status}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="schemes">
+               <Card>
+                    <CardHeader>
+                        <CardTitle>Scheme Management</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Scheme</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Sub Category</TableHead>
+                                <TableHead>Code</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {MOCK_SCHEMES.map((scheme) => (
+                                <TableRow key={scheme.id}>
+                                  <TableCell className="font-medium">{scheme.name}</TableCell>
+                                  <TableCell>{scheme.type}</TableCell>
+                                  <TableCell>{scheme.category}</TableCell>
+                                  <TableCell>{scheme.subCategory}</TableCell>
+                                  <TableCell>{scheme.code}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="panchayats">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Panchayat List</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Panchayat</TableHead>
+                                <TableHead>LDG Code</TableHead>
+                                <TableHead>Block</TableHead>
+                                <TableHead>District</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {MOCK_PANCHAYATS.map((item) => (
+                                <TableRow key={item.lgdCode}>
+                                  <TableCell className="font-medium">{item.name}</TableCell>
+                                  <TableCell>{item.lgdCode}</TableCell>
+                                  <TableCell>{item.block}</TableCell>
+                                  <TableCell>{item.district}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
       </main>
       <Footer />
       <BottomNavigation />
