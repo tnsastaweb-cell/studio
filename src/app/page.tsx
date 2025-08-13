@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   // To-do: Replace with real authentication state
@@ -64,18 +65,20 @@ export default function Home() {
 
         {isSignedIn && (
           <Card className="bg-card">
-            <CardHeader>
+            <CardHeader className="bg-secondary rounded-t-lg">
               <CardTitle className="flex items-center gap-2 text-primary">
                 <BellRing className="h-5 w-5" />
                 <span>WHAT'S NEW?</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {whatsNewItems.map((item) => (
-                  <AccordionItem value={item.title} key={item.title}>
-                    <AccordionTrigger className="font-semibold text-base">{item.title}</AccordionTrigger>
-                    <AccordionContent className="font-normal text-foreground/90 pl-2">
+            <CardContent className="p-4 md:p-6">
+              <Accordion type="single" collapsible className="w-full bg-white rounded-md p-4 border">
+                {whatsNewItems.map((item, index) => (
+                  <AccordionItem value={item.title} key={item.title} className={cn(index === whatsNewItems.length - 1 && "border-b-0")}>
+                    <AccordionTrigger className="font-semibold text-base text-primary hover:no-underline">
+                      {item.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="font-normal text-foreground/90 pl-2 pt-2">
                       {item.content}
                     </AccordionContent>
                   </AccordionItem>
