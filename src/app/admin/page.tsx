@@ -157,8 +157,10 @@ export default function AdminPage() {
     setIsFormOpen(false);
     setEditingUser(null);
   }
+  
+  const canAccessAdminPanel = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
-  if (user?.designation !== 'ADMIN') {
+  if (!canAccessAdminPanel) {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />

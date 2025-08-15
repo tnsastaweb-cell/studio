@@ -24,6 +24,8 @@ export function Header() {
     signOut();
     router.push('/');
   }
+  
+  const canAccessAdminPanel = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
   return (
     <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
@@ -37,7 +39,7 @@ export function Header() {
         </div>
       </Link>
       <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
-        {user?.designation === 'ADMIN' && (
+        {canAccessAdminPanel && (
           <Button asChild variant="link" className="text-primary hidden sm:inline-flex">
             <Link href="/admin" prefetch={false}>
               Admin Panel

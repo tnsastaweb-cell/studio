@@ -23,23 +23,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // This effect runs once on mount to check for a logged-in user in localStorage.
     // This is a simple way to persist login state across page refreshes.
     setLoading(true);
-    try {
-      const storedUser = localStorage.getItem('sasta-user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        // We should still verify this user against our "database"
-        const foundUser = users.find(u => u.id === parsedUser.id);
-        if (foundUser) {
-          setUser(foundUser);
-        } else {
+    if (!usersLoading) {
+        try {
+            const storedUser = localStorage.getItem('sasta-user');
+            if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                // We should still verify this user against our "database"
+                const foundUser = users.find(u => u.id === parsedUser.id);
+                if (foundUser) {
+                    setUser(foundUser);
+                } else {
+                    localStorage.removeItem('sasta-user');
+                }
+            }
+        } catch (error) {
+            console.error("Failed to parse user from localStorage", error);
             localStorage.removeItem('sasta-user');
+        } finally {
+            setLoading(false);
         }
-      }
-    } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
-        localStorage.removeItem('sasta-user');
-    } finally {
-       setLoading(usersLoading);
     }
   }, [users, usersLoading]);
 
