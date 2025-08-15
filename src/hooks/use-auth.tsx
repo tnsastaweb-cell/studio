@@ -47,8 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = (employeeCode: string, password: string): boolean => {
     // This is the critical fix: ensure we are checking against the most up-to-date user list.
-    const userDatabase = userStore;
-    const foundUser = userDatabase.find(
+    const foundUser = users.find(
       (u) => u.employeeCode === employeeCode && u.password === password
     );
 
@@ -81,4 +80,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
