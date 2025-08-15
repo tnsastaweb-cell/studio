@@ -71,7 +71,7 @@ export function Header() {
           </DropdownMenu>
         ) : (
           <>
-            <Button asChild variant="ghost">
+            <Button asChild>
               <Link href="/signin" prefetch={false}>
                 Sign In
               </Link>
