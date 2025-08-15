@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const signInSchema = z.object({
-  employeeCode: z.string().min(1, { message: "Employee code is required." }),
+  employeeCode: z.string().min(1, { message: "User Name is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
 
@@ -51,7 +51,7 @@ export default function SignInPage() {
         if (success) {
             router.push('/');
         } else {
-            setSignInError("Invalid employee code or password. Please try again.");
+            setSignInError("Invalid user name or password. Please try again.");
         }
     };
 
@@ -78,7 +78,7 @@ export default function SignInPage() {
                                     name="employeeCode"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Employee Code</FormLabel>
+                                            <FormLabel>User Name</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Your Employee Code" {...field} />
                                             </FormControl>

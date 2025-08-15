@@ -76,11 +76,6 @@ export function Header() {
                 Sign In
               </Link>
             </Button>
-            <Button asChild>
-              <Link href="/signup" prefetch={false}>
-                Sign Up
-              </Link>
-            </Button>
           </>
         )}
       </nav>

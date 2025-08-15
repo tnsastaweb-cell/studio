@@ -10,7 +10,7 @@ import * as z from 'zod';
 import { format } from "date-fns";
 import { Check, X, CalendarIcon } from 'lucide-react';
 
-import { MOCK_USERS, User, ROLES } from '@/services/users';
+import { useUsers, User, ROLES } from '@/services/users';
 import { cn } from "@/lib/utils";
 
 import { Header } from '@/components/header';
@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/use-auth';
 
 const passwordSchema = z.string()
   .min(8, "Must be at least 8 characters")
@@ -57,9 +58,9 @@ const PasswordValidationIndicator = ({ label, isValid }: { label: string, isVali
 );
 
 export default function SignUpPage() {
-    const [isSignedIn, setIsSignedIn] = useState(false);
+    const { users, updateUser } = useUsers();
     const [employeeCodeQuery, setEmployeeCodeQuery] = useState('');
-    const [passwordValue, setPasswordValue] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(true);
     const router = useRouter();
     const { toast } = useToast();
 
@@ -79,6 +80,7 @@ export default function SignUpPage() {
         const query = e.target.value;
         setEmployeeCodeQuery(query);
         form.setValue('employeeCode', query);
+        setShowSuggestions(true);
 
         // Clear other fields if query is empty
         if (!query) {
@@ -93,7 +95,8 @@ export default function SignUpPage() {
     };
 
     const handleEmployeeSelect = (user: User) => {
-        setEmployeeCodeQuery('');
+        setEmployeeCodeQuery(user.employeeCode);
+        setShowSuggestions(false);
         form.reset({
             ...form.getValues(),
             name: user.name,
@@ -105,16 +108,13 @@ export default function SignUpPage() {
     };
 
     const onSubmit = (values: SignUpFormValues) => {
-        // In a real app, you would send this data to your backend to create a new user
-        // and update the password. For this demo, we'll just show a success toast.
-        console.log("Form Submitted:", values);
-        
-        // This is where you would update the master user list.
-        // For now, it's just a mock.
-        const userIndex = MOCK_USERS.findIndex(u => u.employeeCode === values.employeeCode);
-        if (userIndex !== -1) {
-            MOCK_USERS[userIndex].email = values.email;
-            MOCK_USERS[userIndex].password = values.password; // Remember to hash in a real app!
+        const userToUpdate = users.find(u => u.employeeCode === values.employeeCode);
+        if (userToUpdate) {
+            updateUser({
+                ...userToUpdate,
+                email: values.email,
+                password: values.password,
+            });
         }
         
         toast({
@@ -122,8 +122,7 @@ export default function SignUpPage() {
             description: "Your account has been created. Please sign in.",
         });
 
-        // Redirect to sign-in page or home page
-        router.push('/');
+        router.push('/signin');
     };
     
     const password = form.watch('password');
@@ -134,15 +133,15 @@ export default function SignUpPage() {
         specialChar: /[^A-Za-z0-9]/.test(password || ''),
     };
 
-    const filteredUsers = employeeCodeQuery
-        ? MOCK_USERS.filter(user =>
-            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase())
-          ).slice(0, 5) // Limit suggestions
+    const filteredUsers = employeeCodeQuery && showSuggestions
+        ? users.filter(user =>
+            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase()) && !user.email
+          ).slice(0, 5) // Limit suggestions and only show users who haven't signed up
         : [];
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Header isSignedIn={isSignedIn} setIsSignedIn={setIsSignedIn} />
+            <Header />
             <main className="flex-1 container mx-auto px-4 py-12 flex items-center justify-center">
                 <Card className="w-full max-w-4xl">
                     <CardHeader>
@@ -158,14 +157,14 @@ export default function SignUpPage() {
                                         <FormField
                                             control={form.control}
                                             name="employeeCode"
-                                            render={() => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Employee Code</FormLabel>
                                                     <FormControl>
                                                         <div className="relative">
                                                             <Input 
                                                                 placeholder="Type to search your employee code" 
-                                                                value={employeeCodeQuery}
+                                                                value={form.getValues('employeeCode')}
                                                                 onChange={handleEmployeeCodeChange}
                                                                 autoComplete="off"
                                                             />
@@ -177,7 +176,7 @@ export default function SignUpPage() {
                                                                             className="p-2 hover:bg-accent cursor-pointer"
                                                                             onClick={() => handleEmployeeSelect(user)}
                                                                         >
-                                                                            {user.employeeCode} - {user.name}
+                                                                            {user.employeeCode}
                                                                         </div>
                                                                     ))}
                                                                 </div>
