@@ -549,7 +549,8 @@ export const MOCK_USERS: User[] = [
   { id: 493, name: 'M.Prema', employeeCode: 'TN-1220', designation: 'BRP', mobileNumber: '8072942993', dateOfBirth: '1986-04-12', password: 'password123', status: 'active' },
   { id: 494, name: 'R.Kanchana', employeeCode: 'TN-1236', designation: 'BRP', mobileNumber: '8838986038', dateOfBirth: '1980-04-04', password: 'password123', status: 'active' },
   { id: 495, name: 'M.Kumaravel', employeeCode: 'TN-725', designation: 'BRP', mobileNumber: '9790113755', dateOfBirth: '1976-06-03', password: 'password123', status: 'active' },
-  { id: 496, name: 'K.Sivakumar', employeeCode: 'TN-717', designation: 'BRP', mobileNumber: '9488392913', dateOfBirth: '1982-06-15', password: 'password123', status: 'active' }
+  { id: 496, name: 'K.Sivakumar', employeeCode: 'TN-717', designation: 'BRP', mobileNumber: '9488392913', dateOfBirth: '1982-06-15', password: 'password123', status: 'active' },
+  { id: 497, name: 'G.Kalilur Rehman', employeeCode: 'TN-GKR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', password: 'password123', status: 'active' }
 ];
 
 // In a real application, this would be a persistent store like localStorage or a database.
