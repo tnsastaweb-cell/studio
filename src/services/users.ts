@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 /**
@@ -554,18 +555,17 @@ export const MOCK_USERS: User[] = [
 ];
 
 // In a real application, this would be a persistent store like localStorage or a database.
-let userStore: User[] = [...MOCK_USERS];
+export let userStore: User[] = [];
 let isInitialized = false;
 
 // This function simulates fetching users and provides methods to manipulate the user list.
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>(userStore);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // This effect ensures that the userStore is only initialized once.
     if (!isInitialized) {
-        // You could also load this from localStorage for better demo persistence
         userStore = [...MOCK_USERS];
         isInitialized = true;
     }

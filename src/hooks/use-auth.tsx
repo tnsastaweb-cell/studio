@@ -22,8 +22,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // This effect runs once on mount to check for a logged-in user in localStorage.
     // This is a simple way to persist login state across page refreshes.
-    setLoading(true);
     if (!usersLoading) {
+        setLoading(true);
         try {
             const storedUser = localStorage.getItem('sasta-user');
             if (storedUser) {
@@ -46,7 +46,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [users, usersLoading]);
 
   const signIn = (employeeCode: string, password: string): boolean => {
-    const foundUser = users.find(
+    // This is the critical fix: ensure we are checking against the most up-to-date user list.
+    const userDatabase = userStore;
+    const foundUser = userDatabase.find(
       (u) => u.employeeCode === employeeCode && u.password === password
     );
 
@@ -63,8 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('sasta-user');
   };
 
+  const isLoading = usersLoading || loading;
+
   return (
-    <AuthContext.Provider value={{ user, isSignedIn: !!user, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, isSignedIn: !!user, signIn, signOut, loading: isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -77,3 +81,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
