@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useUsers, User } from '@/services/users';
+import { useUsers, User, MOCK_USERS } from '@/services/users';
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +15,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { users, loading: usersLoading } = useUsers();
+  const { users: allUsers, loading: usersLoading } = useUsers();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (storedUser) {
                 const parsedUser = JSON.parse(storedUser);
                 // We should still verify this user against our "database"
-                const foundUser = users.find(u => u.id === parsedUser.id);
+                const foundUser = MOCK_USERS.find(u => u.id === parsedUser.id);
                 if (foundUser) {
                     setUser(foundUser);
                 } else {
@@ -43,11 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(false);
         }
     }
-  }, [users, usersLoading]);
+  }, [usersLoading]);
 
   const signIn = (employeeCode: string, password: string): boolean => {
-    // This is the critical fix: ensure we are checking against the most up-to-date user list.
-    const foundUser = users.find(
+    // Use the definitive MOCK_USERS array which is updated by the sign-up page.
+    const foundUser = MOCK_USERS.find(
       (u) => u.employeeCode === employeeCode && u.password === password
     );
 

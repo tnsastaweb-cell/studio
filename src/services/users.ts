@@ -1,6 +1,4 @@
 
-
-
 'use client';
 
 /**
@@ -554,22 +552,13 @@ export const MOCK_USERS: User[] = [
   { id: 497, name: 'G.Kalilur Rehman', employeeCode: 'TN-GKR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', password: 'password123', status: 'active' }
 ];
 
-// In a real application, this would be a persistent store like localStorage or a database.
-export let userStore: User[] = [];
-let isInitialized = false;
-
 // This function simulates fetching users and provides methods to manipulate the user list.
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This effect ensures that the userStore is only initialized once.
-    if (!isInitialized) {
-        userStore = [...MOCK_USERS];
-        isInitialized = true;
-    }
-    setUsers(userStore);
+    setUsers(MOCK_USERS);
     setLoading(false);
   }, []);
 
@@ -577,30 +566,30 @@ export const useUsers = () => {
     setUsers(prevUsers => {
       const newUser = {
         ...user,
-        id: prevUsers.length + 1,
+        id: MOCK_USERS.length + 1,
         status: 'active' as const,
       };
-      userStore = [...prevUsers, newUser];
-      return userStore;
+      MOCK_USERS.push(newUser);
+      return [...MOCK_USERS];
     });
   }, []);
 
   const updateUser = useCallback((updatedUser: User) => {
     setUsers(prevUsers => {
-      const newUsers = prevUsers.map(user =>
-        user.id === updatedUser.id ? updatedUser : user
-      );
-      userStore = newUsers;
-      return newUsers;
+      const index = MOCK_USERS.findIndex(user => user.id === updatedUser.id);
+        if (index !== -1) {
+            MOCK_USERS[index] = updatedUser;
+        }
+      return [...MOCK_USERS];
     });
   }, []);
 
   const deleteUser = useCallback((userId: number) => {
-    setUsers(prevUsers => {
-       const newUsers = prevUsers.filter(user => user.id !== userId);
-       userStore = newUsers;
-       return newUsers;
-    });
+    const index = MOCK_USERS.findIndex(user => user.id === userId);
+    if (index > -1) {
+        MOCK_USERS.splice(index, 1);
+    }
+    setUsers([...MOCK_USERS]);
   }, []);
 
   return { users, loading, addUser, updateUser, deleteUser };
