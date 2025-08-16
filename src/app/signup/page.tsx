@@ -135,8 +135,8 @@ export default function SignUpPage() {
 
     const filteredUsers = employeeCodeQuery && showSuggestions
         ? users.filter(user =>
-            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase()) && !user.email
-          ).slice(0, 5) // Limit suggestions and only show users who haven't signed up
+            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase())
+          ).slice(0, 5) // Limit suggestions
         : [];
 
     return (
