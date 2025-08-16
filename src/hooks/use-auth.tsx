@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useUsers, User, MOCK_USERS } from '@/services/users';
+import { useUsers, User } from '@/services/users';
 
 interface AuthContextType {
   user: User | null;
@@ -21,18 +21,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const handleStorageChange = (event: StorageEvent) => {
-    if (event.key === LOCAL_STORAGE_KEY) {
-       loadUserFromStorage();
-    }
-  };
-
   const loadUserFromStorage = () => {
      try {
         const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (storedUser) {
             const parsedUser: User = JSON.parse(storedUser);
-            const foundUser = MOCK_USERS.find(u => u.id === parsedUser.id && u.password === parsedUser.password);
+            // Validate the stored user against the current user list from useUsers
+            const foundUser = users.find(u => u.id === parsedUser.id && u.password === parsedUser.password);
             setUser(foundUser || null);
         } else {
           setUser(null);
@@ -46,24 +41,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-
   useEffect(() => {
     // This effect runs once on mount to check for a logged-in user in localStorage.
     if (!usersLoading) {
         setLoading(true);
         loadUserFromStorage();
     }
-  }, [usersLoading]);
+  }, [usersLoading, users]); // Add `users` as a dependency to re-validate when it changes
 
   useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY) {
+         loadUserFromStorage();
+      }
+    };
     window.addEventListener('storage', handleStorageChange);
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [users]); // Depend on users to ensure the handler has the latest user list
 
   const signIn = (employeeCode: string, password: string): boolean => {
-    const foundUser = MOCK_USERS.find(
+    const foundUser = users.find(
       (u) => u.employeeCode === employeeCode && u.password === password
     );
 
@@ -78,6 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = () => {
     setUser(null);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    // Dispatch a storage event to notify other tabs
+    window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_STORAGE_KEY, newValue: null }));
   };
 
   const isLoading = usersLoading || loading;
