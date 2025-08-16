@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Mountain, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,23 @@ const feedbackMessages = [
     "Feedback from Sam Wilson: Suggestion - add a search bar to the library.",
     "Feedback from Maria Garcia: The mobile view is very user-friendly."
 ];
+
+const TamilNaduLogo = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="h-full w-full">
+        <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2">
+            <path d="M256 41.5l20.4 63.8h67.1l-54.3 39.4 20.4 63.8-54.3-39.4-54.3 39.4 20.4-63.8-54.3-39.4h67.1z" />
+            <path d="M128 208.3h256v39.4H128z" />
+            <path d="M256 128.3c-70.6 0-128 57.4-128 128s57.4 128 128 128 128-57.4 128-128-57.4-128-128-128zm0 230.4c-56.5 0-102.4-45.9-102.4-102.4S199.5 154.7 256 154.7s102.4 45.9 102.4 102.4-45.9 102.4-102.4 102.4z" />
+        </g>
+        <path d="M256 470.5V256h-1.8c-1.1 0-2 .9-2 2v212.5c0 1.1.9 2 2 2h1.8z" fill="#D4AF37" />
+        <g fill="#FFFFFF">
+            <path d="M166.4 307.2h179.2v25.6H166.4z" />
+            <path d="M192 345.6h128v12.8H192z" />
+        </g>
+        <text x="256" y="440" font-family="Lohit Tamil" font-size="64" fill="#FFFFFF" text-anchor="middle">வாய்மையே வெல்லும்</text>
+    </svg>
+);
+
 
 export function Footer() {
   const [name, setName] = useState("");
@@ -65,26 +82,23 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="flex flex-col items-start gap-4">
             <Link href="#" className="flex items-center gap-3" prefetch={false}>
-              <div className="w-10 h-10 border-2 border-primary-foreground rounded-md flex items-center justify-center">
-                <Mountain className="h-6 w-6" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                 <TamilNaduLogo />
               </div>
               <div className="flex flex-col">
-                <span className="font-impact text-2xl font-bold tracking-wider">SASTA</span>
+                <span className="font-impact text-xl font-bold">SASTA</span>
                 <span className="text-xs text-primary-foreground/80 font-semibold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
               </div>
             </Link>
             <div className="flex flex-col gap-2 text-sm text-primary-foreground/80 font-normal">
-               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>SASTA, Chennai, Tamil Nadu</span>
+               <h3 className="font-bold text-lg text-primary-foreground">Office Address & Contact</h3>
+               <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-1 shrink-0" />
+                <span>Panagal Maligai, Saidapet, Chennai - 600015, Tamil Nadu, India.</span>
                </div>
                <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>+91 12345 67890</span>
-               </div>
-               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>contact@sasta.tn.gov.in</span>
+                <span>044-XXXX XXXX / 044-YYYY YYYY</span>
                </div>
             </div>
           </div>
@@ -107,9 +121,9 @@ export function Footer() {
             <h3 className="font-bold text-lg">Report an Issue or Share Feedback</h3>
             <p className="text-sm text-primary-foreground/80 font-normal">Your input helps us improve the SASTA portal.</p>
             <form className="flex flex-col gap-3 mt-1" onSubmit={handleSubmit}>
-              <Input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="bg-primary-foreground/20 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 font-normal" />
-              <Input type="email" placeholder="Email ID" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-primary-foreground/20 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 font-normal" />
-              <Textarea placeholder="Feedback / Issue Description*" value={feedback} onChange={(e) => setFeedback(e.target.value)} className="bg-primary-foreground/20 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 font-normal" />
+              <Input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="bg-white text-black placeholder:text-gray-500 font-normal" />
+              <Input type="email" placeholder="Email ID" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-white text-black placeholder:text-gray-500 font-normal" />
+              <Textarea placeholder="Feedback / Issue Description*" value={feedback} onChange={(e) => setFeedback(e.target.value)} className="bg-white text-black placeholder:text-gray-500 font-normal" />
               <div className="flex gap-2 justify-end">
                 <Button type="button" variant="ghost" onClick={handleCancel} className="hover:bg-primary-foreground/10 text-primary-foreground">Cancel</Button>
                 <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">Submit Feedback</Button>
