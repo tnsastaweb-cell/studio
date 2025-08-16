@@ -19,7 +19,7 @@ const feedbackMessages = [
 
 const TamilNaduLogo = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="h-full w-full">
-        <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2">
+        <g fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="2">
             <path d="M256 41.5l20.4 63.8h67.1l-54.3 39.4 20.4 63.8-54.3-39.4-54.3 39.4 20.4-63.8-54.3-39.4h67.1z" />
             <path d="M128 208.3h256v39.4H128z" />
             <path d="M256 128.3c-70.6 0-128 57.4-128 128s57.4 128 128 128 128-57.4 128-128-57.4-128-128-128zm0 230.4c-56.5 0-102.4-45.9-102.4-102.4S199.5 154.7 256 154.7s102.4 45.9 102.4 102.4-45.9 102.4-102.4 102.4z" />
@@ -29,7 +29,7 @@ const TamilNaduLogo = () => (
             <path d="M166.4 307.2h179.2v25.6H166.4z" />
             <path d="M192 345.6h128v12.8H192z" />
         </g>
-        <text x="256" y="440" font-family="Lohit Tamil" font-size="64" fill="#FFFFFF" text-anchor="middle">வாய்மையே வெல்லும்</text>
+        <text x="256" y="440" fontFamily="Lohit Tamil" fontSize="64" fill="#FFFFFF" textAnchor="middle">வாய்மையே வெல்லும்</text>
     </svg>
 );
 
@@ -94,11 +94,11 @@ export function Footer() {
                <h3 className="font-bold text-lg text-primary-foreground">Office Address & Contact</h3>
                <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 shrink-0" />
-                <span>Panagal Maligai, Saidapet, Chennai - 600015, Tamil Nadu, India.</span>
+                <span>Address: Panagal Maligai, Saidapet, Chennai - 600015, Tamil Nadu, India.</span>
                </div>
                <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>044-XXXX XXXX / 044-YYYY YYYY</span>
+                <span>Phone: 044-XXXX XXXX / 044-YYYY YYYY</span>
                </div>
             </div>
           </div>

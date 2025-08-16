@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 
 const TamilNaduLogo = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="h-full w-full">
-        <g fill="#8E734A" stroke="#000" stroke-width="2">
+        <g fill="#8E734A" stroke="#000" strokeWidth="2">
             <path d="M256 41.5l20.4 63.8h67.1l-54.3 39.4 20.4 63.8-54.3-39.4-54.3 39.4 20.4-63.8-54.3-39.4h67.1z" />
             <path d="M128 208.3h256v39.4H128z" />
             <path d="M256 128.3c-70.6 0-128 57.4-128 128s57.4 128 128 128 128-57.4 128-128-57.4-128-128-128zm0 230.4c-56.5 0-102.4-45.9-102.4-102.4S199.5 154.7 256 154.7s102.4 45.9 102.4 102.4-45.9 102.4-102.4 102.4z" />
@@ -28,7 +28,7 @@ const TamilNaduLogo = () => (
             <path d="M166.4 307.2h179.2v25.6H166.4z" />
             <path d="M192 345.6h128v12.8H192z" />
         </g>
-        <text x="256" y="440" font-family="Lohit Tamil" font-size="64" fill="#000" text-anchor="middle">வாய்மையே வெல்லும்</text>
+        <text x="256" y="440" fontFamily="Lohit Tamil" fontSize="64" fill="#000" textAnchor="middle">வாய்மையே வெல்லும்</text>
     </svg>
 );
 
