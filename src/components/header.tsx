@@ -42,12 +42,18 @@ const TamilNaduLogo = () => (
 
 
 export function Header() {
-  const { user, signOut, isSignedIn } = useAuth();
+  const { user, signOut, isSignedIn, loading } = useAuth();
   const router = useRouter();
 
   const handleSignOut = () => {
     signOut();
     router.push('/');
+  }
+  
+  // We should wait until loading is false before checking user roles.
+  if (loading) {
+    // You can return a loading indicator here if needed
+    return <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b" />;
   }
   
   const canAccessAdminPanel = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
