@@ -1,10 +1,10 @@
 
-"use client";
+'use client';
 
-import Link from "next/link";
-import { LogOut, UserCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
+import Link from 'next/link';
+import { LogOut, UserCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
 
 
 const TamilNaduLogo = () => (

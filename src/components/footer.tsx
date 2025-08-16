@@ -1,14 +1,14 @@
 
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { Phone, Mail, MapPin } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { useFeedback } from "@/services/feedback";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Phone, Mail, MapPin } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { useFeedback } from '@/services/feedback';
 
 const feedbackMessages = [
     "Feedback from John Doe: Great website, very informative!",
