@@ -11,6 +11,7 @@ import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload } from "lucid
 
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
+import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { cn } from "@/lib/utils";
@@ -526,17 +527,50 @@ export default function AdminPage() {
                             </TabsList>
                             {MOCK_SCHEMES.map(scheme => (
                                 <TabsContent key={scheme.id} value={scheme.id}>
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>{scheme.name}</CardTitle>
-                                            <CardDescription>Scheme Code: {scheme.code}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2">
-                                            <p><strong>Type:</strong> {scheme.type}</p>
-                                            <p><strong>Category:</strong> {scheme.category}</p>
-                                            <p><strong>Sub Category:</strong> {scheme.subCategory}</p>
-                                        </CardContent>
-                                    </Card>
+                                     {scheme.name === 'MGNREGS' ? (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>{scheme.name} Details</CardTitle>
+                                                <CardDescription>Scheme Code: {scheme.code}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="border rounded-lg">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead>Type</TableHead>
+                                                                <TableHead>Category</TableHead>
+                                                                <TableHead>Sub Category</TableHead>
+                                                                <TableHead>Code Number</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {MOCK_MGNREGS_DATA.map((item, index) => (
+                                                                <TableRow key={index}>
+                                                                    <TableCell>{item.type}</TableCell>
+                                                                    <TableCell>{item.category}</TableCell>
+                                                                    <TableCell>{item.subCategory}</TableCell>
+                                                                    <TableCell>{item.codeNumber}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                     ) : (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>{scheme.name}</CardTitle>
+                                                <CardDescription>Scheme Code: {scheme.code}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="space-y-2">
+                                                <p><strong>Type:</strong> {scheme.type}</p>
+                                                <p><strong>Category:</strong> {scheme.category}</p>
+                                                <p><strong>Sub Category:</strong> {scheme.subCategory}</p>
+                                            </CardContent>
+                                        </Card>
+                                     )}
                                 </TabsContent>
                             ))}
                         </Tabs>

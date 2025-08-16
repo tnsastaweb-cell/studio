@@ -1,0 +1,57 @@
+
+export interface MgnregsData {
+  type: string;
+  category: string;
+  subCategory: string;
+  codeNumber: string;
+}
+
+export const MOCK_MGNREGS_DATA: MgnregsData[] = [
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Amount misappropriated by individuals through Fake entries', codeNumber: 'FM-1.1' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment made but no work was done', codeNumber: 'FM-1.2' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person who did not work', codeNumber: 'FM-1.3' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to non -existent person', codeNumber: 'FM-1.4' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to migrated person', codeNumber: 'FM-1.5' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person (Mates; Panchayat President; Secretary; Ward Members and other influential persons and their relatives) who did not work', codeNumber: 'FM-1.6' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person employed full -time elsewhere (Government; School; private firm etc.)', codeNumber: 'FM-1.7' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person under 18 years who did not work', codeNumber: 'FM-1.8' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Wages paid to a person twice on the same date', codeNumber: 'FM-1.9' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Worksite Facilitator has got been paid as worker also on the same date', codeNumber: 'FM-1.10' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Person not present in NMR has been included in the FTO', codeNumber: 'FM-1.11' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Person has got more wages than what was due to him', codeNumber: 'FM-1.12' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'payment made to Dead person', codeNumber: 'FM-1.13' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person for work done by machine', codeNumber: 'FM-1.14' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Person A’s wages have gone to Person B', codeNumber: 'FM-1.15' },
+    { type: 'FM - Financial Misappropriation', category: 'Payment to Person Who did not Work', subCategory: 'Payment to person who did not work but work was done', codeNumber: 'FM-1.16' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Complaint- Money was collected for issuing Job card', codeNumber: 'FM-2.1' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Complaint-money was collected for taking photographs', codeNumber: 'FM-2.2' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Complaint-money was collected for opening bank/Post Office account', codeNumber: 'FM-2.3' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Complaint-commission is withheld during wage payment', codeNumber: 'FM-2.4' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Business correspondent/Bank/Post Office takes a commission during wage payment', codeNumber: 'FM-2.5' },
+    { type: 'FM - Financial Misappropriation', category: 'Bribes', subCategory: 'Complaint-money was collected for allotting individual work', codeNumber: 'FM-2.6' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Work was not done /No work found at the work site', codeNumber: 'FM-3.1' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Saplings were not planted in plantation work', codeNumber: 'FM-3.2' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Farm Pond was not constructed', codeNumber: 'FM-3.3' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'No trace of work now', codeNumber: 'FM-3.4' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'No trace of planted saplings', codeNumber: 'FM-3.5' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Work was done through contractors', codeNumber: 'FM-3.6' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Work was done through machines', codeNumber: 'FM-3.7' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Work was allotted to ineligible beneficiary', codeNumber: 'FM-3.8' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Inappropriate work was executed', codeNumber: 'FM-3.9' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'IHHL not constructed but payment has been made', codeNumber: 'FM-3.10' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Amount paid for already for constructed IHHL', codeNumber: 'FM-3.11' },
+    { type: 'FM - Financial Misappropriation', category: 'Work Related', subCategory: 'Payment has been made twice for the same work', codeNumber: 'FM-3.12' },
+    { type: 'FM - Financial Misappropriation', category: 'Material Procurement', subCategory: 'Material have been procured high rate', codeNumber: 'FM-4.1' },
+    { type: 'FM - Financial Misappropriation', category: 'Material Procurement', subCategory: 'Poor quality material has been used', codeNumber: 'FM-4.2' },
+    { type: 'FM - Financial Misappropriation', category: 'Material Procurement', subCategory: 'Fake bills', codeNumber: 'FM-4.3' },
+    { type: 'FM - Financial Misappropriation', category: 'Material Procurement', subCategory: 'Booked expenses have not been spent', codeNumber: 'FM-4.4' },
+    { type: 'FM - Financial Misappropriation', category: 'Material Procurement', subCategory: 'Amount of material purchased is less than specified in the bills', codeNumber: 'FM-4.5' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Muster roll not found in worksite', codeNumber: 'FM-5.1' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Workers found in worksite with no name in muster roll', codeNumber: 'FM-5.2' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Inappropriate administrative expenses', codeNumber: 'FM-5.3' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Skilled expenditure has been paid at higher rates', codeNumber: 'FM-5.4' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Payment to worker without job cards', codeNumber: 'FM-5.5' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Payment to person through someone else’s job card', codeNumber: 'FM-5.6' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Family having more than one job card has been paid for more than 100 days', codeNumber: 'FM-5.7' },
+    { type: 'FM - Financial Misappropriation', category: 'Others', subCategory: 'Wages have been withdrawn from the worker’s account but has not been paid to the worker.', codeNumber: 'FM-5.8' },
+];
