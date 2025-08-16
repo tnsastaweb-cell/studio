@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const ChartBox = ({ label, className, level }: { label: string; className?: string, level: number }) => (
   <div className={cn(
       "bg-primary text-primary-foreground rounded-lg p-3 text-center font-bold shadow-md mx-auto w-60",
-      "flex items-center justify-center",
+      "flex items-center justify-center break-words", // Added break-words
       level === 1 && "w-48 h-16",
       level === 2 && "w-64 h-16",
       level === 3 && "w-64 h-16",
