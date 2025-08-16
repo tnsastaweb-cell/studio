@@ -29,7 +29,8 @@ const guestMenuItems = [
     href: "/schemes",
     children: [
         { title: "MGNREGS", href: "/schemes/mgnregs" },
-        { title: "PAMY-G", href: "/schemes/pamy-g" },
+        { title: "PMAY-G", href: "/schemes/pamy-g" },
+        { title: "15TH CFC GRANT", href: "/schemes/15th-cfc-grant" },
         { title: "NSAP", href: "/schemes/nsap" },
         { title: "NMP", href: "/schemes/nmp" },
         { title: "FFCG", href: "/schemes/ffcg" },
@@ -42,7 +43,7 @@ const guestMenuItems = [
     href: "/calendar",
      children: [
         { title: "MGNREGS", href: "/calendar/mgnregs" },
-        { title: "PAMY-G", href: "/calendar/pamy-g" },
+        { title: "PMAY-G", href: "/calendar/pamy-g" },
         { title: "NSAP", href: "/calendar/nsap" },
         { title: "NMP", href: "/calendar/nmp" },
         { title: "FFCG", href: "/calendar/ffcg" },
@@ -99,7 +100,7 @@ const signedInMenuItems = [
       href: "/data-entry",
       children: [
         { title: "MGNREGS", href: "/data-entry/mgnregs" },
-        { title: "PAMY-G", href: "/data-entry/pamy-g" },
+        { title: "PMAY-G", href: "/data-entry/pamy-g" },
         { title: "NSAP", href: "/data-entry/nsap" },
         { title: "NMP", href: "/data-entry/nmp" },
         { title: "FFCG", href: "/data-entry/ffcg" },
