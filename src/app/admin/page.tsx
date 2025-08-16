@@ -88,7 +88,7 @@ export default function AdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -158,6 +158,19 @@ export default function AdminPage() {
     }
     setIsFormOpen(false);
     setEditingUser(null);
+  }
+  
+  if (loading) {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <MainNavigation />
+            <main className="flex-1 container mx-auto px-4 py-8 text-center">
+                <p>Loading...</p>
+            </main>
+            <Footer />
+        </div>
+    )
   }
   
   const canAccessAdminPanel = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
