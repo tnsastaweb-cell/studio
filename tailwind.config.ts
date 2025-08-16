@@ -93,6 +93,9 @@ export default {
         marquee: 'marquee 40s linear infinite',
         marquee2: 'marquee2 40s linear infinite',
       },
+      textShadow: {
+        none: 'none',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

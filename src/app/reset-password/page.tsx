@@ -72,14 +72,14 @@ export default function ResetPasswordPage() {
             return;
         }
 
-        // Simulate sending a password reset link
-        toast({
-            title: "Password Reset Email Sent",
-            description: `A password reset link has been sent to ${user.email}. (This is a simulation)`,
-        });
-
         // In a real app, you'd handle token verification. Here we'll just update it.
         updateUser({ ...user, password: values.newPassword });
+
+        // Simulate sending a password reset link
+        toast({
+            title: "Password Reset Email Sent (Simulation)",
+            description: `A password reset link has been sent to ${user.email}.`,
+        });
 
         setTimeout(() => {
              toast({

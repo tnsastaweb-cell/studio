@@ -13,6 +13,7 @@ import { Calendar as CalendarIcon, PlusCircle } from "lucide-react";
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+import { useFeedback, Feedback } from '@/services/feedback';
 import { cn } from "@/lib/utils";
 
 import {
@@ -83,6 +84,7 @@ type UserFormValues = z.infer<typeof userFormSchema>;
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
+  const { feedbacks } = useFeedback();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const { toast } = useToast();
@@ -351,11 +353,12 @@ export default function AdminPage() {
 
 
         <Tabs defaultValue="signup-details" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="roles">Roles</TabsTrigger>
                 <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
                 <TabsTrigger value="schemes">Schemes</TabsTrigger>
                 <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
+                <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
             </TabsList>
             <TabsContent value="roles">
                 <Card>
@@ -455,7 +458,7 @@ export default function AdminPage() {
                 </Card>
             </TabsContent>
             <TabsContent value="schemes">
-               <Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle>Scheme Management</CardTitle>
                          <CardDescription>
@@ -463,30 +466,28 @@ export default function AdminPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="border rounded-lg">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Scheme</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Sub Category</TableHead>
-                                <TableHead>Code</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {MOCK_SCHEMES.map((scheme) => (
-                                <TableRow key={scheme.id}>
-                                  <TableCell className="font-medium">{scheme.name}</TableCell>
-                                  <TableCell>{scheme.type}</TableCell>
-                                  <TableCell>{scheme.category}</TableCell>
-                                  <TableCell>{scheme.subCategory}</TableCell>
-                                  <TableCell>{scheme.code}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+                        <Tabs defaultValue={MOCK_SCHEMES[0]?.id} className="w-full flex-col">
+                            <TabsList>
+                                {MOCK_SCHEMES.map(scheme => (
+                                    <TabsTrigger key={scheme.id} value={scheme.id}>{scheme.name}</TabsTrigger>
+                                ))}
+                            </TabsList>
+                            {MOCK_SCHEMES.map(scheme => (
+                                <TabsContent key={scheme.id} value={scheme.id}>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>{scheme.name}</CardTitle>
+                                            <CardDescription>Scheme Code: {scheme.code}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                            <p><strong>Type:</strong> {scheme.type}</p>
+                                            <p><strong>Category:</strong> {scheme.category}</p>
+                                            <p><strong>Sub Category:</strong> {scheme.subCategory}</p>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            ))}
+                        </Tabs>
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -516,6 +517,42 @@ export default function AdminPage() {
                                   <TableCell>{item.lgdCode}</TableCell>
                                   <TableCell>{item.block}</TableCell>
                                   <TableCell>{item.district}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+             <TabsContent value="feedbacks">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>User Feedbacks</CardTitle>
+                         <CardDescription>
+                            List of all submitted feedbacks from users. Total: {feedbacks.length}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>S.No</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Feedback</TableHead>
+                                <TableHead>Submitted At</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {feedbacks.map((feedback, index) => (
+                                <TableRow key={feedback.id}>
+                                  <TableCell>{index + 1}</TableCell>
+                                  <TableCell className="font-medium">{feedback.name}</TableCell>
+                                  <TableCell>{feedback.email}</TableCell>
+                                  <TableCell className="max-w-xs truncate">{feedback.feedback}</TableCell>
+                                  <TableCell>{format(new Date(feedback.submittedAt), 'dd/MM/yyyy hh:mm a')}</TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>

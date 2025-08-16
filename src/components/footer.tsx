@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useFeedback } from "@/services/feedback";
 
 const feedbackMessages = [
     "Feedback from John Doe: Great website, very informative!",
@@ -19,22 +20,31 @@ const feedbackMessages = [
 
 const TamilNaduLogo = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="h-full w-full">
-        <g fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="2">
-            <path d="M256 41.5l20.4 63.8h67.1l-54.3 39.4 20.4 63.8-54.3-39.4-54.3 39.4 20.4-63.8-54.3-39.4h67.1z" />
-            <path d="M128 208.3h256v39.4H128z" />
-            <path d="M256 128.3c-70.6 0-128 57.4-128 128s57.4 128 128 128 128-57.4 128-128-57.4-128-128-128zm0 230.4c-56.5 0-102.4-45.9-102.4-102.4S199.5 154.7 256 154.7s102.4 45.9 102.4 102.4-45.9 102.4-102.4 102.4z" />
-        </g>
-        <path d="M256 470.5V256h-1.8c-1.1 0-2 .9-2 2v212.5c0 1.1.9 2 2 2h1.8z" fill="#D4AF37" />
-        <g fill="#FFFFFF">
-            <path d="M166.4 307.2h179.2v25.6H166.4z" />
-            <path d="M192 345.6h128v12.8H192z" />
-        </g>
-        <text x="256" y="440" fontFamily="Lohit Tamil" fontSize="64" fill="#FFFFFF" textAnchor="middle">வாய்மையே வெல்லும்</text>
+      <path fill="#006A4E" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z"/>
+      <path fill="#FFFFFF" d="M256 472A216 216 0 1 0 256 40a216 216 0 1 0 0 432z"/>
+      <path fill="#006A4E" d="M256 464a208 208 0 1 0 0-416 208 208 0 1 0 0 416z"/>
+      <path fill="#FFFFFF" d="M374.2 214.4c-3.1-12.8-7.4-25.2-12.8-37.1l-105.3-39.6-105.4 39.6c-5.4 11.9-9.7 24.3-12.8 37.1h236.3z"/>
+      <path fill="#FF9933" d="m162.9 177.3 93.1-34.9 93.1 34.9v88.2H162.9v-88.2z"/>
+      <path fill="#FFFFFF" d="m162.9 265.5h186.2v44.1H162.9z"/>
+      <path fill="#138808" d="m162.9 309.6h186.2v44.1H162.9z"/>
+      <circle fill="#000080" cx="256" cy="287.5" r="14.7"/>
+      <circle fill="#FFFFFF" cx="256" cy="287.5" r="12.7"/>
+      <circle fill="#000080" cx="256" cy="287.5" r="4"/>
+      <g fill="#000080">
+          <path d="M256 276.3c-6.2 0-11.2 5-11.2 11.2s5 11.2 11.2 11.2 11.2-5 11.2-11.2-5-11.2-11.2-11.2zm0 20.4c-5.1 0-9.2-4.1-9.2-9.2s4.1-9.2 9.2-9.2 9.2 4.1 9.2 9.2-4.1 9.2-9.2 9.2z"/>
+          <path d="M256 278.4h-1v18.3h1zM258.8 279.1l-1 1-16.3 7.8.5 1.1 16.3-7.8zM262.8 281.4l-.9-.5-14.7 11.1.6.8 14.7-11.1zM265.6 285.3l-.8-.6-12.2 13.5.7.6 12.2-13.5zM266.9 289.9l-.7-.7-9.2 15.3.8.5 9.2-15.3zM266.8 294.8l-.5-.9-6 16.9.9.3 6-16.9zM265.1 299.1l-.4-1-2.4 17.9 1 .1 2.4-17.9zM253.2 279.1l-16.3-7.8.5-1.1 16.3 7.8zM249.2 281.4l-14.7-11.1.6-.8 14.7 11.1zM246.4 285.3l-12.2-13.5.7-.6 12.2 13.5zM245.1 289.9l-9.2-15.3.8-.5 9.2 15.3zM245.2 294.8l-6-16.9.9-.3 6 16.9zM246.9 299.1l-2.4-17.9 1-.1 2.4 17.9zM256 287.5m-1.5 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0"/>
+      </g>
+      <path fill="#D22F27" d="M256 376.1c-14.6 0-26.5-11.9-26.5-26.5s11.9-26.5 26.5-26.5 26.5 11.9 26.5 26.5-11.9 26.5-26.5 26.5zm-8.8-37.4h17.5v-5.4h-17.5v5.4zm0 10.9h17.5v-5.4h-17.5v5.4zm0 10.9h17.5v-5.4h-17.5v5.4z"/>
+      <path fill="#D22F27" d="M256 376.1c-14.6 0-26.5-11.9-26.5-26.5s11.9-26.5 26.5-26.5 26.5 11.9 26.5 26.5-11.9 26.5-26.5 26.5zm-8.8-37.4h17.5v-5.4h-17.5v5.4zm0 10.9h17.5v-5.4h-17.5v5.4zm0 10.9h17.5v-5.4h-17.5v5.4z"/>
+      <path d="M280.4 402s-5.6 1.4-10.3 1.4c-4.2 0-11-1.3-14-1.3-11.4 0-19.4 4.6-19.4 4.6s10.3 3.1 23.1 3.1c16.9 0 24.9-5.1 24.9-5.1s-2.1-2.7-4.3-2.7z" fill="#D22F27"/>
+      <text x="256" y="88" fontFamily="Lohit Tamil" fontSize="48" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">தமிழ் நாடு</text>
+      <text x="256" y="440" fontFamily="Lohit Tamil" fontSize="48" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">வாய்மையே வெல்லும்</text>
     </svg>
 );
 
 
 export function Footer() {
+  const { addFeedback } = useFeedback();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -52,11 +62,16 @@ export function Footer() {
         });
         return;
     }
+    addFeedback({ name, email, feedback });
     setIsSubmitted(true);
     toast({
         title: "Success",
         description: "Thank you for your feedback!",
     });
+    // Clear form
+    setName("");
+    setEmail("");
+    setFeedback("");
   };
 
   const handleCancel = () => {
@@ -82,11 +97,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div className="flex flex-col items-start gap-4">
             <Link href="#" className="flex items-center gap-3" prefetch={false}>
-              <div className="w-12 h-12 flex items-center justify-center">
+              <div className="w-16 h-16 flex items-center justify-center">
                  <TamilNaduLogo />
               </div>
               <div className="flex flex-col">
-                <span className="font-impact text-xl font-bold">SASTA</span>
+                <span className="font-impact text-2xl font-bold tracking-wider">SASTA</span>
                 <span className="text-xs text-primary-foreground/80 font-semibold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
               </div>
             </Link>
