@@ -3,12 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { Phone, Mail, MapPin, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFeedback } from '@/services/feedback';
+import { useLogo } from '@/hooks/use-logo';
 
 const feedbackMessages = [
     "Feedback from John Doe: Great website, very informative!",
@@ -18,19 +20,9 @@ const feedbackMessages = [
     "Feedback from Maria Garcia: The mobile view is very user-friendly."
 ];
 
-const TamilNaduLogo = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="h-full w-full">
-        <path fill="#FFF" d="M256 0C114.615 0 0 114.615 0 256c0 141.385 114.615 256 256 256s256-114.615 256-256C512 114.615 397.385 0 256 0z"/>
-        <path fill="#333" d="M256 41.5l20.4 63.8h67.1l-54.3 39.4 20.4 63.8-54.3-39.4-54.3 39.4 20.4-63.8-54.3-39.4h67.1z"/>
-        <path fill="#000" stroke="#000" strokeWidth="2" d="M256 128.3c-70.6 0-128 57.4-128 128s57.4 128 128 128 128-57.4 128-128-57.4-128-128-128zm0 230.4c-56.5 0-102.4-45.9-102.4-102.4S199.5 154.7 256 154.7s102.4 45.9 102.4 102.4-45.9 102.4-102.4 102.4z"/>
-        <text fontFamily="Lohit Tamil" fontSize="48" fontWeight="bold" textAnchor="middle" x="256" y="93.923" fill="#333">தமிழ் நாடு</text>
-        <text fontFamily="Lohit Tamil" fontSize="48" fontWeight="bold" textAnchor="middle" x="256" y="446.404" fill="#333">வாய்மையே வெல்லும்</text>
-    </svg>
-);
-
-
 export function Footer() {
   const { addFeedback } = useFeedback();
+  const { logo } = useLogo();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -84,7 +76,13 @@ export function Footer() {
           <div className="flex flex-col items-start gap-4">
             <Link href="#" className="flex items-center gap-3" prefetch={false}>
               <div className="w-16 h-16 flex items-center justify-center">
-                 <TamilNaduLogo />
+                 {logo ? (
+                    <Image src={logo} alt="Sasta logo" width={64} height={64} className="object-contain" />
+                ) : (
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <Upload className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                )}
               </div>
               <div className="flex flex-col">
                 <span className="font-impact text-2xl font-bold tracking-wider">SASTA</span>

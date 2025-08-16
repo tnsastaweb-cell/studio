@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
+import { LogoProvider } from '@/hooks/use-logo';
 
 export const metadata: Metadata = {
   title: 'SastaPage',
@@ -23,7 +24,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
+          <LogoProvider>
             {children}
+          </LogoProvider>
         </AuthProvider>
         <Toaster />
       </body>

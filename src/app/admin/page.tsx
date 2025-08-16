@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload } from "lucide-react";
 
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
@@ -68,6 +67,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
+import { useLogo } from '@/hooks/use-logo';
+import Image from 'next/image';
 
 
 const userFormSchema = z.object({
@@ -90,6 +91,9 @@ export default function AdminPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const { user, loading } = useAuth();
+  const { logo, setLogo } = useLogo();
+  const [logoPreview, setLogoPreview] = useState<string | null>(logo);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -159,6 +163,34 @@ export default function AdminPage() {
     }
     setIsFormOpen(false);
     setEditingUser(null);
+  }
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "image/png") {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            setLogoPreview(dataUrl);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        toast({
+            title: "Invalid File",
+            description: "Please upload a PNG file.",
+            variant: "destructive"
+        })
+    }
+  }
+
+  const handleSaveLogo = () => {
+      if (logoPreview) {
+          setLogo(logoPreview);
+          toast({
+              title: "Logo Updated",
+              description: "The site logo has been changed successfully."
+          })
+      }
   }
   
   if (loading) {
@@ -372,12 +404,13 @@ export default function AdminPage() {
 
 
         <Tabs defaultValue="signup-details" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="roles">Roles</TabsTrigger>
                 <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
                 <TabsTrigger value="schemes">Schemes</TabsTrigger>
                 <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
                 <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
+                <TabsTrigger value="settings">Site Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="roles">
                 <Card>
@@ -576,6 +609,39 @@ export default function AdminPage() {
                               ))}
                             </TableBody>
                           </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="settings">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Site Settings</CardTitle>
+                         <CardDescription>
+                            Manage global site settings, such as the logo.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium text-primary">Upload Logo</h3>
+                            <p className="text-sm text-muted-foreground">Upload a PNG file to be used as the site logo in the header and footer.</p>
+                        </div>
+                        <div className="flex items-center gap-6">
+                            <div className="w-24 h-24 rounded-md border border-dashed flex items-center justify-center bg-muted">
+                               {logoPreview ? (
+                                   <Image src={logoPreview} alt="Logo preview" width={96} height={96} className="object-contain p-1" />
+                               ) : (
+                                   <Upload className="h-8 w-8 text-muted-foreground" />
+                               )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                               <input type="file" accept="image/png" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" />
+                               <Button onClick={() => fileInputRef.current?.click()}>
+                                   <Upload className="mr-2 h-4 w-4" />
+                                   Choose PNG File
+                                </Button>
+                               <Button onClick={handleSaveLogo} disabled={!logoPreview || logoPreview === logo}>Save Logo</Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
