@@ -127,13 +127,9 @@ const signedInMenuItems = [
     },
 ];
 
-export function MainNavigation() {
-  const { isSignedIn } = useAuth();
-  
-  return (
-    <nav className="bg-secondary w-full flex flex-col items-center py-2 shadow-md sticky top-[80px] z-40">
-      <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-        {guestMenuItems.map((item, index) => (
+const MenuBar = ({ items }: { items: typeof guestMenuItems | typeof signedInMenuItems }) => (
+    <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
+        {items.map((item, index) => (
             <React.Fragment key={item.title}>
                 {item.children ? (
                   <DropdownMenu>
@@ -155,44 +151,28 @@ export function MainNavigation() {
                       <Link href={item.href}>{item.title}</Link>
                   </Button>
                 )}
-                {index < guestMenuItems.length - 1 && (
+                {index < items.length - 1 && (
                     <div className="h-4 w-px bg-primary/20" />
                 )}
             </React.Fragment>
         ))}
-      </div>
-      
+    </div>
+);
+
+
+export function MainNavigation() {
+  const { isSignedIn } = useAuth();
+  
+  return (
+    <nav className="bg-secondary w-full flex flex-col items-center shadow-md sticky top-[80px] z-40">
       {isSignedIn && (
-        <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center mt-2">
-            {signedInMenuItems.map((item, index) => (
-                <React.Fragment key={item.title}>
-                    {item.children ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                            {item.title}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          {item.children.map((child) => (
-                            <DropdownMenuItem key={child.title} asChild>
-                              <Link href={child.href}>{child.title}</Link>
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                          <Link href={item.href}>{item.title}</Link>
-                      </Button>
-                    )}
-                    {index < signedInMenuItems.length - 1 && (
-                        <div className="h-4 w-px bg-primary/20" />
-                    )}
-                </React.Fragment>
-            ))}
+        <div className="w-full bg-primary/10 py-2 border-b">
+           <MenuBar items={signedInMenuItems} />
         </div>
       )}
+      <div className="py-2">
+        <MenuBar items={guestMenuItems} />
+      </div>
     </nav>
   );
 }
