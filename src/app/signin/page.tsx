@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
@@ -36,6 +36,7 @@ export default function SignInPage() {
     const router = useRouter();
     const { signIn } = useAuth();
     const [signInError, setSignInError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<SignInFormValues>({
         resolver: zodResolver(signInSchema),
@@ -93,7 +94,12 @@ export default function SignInPage() {
                                         <FormItem>
                                             <FormLabel>Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="Your Password" {...field} />
+                                                <div className="relative">
+                                                    <Input type={showPassword ? "text" : "password"} placeholder="Your Password" {...field} />
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                    </Button>
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

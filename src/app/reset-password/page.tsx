@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from "@/hooks/use-toast";
 import { useUsers } from '@/services/users';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -45,6 +46,8 @@ export default function ResetPasswordPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { users, updateUser } = useUsers();
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const form = useForm<ResetPasswordFormValues>({
         resolver: zodResolver(resetPasswordSchema),
@@ -122,7 +125,12 @@ export default function ResetPasswordPage() {
                                         <FormItem>
                                             <FormLabel>New Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="New Password" {...field} />
+                                                <div className="relative">
+                                                    <Input type={showNewPassword ? "text" : "password"} placeholder="New Password" {...field} />
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowNewPassword(!showNewPassword)}>
+                                                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                    </Button>
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -135,7 +143,12 @@ export default function ResetPasswordPage() {
                                         <FormItem>
                                             <FormLabel>Confirm New Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="Confirm Password" {...field} />
+                                                 <div className="relative">
+                                                    <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" {...field} />
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                    </Button>
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(true);
         loadUserFromStorage();
     }
-  }, [usersLoading, users]); // Add `users` as a dependency to re-validate when it changes
+  }, [usersLoading]); // Remove `users` dependency to avoid re-running unnecessarily
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
@@ -69,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (foundUser) {
       setUser(foundUser);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(foundUser));
+      window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_STORAGE_KEY, newValue: JSON.stringify(foundUser) }));
       return true;
     }
     return false;

@@ -8,9 +8,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from "date-fns";
-import { Check, X, CalendarIcon } from 'lucide-react';
+import { Check, X, Eye, EyeOff } from 'lucide-react';
 
-import { useUsers, User, ROLES } from '@/services/users';
+import { useUsers, User } from '@/services/users';
 import { cn } from "@/lib/utils";
 
 import { Header } from '@/components/header';
@@ -26,11 +26,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/hooks/use-auth';
 
 const passwordSchema = z.string()
   .min(8, "Must be at least 8 characters")
@@ -41,7 +37,7 @@ const passwordSchema = z.string()
 const signUpSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   employeeCode: z.string().min(1, { message: "Employee code is required." }),
-  designation: z.enum(ROLES),
+  designation: z.string(),
   mobileNumber: z.string().regex(/^\d{10}$/, { message: "Mobile number must be 10 digits." }),
   dateOfBirth: z.date({ required_error: "Date of birth is required." }),
   email: z.string().email({ message: "Invalid email address." }),
@@ -61,6 +57,7 @@ export default function SignUpPage() {
     const { users, updateUser } = useUsers();
     const [employeeCodeQuery, setEmployeeCodeQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
 
@@ -135,7 +132,7 @@ export default function SignUpPage() {
 
     const filteredUsers = employeeCodeQuery && showSuggestions
         ? users.filter(user =>
-            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase())
+            user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase()) && !user.email
           ).slice(0, 5) // Limit suggestions
         : [];
 
@@ -273,7 +270,12 @@ export default function SignUpPage() {
                                                 <FormItem>
                                                     <FormLabel>Password</FormLabel>
                                                     <FormControl>
-                                                        <Input type="password" {...field} />
+                                                        <div className="relative">
+                                                            <Input type={showPassword ? "text" : "password"} {...field} />
+                                                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                            </Button>
+                                                        </div>
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
