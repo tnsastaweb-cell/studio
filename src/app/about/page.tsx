@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from "@/hooks/use-toast";
+import { Phone } from 'lucide-react';
 
 interface Contact {
   id: number;
@@ -132,26 +133,29 @@ export default function AboutUsPage() {
                     </div>
                 )}
             </div>
-            <Card>
-                <CardContent className="p-6 space-y-4">
-                    {contacts.map(contact => (
-                        <div key={contact.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                            <p className="font-semibold text-primary">{contact.role}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {contacts.map(contact => (
+                    <Card key={contact.id} className="border-dotted">
+                        <CardContent className="p-4 space-y-1">
+                             <p className="font-bold text-primary text-lg">{contact.role}</p>
                             {isEditing ? (
-                                <>
+                                <div className="space-y-2 pt-1">
                                     <Input value={contact.name} onChange={(e) => handleContactChange(contact.id, 'name', e.target.value)} className="font-normal" />
                                     <Input value={contact.phone} onChange={(e) => handleContactChange(contact.id, 'phone', e.target.value)} className="font-normal" />
-                                </>
+                                </div>
                             ) : (
                                 <>
                                     <p className="font-normal text-foreground/90">{contact.name}</p>
-                                    <p className="font-normal text-foreground/90">{contact.phone}</p>
+                                    <div className="flex items-center gap-2 font-normal text-foreground/90">
+                                        <Phone className="h-4 w-4" />
+                                        <span>{contact.phone}</span>
+                                    </div>
                                 </>
                             )}
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </div>
       </main>
       <Footer />

@@ -34,7 +34,7 @@ const ArrowDown = ({ className = '' }: { className?: string }) => (
 
 export function OrganizationalChart() {
   return (
-    <div className="p-4 md:p-8 bg-background rounded-lg overflow-x-auto">
+    <div className="p-4 md:p-8 bg-card rounded-lg overflow-x-auto">
         <div className="flex flex-col items-center space-y-4 min-w-[1200px]">
             {/* Level 1: Director */}
             <ChartBox label="SASTA" level={1} />
