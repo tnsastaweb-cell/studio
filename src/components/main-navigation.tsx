@@ -17,11 +17,11 @@ const guestMenuItems = [
     title: "ABOUT US",
     href: "/about",
     children: [
-      { title: "Social Audit Unit", href: "/about/social-audit-unit" },
-      { title: "Who is who", href: "/about/who-is-who" },
-      { title: "Governing Body", href: "/about/governing-body" },
-      { title: "Executive Committee", href: "/about/executive-committee" },
-      { title: "Legal Documents (GOs, Registration)", href: "/about/legal-documents" },
+      { title: "Social Audit Unit", href: "/about" },
+      { title: "Who is who", href: "/about" },
+      { title: "Governing Body", href: "/about" },
+      { title: "Executive Committee", href: "/about" },
+      { title: "Legal Documents (GOs, Registration)", href: "/about" },
     ],
   },
   {
