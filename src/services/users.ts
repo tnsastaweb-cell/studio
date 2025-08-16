@@ -549,8 +549,12 @@ export const MOCK_USERS: User[] = [
   { id: 494, name: 'R.Kanchana', employeeCode: 'TN-1236', designation: 'BRP', mobileNumber: '8838986038', dateOfBirth: '1980-04-04', password: 'password123', status: 'active' },
   { id: 495, name: 'M.Kumaravel', employeeCode: 'TN-725', designation: 'BRP', mobileNumber: '9790113755', dateOfBirth: '1976-06-03', password: 'password123', status: 'active' },
   { id: 496, name: 'K.Sivakumar', employeeCode: 'TN-717', designation: 'BRP', mobileNumber: '9488392913', dateOfBirth: '1982-06-15', password: 'password123', status: 'active' },
-  { id: 497, name: 'G.Kalilur Rehman', employeeCode: 'TN-GKR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', password: 'password123', status: 'active' }
+  { id: 497, name: 'G.Kalilur Rehman', employeeCode: 'TN-GKR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', email: 'creator@sasta.com', password: 'password123', status: 'active' },
+  { id: 498, name: 'Admin User', employeeCode: 'TN-ADM', designation: 'ADMIN', mobileNumber: '9999999999', dateOfBirth: '1990-01-01', email: 'admin@sasta.com', password: 'password123', status: 'active'},
+  { id: 499, name: 'Consultant User', employeeCode: 'TN-CON', designation: 'CONSULTANT', mobileNumber: '8888888888', dateOfBirth: '1985-01-01', email: 'consultant@sasta.com', password: 'password123', status: 'active'}
 ];
+
+const USER_STORAGE_KEY = 'sasta-users';
 
 // This function simulates fetching users and provides methods to manipulate the user list.
 export const useUsers = () => {
@@ -558,38 +562,62 @@ export const useUsers = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUsers(MOCK_USERS);
-    setLoading(false);
+    // In a real app, you might fetch this from an API.
+    // For now, we use localStorage to persist changes during a session.
+    try {
+      const storedUsers = localStorage.getItem(USER_STORAGE_KEY);
+      if (storedUsers) {
+        setUsers(JSON.parse(storedUsers));
+      } else {
+        // Initialize localStorage with the mock data if it's empty.
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(MOCK_USERS));
+        setUsers(MOCK_USERS);
+      }
+    } catch (error) {
+      console.error("Failed to access localStorage:", error);
+      setUsers(MOCK_USERS); // Fallback to in-memory mock data
+    } finally {
+      setLoading(false);
+    }
   }, []);
+  
+  const syncUsers = (updatedUsers: User[]) => {
+     setUsers(updatedUsers);
+     try {
+         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUsers));
+     } catch (error) {
+         console.error("Failed to save users to localStorage:", error);
+     }
+  };
+
 
   const addUser = useCallback((user: Omit<User, 'id' | 'status'>) => {
     setUsers(prevUsers => {
       const newUser = {
         ...user,
-        id: MOCK_USERS.length + 1,
+        id: (prevUsers[prevUsers.length -1]?.id ?? 0) + 1,
         status: 'active' as const,
       };
-      MOCK_USERS.push(newUser);
-      return [...MOCK_USERS];
+      const newUsers = [...prevUsers, newUser];
+      syncUsers(newUsers);
+      return newUsers;
     });
   }, []);
 
   const updateUser = useCallback((updatedUser: User) => {
     setUsers(prevUsers => {
-      const index = MOCK_USERS.findIndex(user => user.id === updatedUser.id);
-        if (index !== -1) {
-            MOCK_USERS[index] = updatedUser;
-        }
-      return [...MOCK_USERS];
+      const newUsers = prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user);
+      syncUsers(newUsers);
+      return newUsers;
     });
   }, []);
 
   const deleteUser = useCallback((userId: number) => {
-    const index = MOCK_USERS.findIndex(user => user.id === userId);
-    if (index > -1) {
-        MOCK_USERS.splice(index, 1);
-    }
-    setUsers([...MOCK_USERS]);
+    setUsers(prevUsers => {
+       const newUsers = prevUsers.filter(user => user.id !== userId);
+       syncUsers(newUsers);
+       return newUsers;
+    });
   }, []);
 
   return { users, loading, addUser, updateUser, deleteUser };
