@@ -165,14 +165,14 @@ export function MainNavigation() {
   
   return (
     <nav className="bg-secondary w-full flex flex-col items-center shadow-md sticky top-[80px] z-40">
+      <div className="py-2 w-full border-b">
+        <MenuBar items={guestMenuItems} />
+      </div>
       {isSignedIn && (
-        <div className="w-full bg-primary/10 py-2 border-b">
+        <div className="w-full bg-primary/10 py-2">
            <MenuBar items={signedInMenuItems} />
         </div>
       )}
-      <div className="py-2">
-        <MenuBar items={guestMenuItems} />
-      </div>
     </nav>
   );
 }
