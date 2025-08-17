@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Panchayat management service.
  * This file contains the data models and mock data for panchayats
@@ -12,6 +13,7 @@ import { VILUPPURAM_PANCHAYATS } from './panchayat-data/viluppuram';
 import { VELLORE_PANCHAYATS } from './panchayat-data/vellore';
 import { TIRUVANNAMALAI_PANCHAYATS } from './panchayat-data/tiruvannamalai';
 import { SALEM_PANCHAYATS } from './panchayat-data/salem';
+import { NAMAKKAL_PANCHAYATS } from './panchayat-data/namakkal';
 
 export type { Panchayat };
 
@@ -23,4 +25,5 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...VELLORE_PANCHAYATS,
   ...TIRUVANNAMALAI_PANCHAYATS,
   ...SALEM_PANCHAYATS,
+  ...NAMAKKAL_PANCHAYATS,
 ];
