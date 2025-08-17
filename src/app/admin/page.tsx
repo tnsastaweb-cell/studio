@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -85,8 +84,6 @@ const userFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
-const PANCHAYATS_PER_PAGE = 15;
-
 const toTitleCase = (str: string) => {
     return str.replace(
         /\w\S*/g,
@@ -105,23 +102,46 @@ export default function AdminPage() {
   const { logo, setLogo } = useLogo();
   const [logoPreview, setLogoPreview] = useState<string | null>(logo);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   
-  const totalPages = Math.ceil(MOCK_PANCHAYATS.length / PANCHAYATS_PER_PAGE);
+  const [panchayatCurrentPage, setPanchayatCurrentPage] = useState(1);
+  const [panchayatsPerPage, setPanchayatsPerPage] = useState(100);
+  const [panchayatFilters, setPanchayatFilters] = useState({ district: '', block: '', panchayat: '', lgdCode: '' });
 
+  const filteredPanchayats = useMemo(() => {
+    return MOCK_PANCHAYATS.filter(p => 
+        p.district.toLowerCase().includes(panchayatFilters.district.toLowerCase()) &&
+        p.block.toLowerCase().includes(panchayatFilters.block.toLowerCase()) &&
+        p.name.toLowerCase().includes(panchayatFilters.panchayat.toLowerCase()) &&
+        p.lgdCode.toString().includes(panchayatFilters.lgdCode)
+    );
+  }, [panchayatFilters]);
+
+  const panchayatTotalPages = Math.ceil(filteredPanchayats.length / panchayatsPerPage);
+  
   const paginatedPanchayats = useMemo(() => {
-    const startIndex = (currentPage - 1) * PANCHAYATS_PER_PAGE;
-    const endIndex = startIndex + PANCHAYATS_PER_PAGE;
-    return MOCK_PANCHAYATS.slice(startIndex, endIndex);
-  }, [currentPage]);
+    const startIndex = (panchayatCurrentPage - 1) * panchayatsPerPage;
+    const endIndex = startIndex + panchayatsPerPage;
+    return filteredPanchayats.slice(startIndex, endIndex);
+  }, [panchayatCurrentPage, panchayatsPerPage, filteredPanchayats]);
 
-  const handleNextPage = () => {
-    setCurrentPage(current => Math.min(current + 1, totalPages));
+  const handlePanchayatFilterChange = (field: keyof typeof panchayatFilters, value: string) => {
+    setPanchayatFilters(prev => ({...prev, [field]: value}));
+    setPanchayatCurrentPage(1);
   }
   
-  const handlePrevPage = () => {
-    setCurrentPage(current => Math.max(current - 1, 1));
+  const handlePanchayatsPerPageChange = (value: string) => {
+    setPanchayatsPerPage(Number(value));
+    setPanchayatCurrentPage(1);
   }
+
+  const handleNextPanchayatPage = () => {
+    setPanchayatCurrentPage(current => Math.min(current + 1, panchayatTotalPages));
+  }
+  
+  const handlePrevPanchayatPage = () => {
+    setPanchayatCurrentPage(current => Math.max(current - 1, 1));
+  }
+  
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -436,7 +456,7 @@ export default function AdminPage() {
                 <TabsTrigger value="roles">Roles</TabsTrigger>
                 <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
                 <TabsTrigger value="schemes">Schemes</TabsTrigger>
-                <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
+                <TabsTrigger value="local-bodies">Rural & Urban</TabsTrigger>
                 <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
                 <TabsTrigger value="settings">Site Settings</TabsTrigger>
             </TabsList>
@@ -635,54 +655,89 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-            <TabsContent value="panchayats">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Panchayat List</CardTitle>
-                         <CardDescription>
-                            List of all Panchayats with their respective codes and districts. Total: {MOCK_PANCHAYATS.length}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="border rounded-lg">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>District</TableHead>
-                                <TableHead>Block</TableHead>
-                                <TableHead>Panchayat</TableHead>
-                                <TableHead>LDG Code</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {paginatedPanchayats.map((item) => (
-                                <TableRow key={item.lgdCode}>
-                                  <TableCell>{toTitleCase(item.district)}</TableCell>
-                                  <TableCell>{toTitleCase(item.block)}</TableCell>
-                                  <TableCell className="font-medium">{toTitleCase(item.name)}</TableCell>
-                                  <TableCell>{item.lgdCode}</TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        <div className="flex items-center justify-between mt-4">
-                            <span className="text-sm text-muted-foreground">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <div className="flex gap-2">
-                                <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
-                                    <ChevronLeft className="mr-2 h-4 w-4" />
-                                    Previous
-                                </Button>
-                                <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline">
-                                    Next
-                                    <ChevronRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+            <TabsContent value="local-bodies">
+                <Tabs defaultValue="panchayats" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
+                        <TabsTrigger value="district-panchayats" disabled>District Panchayat</TabsTrigger>
+                        <TabsTrigger value="corporations" disabled>Corporation</TabsTrigger>
+                        <TabsTrigger value="municipalities" disabled>Municipality</TabsTrigger>
+                        <TabsTrigger value="town-panchayats" disabled>Town Panchayat</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="panchayats">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Panchayat List</CardTitle>
+                                <CardDescription>
+                                    List of all Panchayats with their respective codes and districts. Total: {filteredPanchayats.length}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4 p-4 border rounded-lg">
+                                    <Input placeholder="Filter by District..." value={panchayatFilters.district} onChange={(e) => handlePanchayatFilterChange('district', e.target.value)} />
+                                    <Input placeholder="Filter by Block..." value={panchayatFilters.block} onChange={(e) => handlePanchayatFilterChange('block', e.target.value)} />
+                                    <Input placeholder="Filter by Panchayat..." value={panchayatFilters.panchayat} onChange={(e) => handlePanchayatFilterChange('panchayat', e.target.value)} />
+                                    <Input placeholder="Filter by LGD Code..." value={panchayatFilters.lgdCode} onChange={(e) => handlePanchayatFilterChange('lgdCode', e.target.value)} />
+                                    <Button>Get Reports</Button>
+                                </div>
+                                <div className="border rounded-lg">
+                                <Table>
+                                    <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[80px]">S.No</TableHead>
+                                        <TableHead>District</TableHead>
+                                        <TableHead>Block</TableHead>
+                                        <TableHead>Panchayat</TableHead>
+                                        <TableHead>LDG Code</TableHead>
+                                    </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                    {paginatedPanchayats.map((item, index) => (
+                                        <TableRow key={item.lgdCode}>
+                                          <TableCell>{(panchayatCurrentPage - 1) * panchayatsPerPage + index + 1}</TableCell>
+                                          <TableCell>{toTitleCase(item.district)}</TableCell>
+                                          <TableCell>{toTitleCase(item.block)}</TableCell>
+                                          <TableCell className="font-medium">{toTitleCase(item.name)}</TableCell>
+                                          <TableCell>{item.lgdCode}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table>
+                                </div>
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground">Rows per page:</span>
+                                        <Select value={String(panchayatsPerPage)} onValueChange={handlePanchayatsPerPageChange}>
+                                            <SelectTrigger className="w-20">
+                                                <SelectValue/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {[15, 25, 50, 75, 100].map(val => (
+                                                    <SelectItem key={val} value={String(val)}>{val}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-muted-foreground">
+                                            Page {panchayatCurrentPage} of {panchayatTotalPages}
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <Button onClick={handlePrevPanchayatPage} disabled={panchayatCurrentPage === 1} variant="outline" size="sm">
+                                                <ChevronLeft className="h-4 w-4" />
+                                                <span className="sr-only">Previous</span>
+                                            </Button>
+                                            <Button onClick={handleNextPanchayatPage} disabled={panchayatCurrentPage === panchayatTotalPages} variant="outline" size="sm">
+                                                <span className="sr-only">Next</span>
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
              <TabsContent value="feedbacks">
                  <Card>
