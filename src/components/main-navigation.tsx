@@ -31,11 +31,7 @@ const guestMenuItems = [
         { title: "MGNREGS", href: "/schemes/mgnregs" },
         { title: "PMAY-G", href: "/schemes/pamy-g" },
         { title: "15TH CFC GRANT", href: "/schemes/15th-cfc-grant" },
-        { title: "NSAP", href: "/schemes/nsap" },
         { title: "NMP", href: "/schemes/nmp" },
-        { title: "FFCG", href: "/schemes/ffcg" },
-        { title: "DSJE", href: "/schemes/dsje" },
-        { title: "OTHERS", href: "/schemes/others" },
     ]
   },
   {
