@@ -22,6 +22,7 @@ import { THANJAVUR_PANCHAYATS } from './panchayat-data/thanjavur';
 import { NAGAPATTINAM_PANCHAYATS } from './panchayat-data/nagapattinam';
 import { MAYILADUTHURAI_PANCHAYATS } from './panchayat-data/mayiladuthurai';
 import { TIRUVARUR_PANCHAYATS } from './panchayat-data/tiruvarur';
+import { TIRUCHIRAPPALLI_PANCHAYATS } from './panchayat-data/tiruchirappalli';
 
 export type { Panchayat };
 
@@ -42,4 +43,7 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...NAGAPATTINAM_PANCHAYATS,
   ...MAYILADUTHURAI_PANCHAYATS,
   ...TIRUVARUR_PANCHAYATS,
+  ...TIRUCHIRAPPALLI_PANCHAYATS,
 ];
+
+  
