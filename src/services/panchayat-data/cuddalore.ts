@@ -683,4 +683,4 @@ export const CUDDALORE_PANCHAYATS: Panchayat[] = [
     { district: 'CUDDALORE', block: 'SRIMUSHNAM', name: 'Melapalaiyur', lgdCode: '222435' },
     { district: 'CUDDALORE', block: 'SRIMUSHNAM', name: 'T. Pavazhangudi', lgdCode: '222454' },
     { district: 'CUDDALORE', block: 'SRIMUSHNAM', name: 'K. Thozhur', lgdCode: '222455' },
-    { district: 'CUDDALORE', block: '
+    { district: 'CUDDALORE', block: 'SRIMUSHNAM', name: 'A. Valliam', lgdCode: '222410' }
