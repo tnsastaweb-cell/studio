@@ -1,3 +1,4 @@
+
 import type { Panchayat } from './types';
 
 export const TIRUVALLUR_PANCHAYATS: Panchayat[] = [
@@ -526,4 +527,5 @@ export const TIRUVALLUR_PANCHAYATS: Panchayat[] = [
     { 'district': 'TIRUVALLUR', 'block': 'POONAMALLEE', 'name': 'Thirumanam', 'lgdCode': '229394' },
     { 'district': 'TIRUVALLUR', 'block': 'POONAMALLEE', 'name': 'Varadharajapuram', 'lgdCode': '229395' },
     { 'district': 'TIRUVALLUR', 'block': 'POONAMALLEE', 'name': 'Vellavedu', 'lgdCode': '229396' },
-    { 'district': 'TIRUVALLUR', 'block': 'POONAMALLEE', 'name': 'Voyalanallur', 'lgdCode': '229397' },
+    { 'district': 'TIRUVALLUR', 'block': 'POONAMALLEE', 'name': 'Voyalanallur', 'lgdCode': '229397' }
+];

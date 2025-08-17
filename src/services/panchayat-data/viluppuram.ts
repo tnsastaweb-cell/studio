@@ -689,3 +689,4 @@ export const VILUPPURAM_PANCHAYATS: Panchayat[] = [
     { district: 'VILUPURAM', block: 'MELMALAYANUR', name: 'Vadapalai', lgdCode: '233380' },
     { district: 'VILUPURAM', block: 'MELMALAYANUR', name: 'Vadavetti', lgdCode: '233381' },
     { district: 'VILUPURAM', block: 'MELMALAYANUR', name: 'Vadukapoondi', lgdCode: '233382' },
+];
