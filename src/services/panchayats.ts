@@ -17,6 +17,8 @@ import { NAMAKKAL_PANCHAYATS } from './panchayat-data/namakkal';
 import { DHARMAPURI_PANCHAYATS } from './panchayat-data/dharmapuri';
 import { ERODE_PANCHAYATS } from './panchayat-data/erode';
 import { THE_NILGIRIS_PANCHAYATS } from './panchayat-data/the-nilgiris';
+import { COIMBATORE_PANCHAYATS } from './panchayat-data/coimbatore';
+import { THANJAVUR_PANCHAYATS } from './panchayat-data/thanjavur';
 
 export type { Panchayat };
 
@@ -32,6 +34,6 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...DHARMAPURI_PANCHAYATS,
   ...ERODE_PANCHAYATS,
   ...THE_NILGIRIS_PANCHAYATS,
+  ...COIMBATORE_PANCHAYATS,
+  ...THANJAVUR_PANCHAYATS,
 ];
-
-    
