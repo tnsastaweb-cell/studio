@@ -1,13 +1,13 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
@@ -85,6 +85,15 @@ const userFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
+const PANCHAYATS_PER_PAGE = 15;
+
+const toTitleCase = (str: string) => {
+    return str.replace(
+        /\w\S*/g,
+        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+};
+
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
@@ -96,6 +105,23 @@ export default function AdminPage() {
   const { logo, setLogo } = useLogo();
   const [logoPreview, setLogoPreview] = useState<string | null>(logo);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const totalPages = Math.ceil(MOCK_PANCHAYATS.length / PANCHAYATS_PER_PAGE);
+
+  const paginatedPanchayats = useMemo(() => {
+    const startIndex = (currentPage - 1) * PANCHAYATS_PER_PAGE;
+    const endIndex = startIndex + PANCHAYATS_PER_PAGE;
+    return MOCK_PANCHAYATS.slice(startIndex, endIndex);
+  }, [currentPage]);
+
+  const handleNextPage = () => {
+    setCurrentPage(current => Math.min(current + 1, totalPages));
+  }
+  
+  const handlePrevPage = () => {
+    setCurrentPage(current => Math.max(current - 1, 1));
+  }
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -614,11 +640,11 @@ export default function AdminPage() {
                     <CardHeader>
                         <CardTitle>Panchayat List</CardTitle>
                          <CardDescription>
-                            List of all Panchayats with their respective codes and districts.
+                            List of all Panchayats with their respective codes and districts. Total: {MOCK_PANCHAYATS.length}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="border rounded-lg max-h-96 overflow-y-auto">
+                        <div className="border rounded-lg">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -629,16 +655,31 @@ export default function AdminPage() {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {MOCK_PANCHAYATS.map((item) => (
+                              {paginatedPanchayats.map((item) => (
                                 <TableRow key={item.lgdCode}>
-                                  <TableCell>{item.district}</TableCell>
-                                  <TableCell>{item.block}</TableCell>
-                                  <TableCell className="font-medium">{item.name}</TableCell>
+                                  <TableCell>{toTitleCase(item.district)}</TableCell>
+                                  <TableCell>{toTitleCase(item.block)}</TableCell>
+                                  <TableCell className="font-medium">{toTitleCase(item.name)}</TableCell>
                                   <TableCell>{item.lgdCode}</TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
                           </Table>
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                            <span className="text-sm text-muted-foreground">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <div className="flex gap-2">
+                                <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
+                                    <ChevronLeft className="mr-2 h-4 w-4" />
+                                    Previous
+                                </Button>
+                                <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline">
+                                    Next
+                                    <ChevronRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
