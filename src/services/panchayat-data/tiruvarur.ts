@@ -432,4 +432,3 @@ export const TIRUVARUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUVARUR', block: 'MUTHUPETTAI', name: 'VANGANAGAR', lgdCode: '229869' },
     { district: 'TIRUVARUR', block: 'MUTHUPETTAI', name: 'VEPPANCHERI', lgdCode: '229870' },
     { district: 'TIRUVARUR', block: 'MUTHUPETTAI', name: 'VILANKADU', lgdCode: '229871' },
-];
