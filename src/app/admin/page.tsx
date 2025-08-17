@@ -618,23 +618,23 @@ export default function AdminPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="border rounded-lg">
+                        <div className="border rounded-lg max-h-96 overflow-y-auto">
                           <Table>
                             <TableHeader>
                               <TableRow>
+                                <TableHead>District</TableHead>
+                                <TableHead>Block</TableHead>
                                 <TableHead>Panchayat</TableHead>
                                 <TableHead>LDG Code</TableHead>
-                                <TableHead>Block</TableHead>
-                                <TableHead>District</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {MOCK_PANCHAYATS.map((item) => (
                                 <TableRow key={item.lgdCode}>
+                                  <TableCell>{item.district}</TableCell>
+                                  <TableCell>{item.block}</TableCell>
                                   <TableCell className="font-medium">{item.name}</TableCell>
                                   <TableCell>{item.lgdCode}</TableCell>
-                                  <TableCell>{item.block}</TableCell>
-                                  <TableCell>{item.district}</TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
