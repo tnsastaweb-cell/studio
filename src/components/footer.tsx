@@ -93,11 +93,15 @@ export function Footer() {
                <h3 className="font-bold text-lg text-primary-foreground">Office Address & Contact</h3>
                <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 shrink-0" />
-                <span>Address: Panagal Maligai, Saidapet, Chennai - 600015, Tamil Nadu, India.</span>
+                <span>Address: Social Audit Society of Tamil Nadu, Panagal Maligai, 2nd Floor, Saidapet, Chennai – 600 015.</span>
                </div>
                <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>Phone: 044-XXXX XXXX / 044-YYYY YYYY</span>
+                <span>Phone: 044-24322152</span>
+               </div>
+                <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span>Toll Free: 1800-4252-152</span>
                </div>
             </div>
           </div>

@@ -99,8 +99,9 @@ export default function AboutUsPage() {
                 <Card>
                     <CardHeader><CardTitle>Office Address & Contact</CardTitle></CardHeader>
                     <CardContent className="space-y-2 text-foreground/90 font-normal">
-                        <p><strong>Address:</strong> Panagal Maligai, Saidapet, Chennai - 600015, Tamil Nadu, India.</p>
-                        <p><strong>Phone:</strong> 044-XXXX XXXX / 044-YYYY YYYY</p>
+                        <p><strong>Address:</strong> Social Audit Society of Tamil Nadu, Panagal Maligai, 2nd Floor, Saidapet, Chennai – 600 015.</p>
+                        <p><strong>Phone:</strong> 044-24322152</p>
+                        <p><strong>Toll Free:</strong> 1800-4252-152</p>
                     </CardContent>
                 </Card>
                 <Card>
