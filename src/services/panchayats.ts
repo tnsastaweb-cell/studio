@@ -20,6 +20,7 @@ import { THE_NILGIRIS_PANCHAYATS } from './panchayat-data/the-nilgiris';
 import { COIMBATORE_PANCHAYATS } from './panchayat-data/coimbatore';
 import { THANJAVUR_PANCHAYATS } from './panchayat-data/thanjavur';
 import { NAGAPATTINAM_PANCHAYATS } from './panchayat-data/nagapattinam';
+import { MAYILADUTHURAI_PANCHAYATS } from './panchayat-data/mayiladuthurai';
 
 export type { Panchayat };
 
@@ -38,4 +39,6 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...COIMBATORE_PANCHAYATS,
   ...THANJAVUR_PANCHAYATS,
   ...NAGAPATTINAM_PANCHAYATS,
+  ...MAYILADUTHURAI_PANCHAYATS,
 ];
+
