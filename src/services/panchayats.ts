@@ -14,6 +14,7 @@ import { VELLORE_PANCHAYATS } from './panchayat-data/vellore';
 import { TIRUVANNAMALAI_PANCHAYATS } from './panchayat-data/tiruvannamalai';
 import { SALEM_PANCHAYATS } from './panchayat-data/salem';
 import { NAMAKKAL_PANCHAYATS } from './panchayat-data/namakkal';
+import { DHARMAPURI_PANCHAYATS } from './panchayat-data/dharmapuri';
 
 export type { Panchayat };
 
@@ -26,4 +27,5 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...TIRUVANNAMALAI_PANCHAYATS,
   ...SALEM_PANCHAYATS,
   ...NAMAKKAL_PANCHAYATS,
+  ...DHARMAPURI_PANCHAYATS,
 ];
