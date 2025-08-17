@@ -48,7 +48,17 @@ const guestMenuItems = [
         { title: "OTHERS", href: "/calendar/others" },
     ]
   },
-  { title: "GALLERY", href: "/gallery" },
+  {
+    title: "GALLERY",
+    href: "/gallery",
+    children: [
+      { title: "MGNREGS", href: "/gallery/mgnregs" },
+      { title: "PMAY-G", href: "/gallery/pamy-g" },
+      { title: "15TH CFC GRANT", href: "/gallery/15th-cfc-grant" },
+      { title: "NMP", href: "/gallery/nmp" },
+      { title: "DSJE", href: "/gallery/dsje" },
+    ],
+  },
   {
     title: "SA REPORTS",
     href: "/sa-reports",
