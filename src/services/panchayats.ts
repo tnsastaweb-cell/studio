@@ -23,6 +23,7 @@ import { NAGAPATTINAM_PANCHAYATS } from './panchayat-data/nagapattinam';
 import { MAYILADUTHURAI_PANCHAYATS } from './panchayat-data/mayiladuthurai';
 import { TIRUVARUR_PANCHAYATS } from './panchayat-data/tiruvarur';
 import { TIRUCHIRAPPALLI_PANCHAYATS } from './panchayat-data/tiruchirappalli';
+import { KARUR_PANCHAYATS } from './panchayat-data/karur';
 
 export type { Panchayat };
 
@@ -44,6 +45,6 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...MAYILADUTHURAI_PANCHAYATS,
   ...TIRUVARUR_PANCHAYATS,
   ...TIRUCHIRAPPALLI_PANCHAYATS,
+  ...KARUR_PANCHAYATS,
 ];
 
-  
