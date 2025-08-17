@@ -26,6 +26,7 @@ import { TIRUCHIRAPPALLI_PANCHAYATS } from './panchayat-data/tiruchirappalli';
 import { KARUR_PANCHAYATS } from './panchayat-data/karur';
 import { PERAMBALUR_PANCHAYATS } from './panchayat-data/perambalur';
 import { PUDUKKOTTAI_PANCHAYATS } from './panchayat-data/pudukkottai';
+import { MADURAI_PANCHAYATS } from './panchayat-data/madurai';
 
 export type { Panchayat };
 
@@ -50,4 +51,5 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...KARUR_PANCHAYATS,
   ...PERAMBALUR_PANCHAYATS,
   ...PUDUKKOTTAI_PANCHAYATS,
+  ...MADURAI_PANCHAYATS,
 ];
