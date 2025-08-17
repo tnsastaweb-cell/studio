@@ -10,6 +10,7 @@ import { TIRUVALLUR_PANCHAYATS } from './panchayat-data/tiruvallur';
 import { CUDDALORE_PANCHAYATS } from './panchayat-data/cuddalore';
 import { VILUPPURAM_PANCHAYATS } from './panchayat-data/viluppuram';
 import { VELLORE_PANCHAYATS } from './panchayat-data/vellore';
+import { TIRUVANNAMALAI_PANCHAYATS } from './panchayat-data/tiruvannamalai';
 
 export type { Panchayat };
 
@@ -19,4 +20,5 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...CUDDALORE_PANCHAYATS,
   ...VILUPPURAM_PANCHAYATS,
   ...VELLORE_PANCHAYATS,
+  ...TIRUVANNAMALAI_PANCHAYATS,
 ];
