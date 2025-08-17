@@ -19,6 +19,7 @@ import { ERODE_PANCHAYATS } from './panchayat-data/erode';
 import { THE_NILGIRIS_PANCHAYATS } from './panchayat-data/the-nilgiris';
 import { COIMBATORE_PANCHAYATS } from './panchayat-data/coimbatore';
 import { THANJAVUR_PANCHAYATS } from './panchayat-data/thanjavur';
+import { NAGAPATTINAM_PANCHAYATS } from './panchayat-data/nagapattinam';
 
 export type { Panchayat };
 
@@ -36,4 +37,5 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...THE_NILGIRIS_PANCHAYATS,
   ...COIMBATORE_PANCHAYATS,
   ...THANJAVUR_PANCHAYATS,
+  ...NAGAPATTINAM_PANCHAYATS,
 ];
