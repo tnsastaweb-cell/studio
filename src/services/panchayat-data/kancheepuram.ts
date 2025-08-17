@@ -1,3 +1,4 @@
+
 import type { Panchayat } from './types';
 
 export const KANCHEEPURAM_PANCHAYATS: Panchayat[] = [
@@ -274,4 +275,5 @@ export const KANCHEEPURAM_PANCHAYATS: Panchayat[] = [
     { district: 'KANCHEEPURAM', block: 'KUNDRATHUR', name: 'Vattambakkam', lgdCode: '224116' },
     { district: 'KANCHEEPURAM', block: 'KUNDRATHUR', name: 'Varadharajapuram', lgdCode: '224115' },
     { district: 'KANCHEEPURAM', block: 'KUNDRATHUR', name: 'Vaipoor', lgdCode: '224113' },
-    { district: 'KANCHEEPURAM', block: 'KUNDRATHUR', name: '
+    { district: 'KANCHEEPURAM', block: 'KUNDRATHUR', name: 'Valayakkaranai', lgdCode: '224114' },
+];
