@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Panchayat management service.
  * This file contains the data models and mock data for panchayats
@@ -28,6 +29,7 @@ import { PUDUKKOTTAI_PANCHAYATS } from './panchayat-data/pudukkottai';
 import { MADURAI_PANCHAYATS } from './panchayat-data/madurai';
 import { THENI_PANCHAYATS } from './panchayat-data/theni';
 import { DINDIGUL_PANCHAYATS } from './panchayat-data/dindigul';
+import { RAMANATHAPURAM_PANCHAYATS } from './panchayat-data/ramanathapuram';
 import { VIRUDHUNAGAR_PANCHAYATS } from './panchayat-data/virudhunagar';
 import { SIVAGANGA_PANCHAYATS } from './panchayat-data/sivaganga';
 import { TIRUNELVELI_PANCHAYATS } from './panchayat-data/tirunelveli';
@@ -58,7 +60,10 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...MADURAI_PANCHAYATS,
   ...THENI_PANCHAYATS,
   ...DINDIGUL_PANCHAYATS,
+  ...RAMANATHAPURAM_PANCHAYATS,
   ...VIRUDHUNAGAR_PANCHAYATS,
   ...SIVAGANGA_PANCHAYATS,
   ...TIRUNELVELI_PANCHAYATS,
 ];
+
+    

@@ -432,3 +432,5 @@ export const RAMANATHAPURAM_PANCHAYATS: Panchayat[] = [
     { district: 'RAMANATHAPURAM', block: 'PARAMAKUDI', name: 'KEELAPARTHIBANUR', lgdCode: '227370' },
     { district: 'RAMANATHAPURAM', block: 'PARAMAKUDI', name: 'thenpodhuvakkudi', lgdCode: '227390' },
 ];
+
+    
