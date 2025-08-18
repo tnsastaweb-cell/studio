@@ -1,3 +1,4 @@
+
 import type { Panchayat } from './types';
 
 export const VIRUDHUNAGAR_PANCHAYATS: Panchayat[] = [
