@@ -21,6 +21,7 @@ const guestMenuItems = [
       { title: "Governing Body", href: "/about/governing-body" },
       { title: "Executive Committee", href: "/about/executive-committee" },
       { title: "Organizational Structure", href: "/about/organizational-structure" },
+      { title: "Directory", href: "/about/directory" },
       { title: "Legal Documents (GOs, Registration)", href: "/about/legal-documents" },
       { title: "Financial Statements", href: "/about/financial-statements" },
       { title: "Annual Reports", href: "/about/annual-reports" },
