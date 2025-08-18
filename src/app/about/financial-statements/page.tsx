@@ -7,7 +7,7 @@ import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-export default function FinancialStatementAndAnnualReportsPage() {
+export default function FinancialStatementsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -15,9 +15,9 @@ export default function FinancialStatementAndAnnualReportsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 pb-24">
         <Card>
             <CardHeader>
-                <CardTitle>Financial Statement and Annual Reports</CardTitle>
+                <CardTitle>Financial Statements</CardTitle>
                 <CardDescription>
-                    Detailed financial statements and annual reports of the Social Audit Unit.
+                    Detailed financial statements of the Social Audit Unit.
                 </CardDescription>
             </CardHeader>
             <CardContent>

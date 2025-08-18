@@ -22,7 +22,8 @@ const guestMenuItems = [
       { title: "Executive Committee", href: "/about/executive-committee" },
       { title: "Organizational Structure", href: "/about/organizational-structure" },
       { title: "Legal Documents (GOs, Registration)", href: "/about/legal-documents" },
-      { title: "Financial Statement and Annual Reports", href: "/about/financial-statement-and-annual-reports" },
+      { title: "Financial Statements", href: "/about/financial-statements" },
+      { title: "Annual Reports", href: "/about/annual-reports" },
     ],
   },
   {
