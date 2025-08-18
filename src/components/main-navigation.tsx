@@ -54,20 +54,18 @@ const guestMenuItems = [
     title: "GALLERY",
     href: "/gallery",
     children: [
-      { title: "MGNREGS", href: "/gallery/mgnregs" },
-      { title: "PMAY-G", href: "/gallery/pamy-g" },
-      { title: "15TH CFC GRANT", href: "/gallery/15th-cfc-grant" },
-      { title: "NMP", href: "/gallery/nmp" },
-      { title: "DSJE", href: "/gallery/dsje" },
+      { title: "Photos", href: "/gallery/photos" },
+      { title: "Videos", href: "/gallery/videos" },
+      { title: "New's Repots", href: "/gallery/news-reports" },
+      { title: "Blog", href: "/gallery/blog" },
     ],
   },
   {
     title: "SA REPORTS",
     href: "/sa-reports",
     children: [
-        { title: "Individual Social Audit Reports", href: "/sa-reports/individual" },
+        { title: "MIS Report", href: "/sa-reports/mis-report" },
         { title: "Consolidated Reports", href: "/sa-reports/consolidated" },
-        { title: "Annual Reports", href: "/sa-reports/annual" },
         { title: "Reports in MGNREGS website", href: "/sa-reports/mgnregs-reports" },
         { title: "Reports in MSJE website", href: "/sa-reports/msje-reports" },
     ]
@@ -75,13 +73,6 @@ const guestMenuItems = [
   {
     title: "LIBRARY",
     href: "/library",
-    children: [
-        { title: "Media", href: "/library/media" },
-        { title: "Careers", href: "/library/careers" },
-        { title: "Blog", href: "/library/blog" },
-        { title: "RTI", href: "/library/rti" },
-        { title: "Case Studies", href: "/library/case-studies" },
-    ]
   },
   {
     title: "GRIEVANCES",
