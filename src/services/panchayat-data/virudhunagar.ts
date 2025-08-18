@@ -453,5 +453,4 @@ export const VIRUDHUNAGAR_PANCHAYATS: Panchayat[] = [
     { district: 'VIRUDHUNAGAR', block: 'SATTUR', name: 'Venkatachalapuram', lgdCode: '234207' },
     { district: 'VIRUDHUNAGAR', block: 'SATTUR', name: 'Venkateshwarapuram', lgdCode: '234208' },
 ];
-
     
