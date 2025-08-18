@@ -30,13 +30,6 @@ const guestMenuItems = [
   {
     title: "SCHEMES",
     href: "/schemes",
-    children: [
-        { title: "MGNREGS", href: "/schemes/mgnregs" },
-        { title: "PMAY-G", href: "/schemes/pamy-g" },
-        { title: "15TH CFC GRANT", href: "/schemes/15th-cfc-grant" },
-        { title: "NMP", href: "/schemes/nmp" },
-        { title: "DSJE", href: "/schemes/dsje" },
-    ]
   },
   {
     title: "CALENDAR",
