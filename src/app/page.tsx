@@ -62,7 +62,7 @@ export default function Home() {
           />
         </div>
         
-        {isSignedIn && <SignedInMenu />}
+        <SignedInMenu />
 
         <GalleryHighlights />
 
