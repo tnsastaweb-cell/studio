@@ -1,21 +1,25 @@
 
 'use client';
 
-import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
+import { MgnregsSchemeContent } from './mgnregs/page';
+import { PmaygSchemeContent } from './pamy-g/page';
+import { CfcGrantSchemeContent } from './15th-cfc-grant/page';
+import { NmpSchemeContent } from './nmp/page';
+import { DsjeSchemeContent } from './dsje/page';
+
 
 const schemes = [
-    { id: "mgnregs", name: "MGNREGS", href: "/schemes/mgnregs", description: "Mahatma Gandhi National Rural Employment Guarantee Scheme" },
-    { id: "pmay-g", name: "PMAY-G", href: "/schemes/pamy-g", description: "Pradhan Mantri Awas Yojana (Gramin)" },
-    { id: "15th-cfc", name: "15th CFC Grant", href: "/schemes/15th-cfc-grant", description: "15th Central Finance Commission Grants" },
-    { id: "nmp", name: "NMP", href: "/schemes/nmp", description: "Puratchi Thalaivar MGR Nutritious Meal Programme" },
-    { id: "dsje", name: "DSJE", href: "/schemes/dsje", description: "Social Justice - Grant-in-Aid (GIA) Institutions" },
+    { id: "mgnregs", name: "MGNREGS", Component: MgnregsSchemeContent },
+    { id: "pmay-g", name: "PMAY-G", Component: PmaygSchemeContent },
+    { id: "15th-cfc", name: "15th CFC Grant", Component: CfcGrantSchemeContent },
+    { id: "nmp", name: "NMP", Component: NmpSchemeContent },
+    { id: "dsje", name: "DSJE", Component: DsjeSchemeContent },
 ];
 
 export default function SchemesPage() {
@@ -39,20 +43,8 @@ export default function SchemesPage() {
                         ))}
                     </TabsList>
                      {schemes.map(scheme => (
-                        <TabsContent key={scheme.id} value={scheme.id}>
-                            <Card className="border-t-0 rounded-t-none">
-                                <CardHeader>
-                                    <CardTitle className="text-xl text-primary">{scheme.description}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-muted-foreground mb-4">
-                                        You are viewing the tab for the {scheme.description}. Click the button below to see the full details.
-                                    </p>
-                                     <Button asChild>
-                                        <Link href={scheme.href}>Go to {scheme.name} Page</Link>
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                        <TabsContent key={scheme.id} value={scheme.id} className="pt-4">
+                            <scheme.Component />
                         </TabsContent>
                     ))}
                 </Tabs>

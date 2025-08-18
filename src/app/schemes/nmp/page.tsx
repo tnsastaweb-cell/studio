@@ -2,10 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
-import { MainNavigation } from '@/components/main-navigation';
-import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -29,7 +25,7 @@ const initialContent = {
 };
 
 
-export default function NmpSchemePage() {
+export function NmpSchemeContent() {
     const { user, loading } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [content, setContent] = useState(initialContent);
@@ -55,13 +51,10 @@ export default function NmpSchemePage() {
     };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <MainNavigation />
-      <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
+    <div className="space-y-8">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-3xl text-primary">Mid Day Meal Scheme / Puratchi Thalaivar MGR Nutritious Meal Programme</CardTitle>
+                <CardTitle className="text-2xl text-primary">About the NMP Social Audit</CardTitle>
                  {!loading && canEdit && (
                     <div className="flex gap-2">
                         {isEditing ? (
@@ -131,9 +124,6 @@ export default function NmpSchemePage() {
                 )}
             </CardContent>
         </Card>
-      </main>
-      <Footer />
-      <BottomNavigation />
     </div>
   );
 }
