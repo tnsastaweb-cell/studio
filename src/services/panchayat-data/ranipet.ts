@@ -190,105 +190,312 @@ export const RANIPET_PANCHAYATS: Panchayat[] = [
     { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Sirukarumbur', lgdCode: '232550' },
     { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Siruvalayam', lgdCode: '232551' },
     { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Thuraiperumbakkam', lgdCode: '232556' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Uthirampattu', lgdCode: '232557' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Vegamangalam', lgdCode: '232561' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Avalur', lgdCode: '232630' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Kalathur', lgdCode: '232637' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Perumbulipakkam', lgdCode: '232661' },
-    { district: 'RANIPET', block: 'KAVERIPAKKAM', name: 'Sankarampadi', lgdCode: '232665' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Anathangal', lgdCode: '232266' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Arumbakkam', lgdCode: '232268' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Arapakkam', lgdCode: '232267' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Arungundram', lgdCode: '232269' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Athithangal', lgdCode: '232270' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Ayilam', lgdCode: '232271' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Tajpura', lgdCode: '254903' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Esaiyanur', lgdCode: '232273' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Karikkanthangal', lgdCode: '232274' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Karivedu', lgdCode: '232275' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kathiyavadi', lgdCode: '232276' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kirambadi', lgdCode: '232280' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kilambadi', lgdCode: '232277' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kilkuppam', lgdCode: '232278' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kilminnal', lgdCode: '232279' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Koorambadi', lgdCode: '232281' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Kukkundi', lgdCode: '232282' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Ladavaram', lgdCode: '232283' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Mangadu', lgdCode: '232284' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Mecheri', lgdCode: '232285' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Melakuppam', lgdCode: '232286' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Muppathuvetti', lgdCode: '232288' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Mulluvadi', lgdCode: '232287' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Nandhiyalam', lgdCode: '232289' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Papperi', lgdCode: '232290' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Puttuthakku', lgdCode: '232294' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Puderi', lgdCode: '232291' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Pudupadi', lgdCode: '232292' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Punnapadi', lgdCode: '232293' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Sakkaramallur', lgdCode: '232295' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Sambasivapuram', lgdCode: '232296' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Sarvanthangal', lgdCode: '232297' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Sathur', lgdCode: '232298' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Sembedu', lgdCode: '232299' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Thazhanur', lgdCode: '232300' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Uppupettai', lgdCode: '232301' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Valavanur', lgdCode: '232302' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'K.Velur', lgdCode: '232303' },
-    { district: 'RANIPET', block: 'ARCOT', name: 'Vepoor', lgdCode: '232304' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Agaram', lgdCode: '232773' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Allalacheri', lgdCode: '232774' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Aroor', lgdCode: '232776' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Athiyanam', lgdCode: '232777' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Anaimallur', lgdCode: '232775' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Ayiramangalam', lgdCode: '232778' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Damaraipakkam', lgdCode: '232779' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Donimedu', lgdCode: '232780' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Durgam', lgdCode: '232781' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Gundaleri', lgdCode: '232782' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Irunghur', lgdCode: '232783' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kaniyanur', lgdCode: '232785' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kavanur', lgdCode: '232786' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kalavaiputhur', lgdCode: '232784' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kuppam', lgdCode: '232787' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kuppidisatham', lgdCode: '232788' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Kuthiyam', lgdCode: '232789' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Mazhaiyur', lgdCode: '232792' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Mambakkam', lgdCode: '232790' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Manthangal', lgdCode: '232791' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melathangal', lgdCode: '232794' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melapalanthai', lgdCode: '232793' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melnelli', lgdCode: '232796' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melnaickenpalayam', lgdCode: '232795' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Mosur', lgdCode: '232798' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Nambarai', lgdCode: '232801' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Nallur', lgdCode: '232800' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Nagaleri', lgdCode: '232799' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melnethapakkam', lgdCode: '232797' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Paradarami', lgdCode: '232805' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Parikkalpattu', lgdCode: '232807' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Palayanur', lgdCode: '232803' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pattanam', lgdCode: '232808' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Palayam', lgdCode: '232802' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pali', lgdCode: '232804' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pariamangalam', lgdCode: '232806' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Perumanthangal', lgdCode: '232810' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pinnathangal', lgdCode: '232811' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pennagar', lgdCode: '232809' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Punganur', lgdCode: '232814' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Pudur', lgdCode: '232813' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Melpudupakkam', lgdCode: '254904' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Senganavaram', lgdCode: '232815' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Chennasamudram', lgdCode: '232816' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Cheyyathuvannam', lgdCode: '232817' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Chittanthangal', lgdCode: '232818' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Soraiyur', lgdCode: '232819' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Valaiyathur', lgdCode: '232820' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Vanakkambadi', lgdCode: '232822' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Varaghur', lgdCode: '232823' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Vazhaipandal', lgdCode: '232821' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Vellambi', lgdCode: '232824' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Vembi', lgdCode: '232825' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Venkatapuram', lgdCode: '232826' },
-    { district: 'RANIPET', block: 'THIMIRI', name: 'Vilari', lgdCode: '232827' }
-];
-
+    { district: 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Uthirampattu', 'lgdCode': '232557' },
+    { 'district': 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Vegamangalam', 'lgdCode': '232561' },
+    { 'district': 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Avalur', 'lgdCode': '232630' },
+    { 'district': 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Kalathur', 'lgdCode': '232637' },
+    { 'district': 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Perumbulipakkam', 'lgdCode': '232661' },
+    { 'district': 'RANIPET', 'block': 'KAVERIPAKKAM', 'name': 'Sankarampadi', 'lgdCode': '232665' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Anathangal', 'lgdCode': '232266' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Arumbakkam', 'lgdCode': '232268' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Arapakkam', 'lgdCode': '232267' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Arungundram', 'lgdCode': '232269' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Athithangal', 'lgdCode': '232270' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Ayilam', 'lgdCode': '232271' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Tajpura', 'lgdCode': '254903' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Esaiyanur', 'lgdCode': '232273' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Karikkanthangal', 'lgdCode': '232274' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Karivedu', 'lgdCode': '232275' },
+    { 'district': 'TIRUVANNAMALAI', 'block': 'CHETPET', 'name': 'Karikkathur', 'lgdCode': '231063' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kathiyavadi', 'lgdCode': '232276' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kirambadi', 'lgdCode': '232280' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kilambadi', 'lgdCode': '232277' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kilkuppam', 'lgdCode': '232278' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kilminnal', 'lgdCode': '232279' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Koorambadi', 'lgdCode': '232281' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Kukkundi', 'lgdCode': '232282' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Ladavaram', 'lgdCode': '232283' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Mangadu', 'lgdCode': '232284' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Mecheri', 'lgdCode': '232285' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Melakuppam', 'lgdCode': '232286' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Muppathuvetti', 'lgdCode': '232288' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Mulluvadi', 'lgdCode': '232287' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Nandhiyalam', 'lgdCode': '232289' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Papperi', 'lgdCode': '232290' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Puttuthakku', 'lgdCode': '232294' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Puderi', 'lgdCode': '232291' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Pudupadi', 'lgdCode': '232292' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Punnapadi', 'lgdCode': '232293' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Sakkaramallur', 'lgdCode': '232295' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Sambasivapuram', 'lgdCode': '232296' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Sarvanthangal', 'lgdCode': '232297' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Sathur', 'lgdCode': '232298' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Sembedu', 'lgdCode': '232299' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Thazhanur', 'lgdCode': '232300' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Uppupettai', 'lgdCode': '232301' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Valavanur', 'lgdCode': '232302' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'K.Velur', 'lgdCode': '232303' },
+    { 'district': 'RANIPET', 'block': 'ARCOT', 'name': 'Vepoor', 'lgdCode': '232304' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Agaram', 'lgdCode': '232773' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Allalacheri', 'lgdCode': '232774' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Aroor', 'lgdCode': '232776' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Athiyanam', 'lgdCode': '232777' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Anaimallur', 'lgdCode': '232775' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Ayiramangalam', 'lgdCode': '232778' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Damaraipakkam', 'lgdCode': '232779' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Donimedu', 'lgdCode': '232780' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Durgam', 'lgdCode': '232781' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Gundaleri', 'lgdCode': '232782' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Irunghur', 'lgdCode': '232783' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kaniyanur', 'lgdCode': '232785' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kavanur', 'lgdCode': '232786' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kalavaiputhur', 'lgdCode': '232784' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kuppam', 'lgdCode': '232787' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kuppidisatham', 'lgdCode': '232788' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Kuthiyam', 'lgdCode': '232789' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Mazhaiyur', 'lgdCode': '232792' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Mambakkam', 'lgdCode': '232790' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Manthangal', 'lgdCode': '232791' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melathangal', 'lgdCode': '232794' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melapalanthai', 'lgdCode': '232793' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melnelli', 'lgdCode': '232796' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melnaickenpalayam', 'lgdCode': '232795' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Mosur', 'lgdCode': '232798' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Nambarai', 'lgdCode': '232801' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Nallur', 'lgdCode': '232800' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Nagaleri', 'lgdCode': '232799' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melnethapakkam', 'lgdCode': '232797' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Paradarami', 'lgdCode': '232805' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Parikkalpattu', 'lgdCode': '232807' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Palayanur', 'lgdCode': '232803' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pattanam', 'lgdCode': '232808' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Palayam', 'lgdCode': '232802' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pali', 'lgdCode': '232804' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pariamangalam', 'lgdCode': '232806' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Perumanthangal', 'lgdCode': '232810' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pinnathangal', 'lgdCode': '232811' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pennagar', 'lgdCode': '232809' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Punganur', 'lgdCode': '232814' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Pudur', 'lgdCode': '232813' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Melpudupakkam', 'lgdCode': '254904' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Senganavaram', 'lgdCode': '232815' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Chennasamudram', 'lgdCode': '232816' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Cheyyathuvannam', 'lgdCode': '232817' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Chittanthangal', 'lgdCode': '232818' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Soraiyur', 'lgdCode': '232819' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Valaiyathur', 'lgdCode': '232820' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Vanakkambadi', 'lgdCode': '232822' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Varaghur', 'lgdCode': '232823' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Vazhaipandal', 'lgdCode': '232821' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Vellambi', 'lgdCode': '232824' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Vembi', 'lgdCode': '232825' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Venkatapuram', 'lgdCode': '232826' },
+    { 'district': 'RANIPET', 'block': 'THIMIRI', 'name': 'Vilari', 'lgdCode': '232827' }
+TIRUPATHUR	MADHANUR	ALANKUPPAM	232566
+TIRUPATHUR	MADHANUR	Bappanapalli	232682
+TIRUPATHUR	MADHANUR	CHENGILIKUPPAM	232569
+TIRUPATHUR	MADHANUR	KANNADIKUPPAM	232574
+TIRUPATHUR	MADHANUR	KILMURUNGAI	232575
+TIRUPATHUR	MADHANUR	KULITHIGAIZAMEEN	232577
+TIRUPATHUR	MADHANUR	MADHANUR	232580
+TIRUPATHUR	MADHANUR	MINNUR	232582
+TIRUPATHUR	MADHANUR	NACHARKUPPAM	232583
+TIRUPATHUR	MADHANUR	NAICKANERI	232584
+TIRUPATHUR	MADHANUR	PALUR	232587
+TIRUPATHUR	MADHANUR	PERIYANKUPPAM	232588
+TIRUPATHUR	MADHANUR	SOLUR	232590
+TIRUPATHUR	MADHANUR	SOMALAPURAM	232591
+TIRUPATHUR	MADHANUR	TIRUMALAIKUPPAM	232594
+TIRUPATHUR	MADHANUR	THOTTALAM	232593
+TIRUPATHUR	MADHANUR	VADAPUDUPET	232595
+TIRUPATHUR	MADHANUR	VENGILI	232596
+TIRUPATHUR	MADHANUR	VINNAMANGALAM	232598
+TIRUPATHUR	MADHANUR	Ayathambattu	232677
+TIRUPATHUR	MADHANUR	Arangaldurgam	232679
+TIRUPATHUR	MADHANUR	Chinnapallikupam	232685
+TIRUPATHUR	MADHANUR	Chinnavarigam	232687
+TIRUPATHUR	MADHANUR	MELKUPPAM	232184
+TIRUPATHUR	MADHANUR	Devalapuram	232689
+TIRUPATHUR	MADHANUR	Kailasagiri	232695
+TIRUPATHUR	MADHANUR	Karumbur	232697
+TIRUPATHUR	MADHANUR	Kadavalam	232694
+TIRUPATHUR	MADHANUR	Kumaramangalam	232700
+TIRUPATHUR	MADHANUR	Malayambattu	232703
+TIRUPATHUR	MADHANUR	Melsanankuppam	232705
+TIRUPATHUR	MADHANUR	Mittalam	232707
+TIRUPATHUR	MADHANUR	Mothagapalli	232710
+TIRUPATHUR	MADHANUR	Nariyambattu	232711
+TIRUPATHUR	MADHANUR	Parasanapalli	232713
+TIRUPATHUR	MADHANUR	Periyakommeswaram	232715
+TIRUPATHUR	MADHANUR	Periyavarigam	232716
+TIRUPATHUR	MADHANUR	Sathambakkam	232719
+TIRUPATHUR	MADHANUR	Thennambut	232722
+TIRUPATHUR	MADHANUR	Thuthipattu	232723
+TIRUPATHUR	MADHANUR	Vadacheri	232724
+TIRUPATHUR	MADHANUR	Vadakarai	232725
+TIRUPATHUR	MADHANUR	Veerankuppam	232726
+TIRUPATHUR	MADHANUR	Venkatasamuthiram	232727
+TIRUPATHUR	THIRUPATHUR	ACHAMANGALAM	232828
+TIRUPATHUR	THIRUPATHUR	AGARAM	232829
+TIRUPATHUR	THIRUPATHUR	ANDIYAPPANUR	232830
+TIRUPATHUR	THIRUPATHUR	ANERI	232831
+TIRUPATHUR	THIRUPATHUR	ANNANDAPATTI	232832
+TIRUPATHUR	THIRUPATHUR	BOMMIKUPPAM	232833
+TIRUPATHUR	THIRUPATHUR	CHINNA SAMUDRAM	232834
+TIRUPATHUR	THIRUPATHUR	IRUNAPATTU	232835
+TIRUPATHUR	THIRUPATHUR	JAMMANAPUDUR	232836
+TIRUPATHUR	THIRUPATHUR	KADHIRAMPATTI	232837
+TIRUPATHUR	THIRUPATHUR	KADHIRIMANGALAM	232838
+TIRUPATHUR	THIRUPATHUR	KAKKANAMPALAYAM	232839
+TIRUPATHUR	THIRUPATHUR	KARUPANUR	232840
+TIRUPATHUR	THIRUPATHUR	KODUMAMPALLI	232841
+TIRUPATHUR	THIRUPATHUR	KURISILAPATTU	232842
+TIRUPATHUR	THIRUPATHUR	KURUMBAKERI	232843
+TIRUPATHUR	THIRUPATHUR	MADAPALLI	232844
+TIRUPATHUR	THIRUPATHUR	MELACHAMANGALAM	232846
+TIRUPATHUR	THIRUPATHUR	MOTTUR.A.K.	232848
+TIRUPATHUR	THIRUPATHUR	PALLAVALLI	232849
+TIRUPATHUR	THIRUPATHUR	PALNANKUPPAM	232850
+TIRUPATHUR	THIRUPATHUR	PERUMAPATTU	232851
+TIRUPATHUR	THIRUPATHUR	BOORIGAMANIMITTA	232853
+TIRUPATHUR	THIRUPATHUR	PUDUKOTTAI	232854
+TIRUPATHUR	THIRUPATHUR	RACHAMANGALAM	232855
+TIRUPATHUR	THIRUPATHUR	SELANDAMPALLI	232856
+TIRUPATHUR	THIRUPATHUR	SOWDEKUPPAM	232857
+TIRUPATHUR	THIRUPATHUR	THATHANAVALASAI	232858
+TIRUPATHUR	THIRUPATHUR	T.KRISHNAPURAM	232859
+TIRUPATHUR	THIRUPATHUR	THIMMANAMUTHUR	232860
+TIRUPATHUR	THIRUPATHUR	VENGAYAPALLI	232861
+TIRUPATHUR	THIRUPATHUR	NELLIVASALNADU	232188
+TIRUPATHUR	THIRUPATHUR	PUDURNADU	232193
+TIRUPATHUR	THIRUPATHUR	PUNGAMBATTU NADU	232194
+TIRUPATHUR	JOLARPET	AGRAHARAM	232349
+TIRUPATHUR	JOLARPET	AMMAIAPPANAGAR	232350
+TIRUPATHUR	JOLARPET	AMMANANKOIL	232351
+TIRUPATHUR	JOLARPET	CHANDRAPURAM	232352
+TIRUPATHUR	JOLARPET	CHINNAKALLUPALLI	232353
+TIRUPATHUR	JOLARPET	CHINNAKAMMIYAMPATTU	232354
+TIRUPATHUR	JOLARPET	CHINNAMOTUR	232356
+TIRUPATHUR	JOLARPET	CHINNAMOOKANUR	232355
+TIRUPATHUR	JOLARPET	CHINNAVEPPAMPATTU	232357
+TIRUPATHUR	JOLARPET	ELAGIRI HILLS	232359
+TIRUPATHUR	JOLARPET	ELAGIRI VILLAGE	232360
+TIRUPATHUR	JOLARPET	KALNARSAMPATTI	232361
+TIRUPATHUR	JOLARPET	KATTERI	232362
+TIRUPATHUR	JOLARPET	KETHANDAPATTI	232364
+TIRUPATHUR	JOLARPET	KAVERIPATTU	232363
+TIRUPATHUR	JOLARPET	KONAPATTU	232365
+TIRUPATHUR	JOLARPET	KOOTHANDAKUPPAM	232366
+TIRUPATHUR	JOLARPET	MALLAPALLI	232367
+TIRUPATHUR	JOLARPET	MANDALAVADI	232368
+TIRUPATHUR	JOLARPET	MOOKANUR	232369
+TIRUPATHUR	JOLARPET	NEKKUNTHI	232370
+TIRUPATHUR	JOLARPET	ODDAPATTI	232371
+TIRUPATHUR	JOLARPET	DHAMALERIMUTHUR	232358
+TIRUPATHUR	JOLARPET	PACHAL	232372
+TIRUPATHUR	JOLARPET	PANIYANDAPALLI	232373
+TIRUPATHUR	JOLARPET	PEDDAKALLUPALLI	232374
+TIRUPATHUR	JOLARPET	PERIYAKAMMIYAMPATTU	232375
+TIRUPATHUR	JOLARPET	PERIYAMOTTUR	232376
+TIRUPATHUR	JOLARPET	PONNERI	232377
+TIRUPATHUR	JOLARPET	PULLANERI	232378
+TIRUPATHUR	JOLARPET	PUTHAGARAM	232379
+TIRUPATHUR	JOLARPET	REDDIYUR	232380
+TIRUPATHUR	JOLARPET	SOMANAIKKANPATTI	232381
+TIRUPATHUR	JOLARPET	THIRIYALAM	232382
+TIRUPATHUR	JOLARPET	VELAGALNATHAM	232383
+TIRUPATHUR	JOLARPET	VETTAPATTU	232384
+TIRUPATHUR	JOLARPET	CHETTIYAPPANUR	232174
+TIRUPATHUR	JOLARPET	KALENDRA	232181
+TIRUPATHUR	KANDHILI	ADIYUR	232424
+TIRUPATHUR	KANDHILI	AVALNAICKENPATTI	232425
+TIRUPATHUR	KANDHILI	CHINNAKANDILI	232426
+TIRUPATHUR	KANDHILI	CHINNAKASINAICKENPATTI	232427
+TIRUPATHUR	KANDHILI	CHINNARAMPATTI	232428
+TIRUPATHUR	KANDHILI	EASTBADANAVADI	232429
+TIRUPATHUR	KANDHILI	ELAVAMPATTI	232430
+TIRUPATHUR	KANDHILI	ERRAMPATTI	232431
+TIRUPATHUR	KANDHILI	GAJALNAICKENPATTI	232432
+TIRUPATHUR	KANDHILI	GUMMIDIGAMPATTI	232433
+TIRUPATHUR	KANDHILI	KAKKANGARAI	232434
+TIRUPATHUR	KANDHILI	KANDILI	232435
+TIRUPATHUR	KANDHILI	KASINAICKENPATTI	232436
+TIRUPATHUR	KANDHILI	KORATTI	232437
+TIRUPATHUR	KANDHILI	KUNICHI	232438
+TIRUPATHUR	KANDHILI	KURUMBERI	232439
+TIRUPATHUR	KANDHILI	LAKKINAICKENPATTI	232440
+TIRUPATHUR	KANDHILI	MANAVALLI	232441
+TIRUPATHUR	KANDHILI	MANDALANAYANAGUNDA	232442
+TIRUPATHUR	KANDHILI	MATRAPALLI	232443
+TIRUPATHUR	KANDHILI	MOTTUR	232444
+TIRUPATHUR	KANDHILI	NARIYANERI	232445
+TIRUPATHUR	KANDHILI	NARSAMPATTI	232446
+TIRUPATHUR	KANDHILI	NATHAM	232447
+TIRUPATHUR	KANDHILI	UDAYAMUTHUR	232460
+TIRUPATHUR	KANDHILI	PALLATHUR	232448
+TIRUPATHUR	KANDHILI	PARADESIPATTI	232450
+TIRUPATHUR	KANDHILI	PARAMUTHAMPATTI	232451
+TIRUPATHUR	KANDHILI	PERAMBATTU	232452
+TIRUPATHUR	KANDHILI	PERIYAKANNALAPATTI	232454
+TIRUPATHUR	KANDHILI	PERIYAGARAM	232453
+TIRUPATHUR	KANDHILI	S.PALLIPATTU	232449
+TIRUPATHUR	KANDHILI	SEVATHUR	232455
+TIRUPATHUR	KANDHILI	SIMMANAPUDUR	232456
+TIRUPATHUR	KANDHILI	SUNDARAMPALLI	232457
+TIRUPATHUR	KANDHILI	THOKKIAM	232458
+TIRUPATHUR	KANDHILI	THORANAMPATHY	232459
+TIRUPATHUR	KANDHILI	VENGALAPURAM	232461
+TIRUPATHUR	KANDHILI	VISHAMANGALAM	232462
+TIRUPATHUR	NATRAMPALLI	ALASANDAPURAM	232599
+TIRUPATHUR	NATRAMPALLI	ALINJIKULAM	232600
+TIRUPATHUR	NATRAMPALLI	AMBALUR	232601
+TIRUPATHUR	NATRAMPALLI	ATHURKUPPAM	232602
+TIRUPATHUR	NATRAMPALLI	AVARANKUPPAM	232603
+TIRUPATHUR	NATRAMPALLI	BANDARAPALLI	232604
+TIRUPATHUR	NATRAMPALLI	CHICKKANANKUPPAM	232605
+TIRUPATHUR	NATRAMPALLI	EKLASPURAM	232606
+TIRUPATHUR	NATRAMPALLI	KONDAKINDAPALLI	232609
+TIRUPATHUR	NATRAMPALLI	KOTHUR	232610
+TIRUPATHUR	NATRAMPALLI	KODAYANCHI	232608
+TIRUPATHUR	NATRAMPALLI	KATHERI	232607
+TIRUPATHUR	NATRAMPALLI	MALLAGUNDA	232611
+TIRUPATHUR	NATRAMPALLI	MALLANKUPPAM	232612
+TIRUPATHUR	NATRAMPALLI	NARAYANAPURAM	232613
+TIRUPATHUR	NATRAMPALLI	NAYANACHERUVU	232614
+TIRUPATHUR	NATRAMPALLI	PATCHUR	232615
+TIRUPATHUR	NATRAMPALLI	PULLUR	232616
+TIRUPATHUR	NATRAMPALLI	RAMANAICKENPET	232617
+TIRUPATHUR	NATRAMPALLI	SANKARAPURAM	232618
+TIRUPATHUR	NATRAMPALLI	SORAKAYALNATHAM	232619
+TIRUPATHUR	NATRAMPALLI	THEKKUPETTU	232620
+TIRUPATHUR	NATRAMPALLI	THIMMAMPET	232621
+TIRUPATHUR	NATRAMPALLI	THOPPALAGUNDA	232622
+TIRUPATHUR	NATRAMPALLI	THUMBERI	232623
+TIRUPATHUR	NATRAMPALLI	VADAKUPATTU	232624
+TIRUPATHUR	ALANGAYAM	BEEMAKULAM	232173
+TIRUPATHUR	ALANGAYAM	DEVASTHANAM	232175
+TIRUPATHUR	ALANGAYAM	ECHANGAL	232176
+TIRUPATHUR	ALANGAYAM	ELAYANAGARAM	232177
+TIRUPATHUR	ALANGAYAM	GIRISAMUDIRAM	232178
+TIRUPATHUR	ALANGAYAM	GOVINDAPURAM	232179
+TIRUPATHUR	ALANGAYAM	JAFFRABAD	232180
+TIRUPATHUR	ALANGAYAM	KOTHAKOTTAI	232182
+TIRUPATHUR	ALANGAYAM	MADANANCHERI	232183
+TIRUPATHUR	ALANGAYAM	NAICKANUR	232185
+TIRUPATHUR	ALANGAYAM	NARASINGAPURAM	232186
+TIRUPATHUR	ALANGAYAM	NEKKANAMALAI	232187
+TIRUPATHUR	ALANGAYAM	NIMMIYAMBATTU	232189
+TIRUPATHUR	ALANGAYAM	PALLIPATTU	232190
+TIRUPATHUR	ALANGAYAM	PERIYAKURUMBATHERU	232191
+TIRUPATHUR	ALANGAYAM	PETHAVAPPAMPATTU	232192
+TIRUPATHUR	ALANGAYAM	REDDIYUR	232195
+TIRUPATHUR	ALANGAYAM	SAMMANDIKUPPAM	232196
+TIRUPATHUR	ALANGAYAM	VALAYAMBATTU	232197
+TIRUPATHUR	ALANGAYAM	VALLIPATTU	232199
+TIRUPATHUR	ALANGAYAM	VALLAKUTTAI	232198
+TIRUPATHUR	ALANGAYAM	VIJILAPURAM	232201
+TIRUPATHUR	ALANGAYAM	VELATHIGAMANIBENDA	232200
+TIRUPATHUR	ALANGAYAM	Gollakuppam	232692
+TIRUPATHUR	ALANGAYAM	MARIMANIKUPPAM	232845
+TIRUPATHUR	ALANGAYAM	MITTUR	232847
+TIRUPATHUR	ALANGAYAM	POONGULAM	232852
