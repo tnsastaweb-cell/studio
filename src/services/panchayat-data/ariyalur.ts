@@ -170,7 +170,7 @@ export const ARIYALUR_PANCHAYATS: Panchayat[] = [
     { district: 'ARIYALUR', block: 'T.PALUR', name: 'ThenkatchiperumalNatham', lgdCode: '226510' },
     { district: 'ARIYALUR', block: 'T.PALUR', name: 'Udayanatham', lgdCode: '226512' },
     { district: 'ARIYALUR', block: 'T.PALUR', name: 'Ulliyagudi', lgdCode: '226513' },
-    { district: 'ARIYALUR', block: 'T.PALUR', name: 'Valaikurichi]', lgdCode: '226514' },
+    { district: 'ARIYALUR', block: 'T.PALUR', name: 'Valaikurichi', lgdCode: '226514' },
     { district: 'ARIYALUR', block: 'T.PALUR', name: 'Vembukudi', lgdCode: '226515' },
     { district: 'ARIYALUR', block: 'T.PALUR', name: 'Venmankondan', lgdCode: '226516' },
     { district: 'ARIYALUR', block: 'SENDURAI', name: 'Adhanakuruchi', lgdCode: '226454' },
@@ -203,4 +203,6 @@ export const ARIYALUR_PANCHAYATS: Panchayat[] = [
     { district: 'ARIYALUR', block: 'SENDURAI', name: 'Unjini', lgdCode: '226481' },
     { district: 'ARIYALUR', block: 'SENDURAI', name: 'Vanjinapuram', lgdCode: '226482' },
     { district: 'ARIYALUR', block: 'SENDURAI', name: 'Veerakkan', lgdCode: '226483' }
-  ];
+];
+
+    

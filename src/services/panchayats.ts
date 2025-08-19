@@ -40,6 +40,8 @@ import { KANNIYAKUMARI_PANCHAYATS } from './panchayat-data/kanniyakumari';
 import { KRISHNAGIRI_PANCHAYATS } from './panchayat-data/krishnagiri';
 import { KALLAKURICHI_PANCHAYATS } from './panchayat-data/kallakurichi';
 import { CHENGALPATTU_PANCHAYATS } from './panchayat-data/chengalpattu';
+import { RANIPET_PANCHAYATS } from './panchayat-data/ranipet';
+import { TIRUPATHUR_PANCHAYATS } from './panchayat-data/tirupathur';
 
 export type { Panchayat };
 
@@ -76,4 +78,7 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...THOOTHUKKUDI_PANCHAYATS,
   ...KANNIYAKUMARI_PANCHAYATS,
   ...KRISHNAGIRI_PANCHAYATS,
+  ...KALLAKURICHI_PANCHAYATS,
 ];
+
+    
