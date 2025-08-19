@@ -1,4 +1,3 @@
-
 import type { Panchayat } from './types';
 
 export const TIRUPPUR_PANCHAYATS: Panchayat[] = [
@@ -268,4 +267,3 @@ export const TIRUPPUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPPUR', block: 'DHARAPURAM', name: 'THOPPAMPATTI', lgdCode: '223654' },
     { district: 'TIRUPPUR', block: 'DHARAPURAM', name: 'VEERACHIMANGALAM', lgdCode: '223655' }
 ];
-

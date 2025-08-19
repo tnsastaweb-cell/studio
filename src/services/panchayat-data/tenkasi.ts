@@ -1,4 +1,3 @@
-
 import type { Panchayat } from './types';
 
 export const TENKASI_PANCHAYATS: Panchayat[] = [
@@ -223,6 +222,4 @@ export const TENKASI_PANCHAYATS: Panchayat[] = [
     { district: 'TENKASI', block: 'VASUDEVANALLUR', name: 'Ariyoor', lgdCode: '230888' },
     { district: 'TENKASI', block: 'VASUDEVANALLUR', name: 'Dharugapuram', lgdCode: '230890' },
     { district: 'TENKASI', block: 'VASUDEVANALLUR', name: 'Sanganaperi', lgdCode: '230902' }
-];
-
-```
+]
