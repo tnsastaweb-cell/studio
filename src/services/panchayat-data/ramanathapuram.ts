@@ -433,4 +433,3 @@ export const RAMANATHAPURAM_PANCHAYATS: Panchayat[] = [
     { district: 'RAMANATHAPURAM', block: 'PARAMAKUDI', name: 'thenpodhuvakkudi', lgdCode: '227390' }
 ];
 
-    
