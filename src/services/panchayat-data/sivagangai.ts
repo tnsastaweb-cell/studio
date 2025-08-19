@@ -1,7 +1,7 @@
 
 import type { Panchayat } from './types';
 
-export const SIVAGANGA_PANCHAYATS: Panchayat[] = [
+export const SIVAGANGAI_PANCHAYATS: Panchayat[] = [
     { district: 'SIVAGANGAI', block: 'SIVAGANGA', name: 'Alavakottai', lgdCode: '228246' },
     { district: 'SIVAGANGAI', block: 'SIVAGANGA', name: 'Arasanoor', lgdCode: '228247' },
     { district: 'SIVAGANGAI', block: 'SIVAGANGA', name: 'Arasani muthupatti', lgdCode: '228248' },
@@ -448,3 +448,4 @@ export const SIVAGANGA_PANCHAYATS: Panchayat[] = [
     { district: 'SIVAGANGAI', block: 'S.PUDUR', name: 'Valasaipatti', lgdCode: '228185' },
     { district: 'SIVAGANGAI', block: 'S.PUDUR', name: 'Warapoor', lgdCode: '228186' }
 ];
+
