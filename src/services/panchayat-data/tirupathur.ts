@@ -209,4 +209,7 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'Gollakuppam', lgdCode: '232692' },
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'MARIMANIKUPPAM', lgdCode: '232845' },
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'MITTUR', lgdCode: '232847' },
-    { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'POONGULAM', lgdCode: '232852' } TIRUPATHUR serial number ends on 12525
+    { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'POONGULAM', lgdCode: '232852' }
+];
+
+    
