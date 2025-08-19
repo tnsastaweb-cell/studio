@@ -333,9 +333,9 @@ export const TIRUVANNAMALAI_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Pudupattu', lgdCode: '231036' },
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Puliyampatti', lgdCode: '231037' },
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Quilam', lgdCode: '231038' },
-    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che  Agaram', lgdCode: '231039' },
-    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che  Nachipattu', lgdCode: '231040' },
-    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che  Sorpanandal', lgdCode: '231041' },
+    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che Agaram', lgdCode: '231039' },
+    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che Nachipattu', lgdCode: '231040' },
+    { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Che Sorpanandal', lgdCode: '231041' },
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Thalaiyouthu', lgdCode: '231042' },
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Theethandapattu', lgdCode: '231043' },
     { district: 'TIRUVANNAMALAI', block: 'CHENGAM', name: 'Uchimalaikuppam', lgdCode: '231044' },
@@ -862,4 +862,5 @@ export const TIRUVANNAMALAI_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUVANNAMALAI', block: 'ARNI WEST', name: 'Thellur', lgdCode: '231767' },
     { district: 'TIRUVANNAMALAI', block: 'ARNI WEST', name: 'Vannankulam', lgdCode: '231768' },
     { district: 'TIRUVANNAMALAI', block: 'ARNI WEST', name: 'Vinnamangalam', lgdCode: '231769' }
-  ];
+  ]
+  
