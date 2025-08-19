@@ -35,6 +35,7 @@ import { SIVAGANGAI_PANCHAYATS } from './panchayat-data/sivagangai';
 import { TIRUNELVELI_PANCHAYATS } from './panchayat-data/tirunelveli';
 import { THOOTHUKKUDI_PANCHAYATS } from './panchayat-data/thoothukkudi';
 import { KANNIYAKUMARI_PANCHAYATS } from './panchayat-data/kanniyakumari';
+import { KRISHNAGIRI_PANCHAYATS } from './panchayat-data/krishnagiri';
 
 export type { Panchayat };
 
@@ -68,6 +69,9 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...TIRUNELVELI_PANCHAYATS,
   ...THOOTHUKKUDI_PANCHAYATS,
   ...KANNIYAKUMARI_PANCHAYATS,
+  ...KRISHNAGIRI_PANCHAYATS,
 ];
+
+    
 
     
