@@ -333,7 +333,7 @@ export const CHENGALPATTU_PANCHAYATS: Panchayat[] = [
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Kalpattu', lgdCode: '223965' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Kayapakkam', lgdCode: '223966' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Keezhmaruvatthur', lgdCode: '223967' },
-    { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Kolathur', lgdCode: '223951' },
+    { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: '23 Kolathur', lgdCode: '223951' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Mambakkam', lgdCode: '223968' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Mazhuvnangaranai', lgdCode: '223969' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Mealmaruvathur', lgdCode: '223970' },
@@ -361,5 +361,4 @@ export const CHENGALPATTU_PANCHAYATS: Panchayat[] = [
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Vedal', lgdCode: '223992' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Vilangadu', lgdCode: '223993' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: '57 Kolathur', lgdCode: '223952' }
-];
-
+  ]
