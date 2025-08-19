@@ -46,7 +46,7 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'MADHANUR', name: 'Vadakarai', lgdCode: '232725' },
     { district: 'TIRUPATHUR', block: 'MADHANUR', name: 'Veerankuppam', lgdCode: '232726' },
     { district: 'TIRUPATHUR', block: 'MADHANUR', name: 'Venkatasamuthiram', lgdCode: '232727' },
-    { district: 'THIRUPATHUR', name: 'ACHAMANGALAM', lgdCode: '232828' },
+    { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'ACHAMANGALAM', lgdCode: '232828' },
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'AGARAM', lgdCode: '232829' },
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'ANDIYAPPANUR', lgdCode: '232830' },
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'ANERI', lgdCode: '232831' },
@@ -80,7 +80,7 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'NELLIVASALNADU', lgdCode: '232188' },
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'PUDURNADU', lgdCode: '232193' },
     { district: 'TIRUPATHUR', block: 'THIRUPATHUR', name: 'PUNGAMBATTU NADU', lgdCode: '232194' },
-    { district: 'JOLARPET', name: 'AGRAHARAM', lgdCode: '232349' },
+    { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'AGRAHARAM', lgdCode: '232349' },
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'AMMAIAPPANAGAR', lgdCode: '232350' },
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'AMMANANKOIL', lgdCode: '232351' },
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'CHANDRAPURAM', lgdCode: '232352' },
@@ -118,7 +118,7 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'VETTAPATTU', lgdCode: '232384' },
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'CHETTIYAPPANUR', lgdCode: '232174' },
     { district: 'TIRUPATHUR', block: 'JOLARPET', name: 'KALENDRA', lgdCode: '232181' },
-    { district: 'KANDHILI', name: 'ADIYUR', lgdCode: '232424' },
+    { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'ADIYUR', lgdCode: '232424' },
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'AVALNAICKENPATTI', lgdCode: '232425' },
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'CHINNAKANDILI', lgdCode: '232426' },
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'CHINNAKASINAICKENPATTI', lgdCode: '232427' },
@@ -157,7 +157,7 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'THORANAMPATHY', lgdCode: '232459' },
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'VENGALAPURAM', lgdCode: '232461' },
     { district: 'TIRUPATHUR', block: 'KANDHILI', name: 'VISHAMANGALAM', lgdCode: '232462' },
-    { district: 'NATRAMPALLI', name: 'ALASANDAPURAM', lgdCode: '232599' },
+    { district: 'TIRUPATHUR', block: 'NATRAMPALLI', name: 'ALASANDAPURAM', lgdCode: '232599' },
     { district: 'TIRUPATHUR', block: 'NATRAMPALLI', name: 'ALINJIKULAM', lgdCode: '232600' },
     { district: 'TIRUPATHUR', block: 'NATRAMPALLI', name: 'AMBALUR', lgdCode: '232601' },
     { district: 'TIRUPATHUR', block: 'NATRAMPALLI', name: 'ATHURKUPPAM', lgdCode: '232602' },
@@ -211,3 +211,4 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'MITTUR', lgdCode: '232847' },
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'POONGULAM', lgdCode: '232852' }
 ];
+

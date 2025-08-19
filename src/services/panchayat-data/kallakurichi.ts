@@ -62,7 +62,7 @@ export const KALLAKURICHI_PANCHAYATS: Panchayat[] = [
     { district: 'KALLAKURICHI', block: 'TIRUKOILUR', name: 'NEDUNGAMPATTU', lgdCode: '233424' },
     { district: 'KALLAKURICHI', block: 'TIRUKOILUR', name: 'VILANTHAI', lgdCode: '233446' },
     { district: 'KALLAKURICHI', block: 'TIRUKOILUR', name: 'SORAIYAPATTU', lgdCode: '233437' },
-    { district: 'TIRUNAVALUR', name: 'ANDIKUZHI', lgdCode: '233737' },
+    { district: 'KALLAKURICHI', block: 'TIRUNAVALUR', name: 'ANDIKUZHI', lgdCode: '233737' },
     { district: 'KALLAKURICHI', block: 'TIRUNAVALUR', name: 'ARINATHAM', lgdCode: '233738' },
     { district: 'KALLAKURICHI', block: 'TIRUNAVALUR', name: 'ADHANUR', lgdCode: '233739' },
     { district: 'KALLAKURICHI', block: 'TIRUNAVALUR', name: 'ATHUR', lgdCode: '233740' },
@@ -206,3 +206,4 @@ export const KALLAKURICHI_PANCHAYATS: Panchayat[] = [
     { district: 'KALLAKURICHI', block: 'KALLAKURICHI', name: 'VILAMBAR', lgdCode: '233070' },
     { district: 'KALLAKURICHI', block: 'KALLAKURICHI', name: 'VINAITHEERTHAPURAM', lgdCode: '233071' }
 ];
+
