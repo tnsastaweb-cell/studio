@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Panchayat management service.
  * This file contains the data models and mock data for panchayats
@@ -42,6 +41,8 @@ import { KALLAKURICHI_PANCHAYATS } from './panchayat-data/kallakurichi';
 import { CHENGALPATTU_PANCHAYATS } from './panchayat-data/chengalpattu';
 import { RANIPET_PANCHAYATS } from './panchayat-data/ranipet';
 import { TIRUPATHUR_PANCHAYATS } from './panchayat-data/tirupathur';
+import { TENKASI_PANCHAYATS } from './panchayat-data/tenkasi';
+
 
 export type { Panchayat };
 
