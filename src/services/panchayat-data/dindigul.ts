@@ -1,3 +1,4 @@
+
 import type { Panchayat } from './types';
 
 export const DINDIGUL_PANCHAYATS: Panchayat[] = [
@@ -200,98 +201,6 @@ export const DINDIGUL_PANCHAYATS: Panchayat[] = [
     { district: 'DINDIGUL', block: 'ODDANCHATRAM', name: 'VELUR-ANNAPATTI', lgdCode: '223394' },
     { district: 'DINDIGUL', block: 'ODDANCHATRAM', name: 'VERIYAPPUR', lgdCode: '223395' },
     { district: 'DINDIGUL', block: 'ODDANCHATRAM', name: 'VIRUPATCHI', lgdCode: '223396' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Akkaraipatty', lgdCode: '223463' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Appanuthu', lgdCode: '223464' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Appiyampatty', lgdCode: '223466' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Appipalayam', lgdCode: '223465' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Bodurvarpatty', lgdCode: '223467' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Devathur', lgdCode: '223468' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kallimandayam', lgdCode: '223469' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kariyampatti', lgdCode: '223470' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kolumankondan', lgdCode: '223471' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Koothampoondi', lgdCode: '223472' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Korikadavu', lgdCode: '223473' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kothaiyam', lgdCode: '223474' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kottathurai', lgdCode: '223475' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Kovilammapatti', lgdCode: '223476' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Manjanaickenpatti', lgdCode: '223477' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Manur', lgdCode: '223478' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Marichilambu', lgdCode: '223479' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Melkaraipatti', lgdCode: '223480' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Mettupatti', lgdCode: '223481' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Mollampatti', lgdCode: '223483' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Midapadi', lgdCode: '223482' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Muthunaickenpatti', lgdCode: '223484' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Palappanpatti', lgdCode: '223485' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Paruthiyur', lgdCode: '223486' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Poosaripatti', lgdCode: '223487' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Porulur', lgdCode: '223488' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: '16-pudur', lgdCode: '223462' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Puliampatti', lgdCode: '223489' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Pungamuthur', lgdCode: '223490' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Pushpathur', lgdCode: '223491' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Rajampatti', lgdCode: '223492' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Sikkamanaickenpatti', lgdCode: '223493' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Thalaiyuthu', lgdCode: '223494' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Thoppampatti', lgdCode: '223495' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Thumbalapatty', lgdCode: '223496' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Vagarai', lgdCode: '223497' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Velampatti', lgdCode: '223498' },
-    { district: 'DINDIGUL', block: 'THOPPAMPATTY', name: 'Vilvathampatti', lgdCode: '223499' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Ammapatti', lgdCode: '223532' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'V. Boothipuram', lgdCode: '223533' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'E. Chitoor', lgdCode: '223534' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Viruthalaipatti', lgdCode: '223553' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kalvarpatti', lgdCode: '223535' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kudappam', lgdCode: '223538' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kulathupatti', lgdCode: '223539' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kuttam', lgdCode: '223540' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kovilur', lgdCode: '223537' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Kovakkapatti', lgdCode: '223536' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Malvarpatti', lgdCode: '223541' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Marambadi', lgdCode: '223542' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Nagampatti', lgdCode: '223544' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Nagaiyakottai', lgdCode: '223543' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Nallamanarkottai', lgdCode: '223545' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Nathapatti', lgdCode: '223546' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Palapatti', lgdCode: '223547' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'V. Pudukottai', lgdCode: '223551' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Sri Ramapuram', lgdCode: '223548' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Thattarapatti', lgdCode: '223549' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Usilampatti', lgdCode: '223550' },
-    { district: 'DINDIGUL', block: 'VEDASANDUR', name: 'Vellampatti', lgdCode: '223552' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'KANAPADI', lgdCode: '223500' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'KOMBARIPATTI', lgdCode: '223501' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'KULATHUR', lgdCode: '223502' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'MOREPATTI', lgdCode: '223503' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'PADIYUR', lgdCode: '223505' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'P.KOSAVAPATTI', lgdCode: '223504' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'PAGANATHAM', lgdCode: '223506' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'PILATHU', lgdCode: '223507' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'PUTHUR', lgdCode: '223508' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'SINGARAKOTTAI', lgdCode: '223509' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'SITHUVARPATTI', lgdCode: '223510' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'SUKKAMPATTI', lgdCode: '223511' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'THENNAMPATTI', lgdCode: '223512' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'VELAYUTHAMPALAYAM', lgdCode: '223513' },
-    { district: 'DINDIGUL', block: 'VADAMADURAI', name: 'VELVARKOTTAI', lgdCode: '223514' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'ALAMBADI', lgdCode: '223284' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'CHINNULUPPAI', lgdCode: '223285' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'DHOLIPATTI', lgdCode: '223287' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'D.GUDDALORE', lgdCode: '223286' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'KARIKALI', lgdCode: '223288' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'KARUNGAL', lgdCode: '223289' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'R.KOMBAI', lgdCode: '223294' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'KOOMBUR', lgdCode: '223290' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'KOTTANATHAM', lgdCode: '223291' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'LANDHAKOTTAI', lgdCode: '223292' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'MALLAPURAM', lgdCode: '223293' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'R.PUDUKOTTAI', lgdCode: '223295' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'THIRUKURNAM', lgdCode: '223297' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'ULLIYAKOTTAI', lgdCode: '223298' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'VADUGAMPADI', lgdCode: '223299' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'VANIKARAI', lgdCode: '223300' },
-    { district: 'DINDIGUL', block: 'GUZILIAMPARAI', name: 'R.VELLODU', lgdCode: '223296' },
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Adukkam', lgdCode: '223301' },
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Kamanur', lgdCode: '223302' },
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Kilakkuchettipatti', lgdCode: '223303' },
@@ -307,4 +216,96 @@ export const DINDIGUL_PANCHAYATS: Panchayat[] = [
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Vadakavunji', lgdCode: '223313' },
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Vellakavi', lgdCode: '223314' },
     { district: 'DINDIGUL', block: 'KODAIKANAL', name: 'Vilpatti', lgdCode: '223315' }
-];
+DINDIGUL serial number complete at 11624
+TIRUPPUR	THOPPAMPATTY	Akkaraipatty	223463
+TIRUPPUR	THOPPAMPATTY	Appanuthu	223464
+TIRUPPUR	THOPPAMPATTY	Appiyampatty	223466
+TIRUPPUR	THOPPAMPATTY	Appipalayam	223465
+TIRUPPUR	THOPPAMPATTY	Bodurvarpatty	223467
+TIRUPPUR	THOPPAMPATTY	Devathur	223468
+TIRUPPUR	THOPPAMPATTY	Kallimandayam	223469
+TIRUPPUR	THOPPAMPATTY	Kariyampatti	223470
+TIRUPPUR	THOPPAMPATTY	Kolumankondan	223471
+TIRUPPUR	THOPPAMPATTY	Koothampoondi	223472
+TIRUPPUR	THOPPAMPATTY	Korikadavu	223473
+TIRUPPUR	THOPPAMPATTY	Kothaiyam	223474
+TIRUPPUR	THOPPAMPATTY	Kottathurai	223475
+TIRUPPUR	THOPPAMPATTY	Kovilammapatti	223476
+TIRUPPUR	THOPPAMPATTY	Manjanaickenpatti	223477
+TIRUPPUR	THOPPAMPATTY	Manur	223478
+TIRUPPUR	THOPPAMPATTY	Marichilambu	223479
+TIRUPPUR	THOPPAMPATTY	Melkaraipatti	223480
+TIRUPPUR	THOPPAMPATTY	Mettupatti	223481
+TIRUPPUR	THOPPAMPATTY	Mollampatti	223483
+TIRUPPUR	THOPPAMPATTY	Midapadi	223482
+TIRUPPUR	THOPPAMPATTY	Muthunaickenpatti	223484
+TIRUPPUR	THOPPAMPATTY	Palappanpatti	223485
+TIRUPPUR	THOPPAMPATTY	Paruthiyur	223486
+TIRUPPUR	THOPPAMPATTY	Poosaripatti	223487
+TIRUPPUR	THOPPAMPATTY	Porulur	223488
+TIRUPPUR	THOPPAMPATTY	16-pudur	223462
+TIRUPPUR	THOPPAMPATTY	Puliampatti	223489
+TIRUPPUR	THOPPAMPATTY	Pungamuthur	223490
+TIRUPPUR	THOPPAMPATTY	Pushpathur	223491
+TIRUPPUR	THOPPAMPATTY	Rajampatti	223492
+TIRUPPUR	THOPPAMPATTY	Sikkamanaickenpatti	223493
+TIRUPPUR	THOPPAMPATTY	Thalaiyuthu	223494
+TIRUPPUR	THOPPAMPATTY	Thoppampatti	223495
+TIRUPPUR	THOPPAMPATTY	Thumbalapatty	223496
+TIRUPPUR	THOPPAMPATTY	Vagarai	223497
+TIRUPPUR	THOPPAMPATTY	Velampatti	223498
+TIRUPPUR	THOPPAMPATTY	Vilvathampatti	223499
+TIRUPPUR	VEDASANDUR	Ammapatti	223532
+TIRUPPUR	VEDASANDUR	V. Boothipuram	223533
+TIRUPPUR	VEDASANDUR	E. Chitoor	223534
+TIRUPPUR	VEDASANDUR	Viruthalaipatti	223553
+TIRUPPUR	VEDASANDUR	Kalvarpatti	223535
+TIRUPPUR	VEDASANDUR	Kudappam	223538
+TIRUPPUR	VEDASANDUR	Kulathupatti	223539
+TIRUPPUR	VEDASANDUR	Kuttam	223540
+TIRUPPUR	VEDASANDUR	Kovilur	223537
+TIRUPPUR	VEDASANDUR	Kovakkapatti	223536
+TIRUPPUR	VEDASANDUR	Malvarpatti	223541
+TIRUPPUR	VEDASANDUR	Marambadi	223542
+TIRUPPUR	VEDASANDUR	Nagampatti	223544
+TIRUPPUR	VEDASANDUR	Nagaiyakottai	223543
+TIRUPPUR	VEDASANDUR	Nallamanarkottai	223545
+TIRUPPUR	VEDASANDUR	Nathapatti	223546
+TIRUPPUR	VEDASANDUR	Palapatti	223547
+TIRUPPUR	VEDASANDUR	V. Pudukottai	223551
+TIRUPPUR	VEDASANDUR	Sri Ramapuram	223548
+TIRUPPUR	VEDASANDUR	Thattarapatti	223549
+TIRUPPUR	VEDASANDUR	Usilampatti	223550
+TIRUPPUR	VEDASANDUR	Vellampatti	223552
+TIRUPPUR	VADAMADURAI	KANAPADI	223500
+TIRUPPUR	VADAMADURAI	KOMBARIPATTI	223501
+TIRUPPUR	VADAMADURAI	KULATHUR	223502
+TIRUPPUR	VADAMADURAI	MOREPATTI	223503
+TIRUPPUR	VADAMADURAI	PADIYUR	223505
+TIRUPPUR	VADAMADURAI	P.KOSAVAPATTI	223504
+TIRUPPUR	VADAMADURAI	PAGANATHAM	223506
+TIRUPPUR	VADAMADURAI	PILATHU	223507
+TIRUPPUR	VADAMADURAI	PUTHUR	223508
+TIRUPPUR	VADAMADURAI	SINGARAKOTTAI	223509
+TIRUPPUR	VADAMADURAI	SITHUVARPATTI	223510
+TIRUPPUR	VADAMADURAI	SUKKAMPATTI	223511
+TIRUPPUR	VADAMADURAI	THENNAMPATTI	223512
+TIRUPPUR	VADAMADURAI	VELAYUTHAMPALAYAM	223513
+TIRUPPUR	VADAMADURAI	VELVARKOTTAI	223514
+TIRUPPUR	GUZILIAMPARAI	ALAMBADI	223284
+TIRUPPUR	GUZILIAMPARAI	CHINNULUPPAI	223285
+TIRUPPUR	GUZILIAMPARAI	DHOLIPATTI	223287
+TIRUPPUR	GUZILIAMPARAI	D.GUDDALORE	223286
+TIRUPPUR	GUZILIAMPARAI	KARIKALI	223288
+TIRUPPUR	GUZILIAMPARAI	KARUNGAL	223289
+TIRUPPUR	GUZILIAMPARAI	R.KOMBAI	223294
+TIRUPPUR	GUZILIAMPARAI	KOOMBUR	223290
+TIRUPPUR	GUZILIAMPARAI	KOTTANATHAM	223291
+TIRUPPUR	GUZILIAMPARAI	LANDHAKOTTAI	223292
+TIRUPPUR	GUZILIAMPARAI	MALLAPURAM	223293
+TIRUPPUR	GUZILIAMPARAI	R.PUDUKOTTAI	223295
+TIRUPPUR	GUZILIAMPARAI	THIRUKURNAM	223297
+TIRUPPUR	GUZILIAMPARAI	ULLIYAKOTTAI	223298
+TIRUPPUR	GUZILIAMPARAI	VADUGAMPADI	223299
+TIRUPPUR	GUZILIAMPARAI	VANIKARAI	223300
+TIRUPPUR	GUZILIAMPARAI	R.VELLODU	223296 serial ends at 11624
