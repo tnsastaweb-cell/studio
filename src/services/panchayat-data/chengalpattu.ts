@@ -346,3 +346,4 @@ export const CHENGALPATTU_PANCHAYATS: Panchayat[] = [
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Vilangadu', lgdCode: '223993' },
     { district: 'CHENGALPATTU', block: 'CHITHAMUR', name: 'Kolathur', lgdCode: '223952' }
 ];
+
