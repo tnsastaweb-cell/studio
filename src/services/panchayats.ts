@@ -30,8 +30,9 @@ import { THENI_PANCHAYATS } from './panchayat-data/theni';
 import { DINDIGUL_PANCHAYATS } from './panchayat-data/dindigul';
 import { RAMANATHAPURAM_PANCHAYATS } from './panchayat-data/ramanathapuram';
 import { VIRUDHUNAGAR_PANCHAYATS } from './panchayat-data/virudhunagar';
-import { SIVAGANGA_PANCHAYATS } from './panchayat-data/sivaganga';
+import { SIVAGANGAI_PANCHAYATS } from './panchayat-data/sivagangai';
 import { TIRUNELVELI_PANCHAYATS } from './panchayat-data/tirunelveli';
+import { THOOTHUKKUDI_PANCHAYATS } from './panchayat-data/thoothukkudi';
 
 export type { Panchayat };
 
@@ -61,6 +62,7 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
   ...DINDIGUL_PANCHAYATS,
   ...RAMANATHAPURAM_PANCHAYATS,
   ...VIRUDHUNAGAR_PANCHAYATS,
-  ...SIVAGANGA_PANCHAYATS,
+  ...SIVAGANGAI_PANCHAYATS,
   ...TIRUNELVELI_PANCHAYATS,
+  ...THOOTHUKKUDI_PANCHAYATS,
 ];
