@@ -241,24 +241,23 @@ export default function AdminPage() {
   const isWorkRelated = galleryForm.watch("isWorkRelated");
 
   const blocksForDistrict = useMemo(() => {
-        if (!selectedDistrict) return [];
-        const uniqueBlocks = [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))];
-        return uniqueBlocks;
-    }, [selectedDistrict]);
+    if (!selectedDistrict) return [];
+    return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))].sort();
+  }, [selectedDistrict]);
 
-    const panchayatsForBlock = useMemo(() => {
-        if (!selectedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === selectedBlock);
-    }, [selectedBlock]);
+  const panchayatsForBlock = useMemo(() => {
+      if (!selectedBlock) return [];
+      return MOCK_PANCHAYATS.filter(p => p.block === selectedBlock);
+  }, [selectedBlock]);
 
-    useEffect(() => {
-        galleryForm.setValue("block", "");
-        galleryForm.setValue("panchayat", "");
-    }, [selectedDistrict, galleryForm]);
+  useEffect(() => {
+      galleryForm.resetField("block", { defaultValue: '' });
+      galleryForm.resetField("panchayat", { defaultValue: '' });
+  }, [selectedDistrict, galleryForm]);
 
-     useEffect(() => {
-        galleryForm.setValue("panchayat", "");
-    }, [selectedBlock, galleryForm]);
+  useEffect(() => {
+      galleryForm.resetField("panchayat", { defaultValue: '' });
+  }, [selectedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -1208,7 +1207,7 @@ export default function AdminPage() {
                                             <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>District</FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                         <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1218,10 +1217,7 @@ export default function AdminPage() {
                                              <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
-                                                    <Select onValueChange={(value) => {
-                                                        field.onChange(value);
-                                                        galleryForm.setValue('panchayat', '');
-                                                    }} value={field.value} disabled={!selectedDistrict}>
+                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value} disabled={!selectedDistrict}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1233,7 +1229,7 @@ export default function AdminPage() {
                                                     <FormLabel>Panchayat</FormLabel>
                                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBlock}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
-                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>(LGD: {p.lgdCode}) {toTitleCase(p.name)}</SelectItem>)}</SelectContent>
+                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)} (LGD: {p.lgdCode})</SelectItem>)}</SelectContent>
                                                     </Select>
                                                     <FormMessage />
                                                 </FormItem>
@@ -1292,7 +1288,12 @@ export default function AdminPage() {
                                                         <FormControl>
                                                             <Input 
                                                                 type="file" 
-                                                                accept="image/jpeg,image/png,video/mp4,video/avi,video/mov,application/pdf"
+                                                                accept={
+                                                                    galleryForm.getValues('mediaType') === 'photo' ? 'image/jpeg,image/png' :
+                                                                    galleryForm.getValues('mediaType') === 'video' ? 'video/mp4,video/avi,video/mov' :
+                                                                    (galleryForm.getValues('mediaType') === 'news' || galleryForm.getValues('mediaType') === 'blog') ? 'application/pdf' :
+                                                                    ''
+                                                                }
                                                                 ref={galleryFileInputRef}
                                                                 onChange={(e) => {
                                                                     field.onChange(e.target.files)
@@ -1301,7 +1302,7 @@ export default function AdminPage() {
                                                             />
                                                         </FormControl>
                                                         <FormDescription>
-                                                          Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), Documents (PDF - Max 5MB).
+                                                            Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), News/Blog (PDF - Max 5MB).
                                                         </FormDescription>
                                                         <FormMessage />
                                                     </FormItem>
@@ -1341,3 +1342,6 @@ export default function AdminPage() {
     </div>
   );
 }
+
+
+    
