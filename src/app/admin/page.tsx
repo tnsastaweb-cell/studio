@@ -256,12 +256,16 @@ export default function AdminPage() {
   }, [selectedDistrict, selectedBlock]);
 
   useEffect(() => {
-    galleryForm.setValue('block', '');
-    galleryForm.setValue('panchayat', '');
+    if (selectedDistrict) {
+      galleryForm.resetField("block", { defaultValue: '' });
+      galleryForm.resetField("panchayat", { defaultValue: '' });
+    }
   }, [selectedDistrict, galleryForm]);
-  
+
   useEffect(() => {
-    galleryForm.setValue('panchayat', '');
+    if (selectedBlock) {
+      galleryForm.resetField("panchayat", { defaultValue: '' });
+    }
   }, [selectedBlock, galleryForm]);
 
 
@@ -1365,3 +1369,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
