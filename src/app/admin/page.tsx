@@ -257,14 +257,14 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (selectedDistrict) {
-      galleryForm.resetField("block", { defaultValue: '' });
-      galleryForm.resetField("panchayat", { defaultValue: '' });
+      galleryForm.setValue("block", "");
+      galleryForm.setValue("panchayat", "");
     }
   }, [selectedDistrict, galleryForm]);
 
   useEffect(() => {
     if (selectedBlock) {
-      galleryForm.resetField("panchayat", { defaultValue: '' });
+      galleryForm.setValue("panchayat", "");
     }
   }, [selectedBlock, galleryForm]);
 
@@ -1230,7 +1230,7 @@ export default function AdminPage() {
                                             <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>District</FormLabel>
-                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue("block", ""); galleryForm.setValue("panchayat", ""); }} value={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                         <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1240,7 +1240,7 @@ export default function AdminPage() {
                                              <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
-                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value} disabled={!selectedDistrict}>
+                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue("panchayat", ""); }} value={field.value} disabled={!selectedDistrict}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1370,3 +1370,6 @@ export default function AdminPage() {
   );
 }
 
+
+
+    
