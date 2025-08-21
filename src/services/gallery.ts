@@ -44,14 +44,19 @@ export interface EnrichedGalleryItem extends GalleryItem {
 
 const GALLERY_STORAGE_KEY = 'sasta-gallery-items';
 
+// Sample data for gallery items
+const MOCK_GALLERY_ITEMS: GalleryItem[] = [
+    // This will be populated by the upload form
+];
+
 const getInitialGalleryItems = (): GalleryItem[] => {
     if (typeof window === 'undefined') return [];
     try {
         const stored = localStorage.getItem(GALLERY_STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
+        return stored ? JSON.parse(stored) : MOCK_GALLERY_ITEMS;
     } catch (error) {
         console.error("Failed to access localStorage for gallery:", error);
-        return [];
+        return MOCK_GALLERY_ITEMS;
     }
 };
 
@@ -91,9 +96,33 @@ export const useGallery = () => {
         setLoading(true);
         const data = getInitialGalleryItems();
         setItems(data);
+         if (typeof window !== 'undefined' && !localStorage.getItem(GALLERY_STORAGE_KEY)) {
+             localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(data));
+        }
         setLoading(false);
     }, []);
     
+    const syncItems = (updatedItems: GalleryItem[]) => {
+        setItems(updatedItems);
+        if(typeof window !== 'undefined') {
+            localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(updatedItems));
+            window.dispatchEvent(new StorageEvent('storage', { key: GALLERY_STORAGE_KEY, newValue: JSON.stringify(updatedItems) }));
+        }
+    };
+
+    const addItem = useCallback((item: Omit<GalleryItem, 'id' | 'uploadedAt'>) => {
+        setItems(prev => {
+            const newItem = {
+                ...item,
+                id: Date.now(),
+                uploadedAt: new Date().toISOString(),
+            };
+            const newItems = [...prev, newItem];
+            syncItems(newItems);
+            return newItems;
+        });
+    }, []);
+
     useEffect(() => {
         loadItems();
         const handleStorageChange = (event: StorageEvent) => {
@@ -105,5 +134,6 @@ export const useGallery = () => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [loadItems]);
 
-    return { items: enrichedItems, loading };
+    return { items: enrichedItems, loading, addItem };
 };
+

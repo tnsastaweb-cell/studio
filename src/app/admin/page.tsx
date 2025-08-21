@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
@@ -27,6 +27,7 @@ import { useCalendars } from '@/services/calendars';
 import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
+import { useGallery, galleryActivityTypes, GalleryMediaType, GalleryItem } from '@/services/gallery';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -72,6 +73,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from '@/hooks/use-auth';
 import { useLogo } from '@/hooks/use-logo';
 import { useToast } from '@/hooks/use-toast';
@@ -88,15 +90,41 @@ const userFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
+const galleryFormSchema = z.object({
+    mediaType: z.enum(["photo", "video", "news", "blog"]),
+    district: z.string().min(1, "District is required."),
+    block: z.string().min(1, "Block is required."),
+    panchayat: z.string().min(1, "Panchayat is required."),
+    scheme: z.string().min(1, "Scheme is required."),
+    activityType: z.enum(galleryActivityTypes),
+    isWorkRelated: z.enum(["yes", "no"]),
+    workName: z.string().optional(),
+    workCode: z.string().optional(),
+    file: z.any().refine(file => file, "File is required."),
+}).refine(data => {
+    if (data.isWorkRelated === 'yes') {
+        return !!data.workName && !!data.workCode;
+    }
+    return true;
+}, {
+    message: "Work Name and Work Code are required when work related is 'Yes'",
+    path: ["workName"],
+});
+
+type GalleryFormValues = z.infer<typeof galleryFormSchema>;
+
 const toTitleCase = (str: string) => {
   if (!str) return '';
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
+const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
+
+
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFormOpen, useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
@@ -180,7 +208,7 @@ export default function AdminPage() {
       email: user.email || '',
       password: user.password,
     });
-    setIsFormOpen(true);
+    useState(true);
   };
 
   const handleAddNewUser = () => {
@@ -194,19 +222,17 @@ export default function AdminPage() {
       email: '',
       password: 'password123', // Default password for new users
     });
-    setIsFormOpen(true);
+    useState(true);
   };
 
   const onUserSubmit = (values: UserFormValues) => {
     if (editingUser) {
-      // Update existing user
       updateUser({ ...editingUser, ...values, dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd') });
       toast({
         title: 'User Updated',
         description: 'The user details have been successfully updated.',
       });
     } else {
-      // Add new user
       addUser({
         ...values,
         dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd'),
@@ -216,7 +242,7 @@ export default function AdminPage() {
         description: 'The new user has been successfully created.',
       });
     }
-    setIsFormOpen(false);
+    useState(false);
     setEditingUser(null);
   };
 
@@ -295,7 +321,7 @@ export default function AdminPage() {
         <Dialog
           open={isFormOpen}
           onOpenChange={(isOpen) => {
-            setIsFormOpen(isOpen);
+            useState(isOpen);
             if (!isOpen) {
               setEditingUser(null);
               userForm.reset();
@@ -458,7 +484,7 @@ export default function AdminPage() {
 
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
+                    <Button type="button" variant="secondary" onClick={() => useState(false)}>
                       Cancel
                     </Button>
                   </DialogClose>
@@ -711,38 +737,26 @@ export default function AdminPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4 p-4 border rounded-lg">
-                      <div>
-                        <Label>District</Label>
-                        <Input
+                      <Input
                           placeholder="Filter by District..."
                           value={panchayatFilters.district}
                           onChange={(e) => handlePanchayatFilterChange('district', e.target.value)}
                         />
-                      </div>
-                      <div>
-                        <Label>Block</Label>
-                        <Input
+                      <Input
                           placeholder="Filter by Block..."
                           value={panchayatFilters.block}
                           onChange={(e) => handlePanchayatFilterChange('block', e.target.value)}
                         />
-                      </div>
-                      <div>
-                        <Label>Panchayat</Label>
-                        <Input
+                     <Input
                           placeholder="Filter by Panchayat..."
                           value={panchayatFilters.panchayat}
                           onChange={(e) => handlePanchayatFilterChange('panchayat', e.target.value)}
                         />
-                      </div>
-                      <div>
-                        <Label>LGD Code</Label>
-                        <Input
+                      <Input
                           placeholder="Filter by LGD Code..."
                           value={panchayatFilters.lgdCode}
                           onChange={(e) => handlePanchayatFilterChange('lgdCode', e.target.value)}
                         />
-                      </div>
                       <Button className="self-end">Get Reports</Button>
                     </div>
                     <div className="border rounded-lg">
@@ -865,13 +879,14 @@ export default function AdminPage() {
           </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-1">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
+                <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
               </TabsList>
               <TabsContent value="logo-upload">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Site Settings</CardTitle>
+                    <CardTitle>Site Logo</CardTitle>
                     <CardDescription>Manage global site settings, such as the logo.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -914,6 +929,17 @@ export default function AdminPage() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+                <TabsContent value="gallery-upload">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Gallery Upload</CardTitle>
+                            <CardDescription>Upload new items to the gallery.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">This feature is currently under construction.</p>
+                        </CardContent>
+                    </Card>
               </TabsContent>
             </Tabs>
           </TabsContent>

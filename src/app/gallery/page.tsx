@@ -83,20 +83,22 @@ function GalleryGrid({ items }: { items: GalleryItem[] }) {
 }
 
 
-export default function GalleryPage({ mediaType }: { mediaType: GalleryMediaType }) {
+export default function GalleryPage({ mediaType }: { mediaType: GalleryMediaType | 'all' }) {
     const { items: galleryItems, loading } = useGallery();
     const pathname = usePathname();
 
     const mediaTypeLinks = [
-        { name: 'Photos', href: '/gallery/photos' },
-        { name: 'Videos', href: '/gallery/videos' },
-        { name: 'News Reports', href: '/gallery/news-reports' },
-        { name: 'Blogs', href: '/gallery/blog' },
+        { name: 'All', href: '/gallery', mediaType: 'all' },
+        { name: 'Photos', href: '/gallery/photos', mediaType: 'photo' },
+        { name: 'Videos', href: '/gallery/videos', mediaType: 'video' },
+        { name: 'News Reports', href: '/gallery/news-reports', mediaType: 'news' },
+        { name: 'Blogs', href: '/gallery/blog', mediaType: 'blog' },
     ];
     
     const schemesForTabs = [{ id: 'all', name: 'All Schemes' }, ...MOCK_SCHEMES];
 
     const filteredByMediaType = useMemo(() => {
+        if (mediaType === 'all') return galleryItems;
         return galleryItems.filter(item => item.mediaType === mediaType);
     }, [galleryItems, mediaType]);
 
