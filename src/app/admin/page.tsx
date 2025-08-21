@@ -67,6 +67,7 @@ import {
     FormDescription
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -247,34 +248,38 @@ export default function AdminPage() {
         }
     });
 
-  const selectedDistrict = galleryForm.watch("district");
-  const selectedBlock = galleryForm.watch("block");
-  const isWorkRelated = galleryForm.watch("isWorkRelated");
+    const selectedDistrict = galleryForm.watch("district");
+    const selectedBlock = galleryForm.watch("block");
+    const isWorkRelated = galleryForm.watch("isWorkRelated");
 
-  const blocksForDistrict = useMemo(() => {
-    if (!selectedDistrict) return [];
-    return [...new Set(
-        MOCK_PANCHAYATS
-            .filter(p => p.district === selectedDistrict)
-            .map(p => p.block)
-    )].sort();
-  }, [selectedDistrict]);
+    const blocksForDistrict = useMemo(() => {
+        if (!selectedDistrict) return [];
+        return [...new Set(
+            MOCK_PANCHAYATS
+                .filter(p => p.district === selectedDistrict)
+                .map(p => p.block)
+        )].sort();
+    }, [selectedDistrict]);
 
-  const panchayatsForBlock = useMemo(() => {
-    if (!selectedDistrict || !selectedBlock) return [];
-    return MOCK_PANCHAYATS
-        .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
-        .sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedDistrict, selectedBlock]);
+    const panchayatsForBlock = useMemo(() => {
+        if (!selectedDistrict || !selectedBlock) return [];
+        return MOCK_PANCHAYATS
+            .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [selectedDistrict, selectedBlock]);
 
-  useEffect(() => {
-      galleryForm.setValue("block", "");
-      galleryForm.setValue("panchayat", "");
-  }, [selectedDistrict, galleryForm]);
+    useEffect(() => {
+        if (selectedDistrict) {
+            galleryForm.setValue("block", "");
+            galleryForm.setValue("panchayat", "");
+        }
+    }, [selectedDistrict, galleryForm]);
 
-  useEffect(() => {
-      galleryForm.setValue("panchayat", "");
-  }, [selectedBlock, galleryForm]);
+    useEffect(() => {
+        if (selectedBlock) {
+           galleryForm.setValue("panchayat", "");
+        }
+    }, [selectedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
