@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -6,13 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload, ChevronLeft, ChevronRight, FileUp } from "lucide-react";
 
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { cn } from "@/lib/utils";
 
@@ -84,6 +86,15 @@ const userFormSchema = z.object({
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
+const calendarFormSchema = z.object({
+    scheme: z.string().min(1, "Please select a scheme."),
+    year: z.string().min(1, "Please select a year."),
+    district: z.string().min(1, "Please select a district."),
+    file: z.any().refine(file => file?.length == 1, "File is required."),
+})
+
+type CalendarFormValues = z.infer<typeof calendarFormSchema>;
+
 const toTitleCase = (str: string) => {
     return str.replace(
         /\w\S*/g,
@@ -102,6 +113,7 @@ export default function AdminPage() {
   const { logo, setLogo } = useLogo();
   const [logoPreview, setLogoPreview] = useState<string | null>(logo);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const calendarFileInputRef = React.useRef<HTMLInputElement>(null);
   
   const [panchayatCurrentPage, setPanchayatCurrentPage] = useState(1);
   const [panchayatsPerPage, setPanchayatsPerPage] = useState(100);
@@ -142,8 +154,7 @@ export default function AdminPage() {
     setPanchayatCurrentPage(current => Math.max(current - 1, 1));
   }
   
-
-  const form = useForm<UserFormValues>({
+  const userForm = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
         name: "",
@@ -153,6 +164,13 @@ export default function AdminPage() {
         email: "",
     },
   });
+
+  const calendarForm = useForm<CalendarFormValues>({
+    resolver: zodResolver(calendarFormSchema),
+    defaultValues: {
+        year: "2025-2026",
+    }
+  })
 
   const handleDeleteUser = (userId: number) => {
     deleteUser(userId);
@@ -164,7 +182,7 @@ export default function AdminPage() {
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
-    form.reset({
+    userForm.reset({
         name: user.name,
         employeeCode: user.employeeCode,
         designation: user.designation,
@@ -178,7 +196,7 @@ export default function AdminPage() {
 
   const handleAddNewUser = () => {
     setEditingUser(null);
-    form.reset({
+    userForm.reset({
         name: "",
         employeeCode: "",
         designation: undefined,
@@ -190,7 +208,7 @@ export default function AdminPage() {
     setIsFormOpen(true);
   }
 
-  const onSubmit = (values: UserFormValues) => {
+  const onUserSubmit = (values: UserFormValues) => {
     if (editingUser) {
         // Update existing user
         updateUser({ ...editingUser, ...values, dateOfBirth: format(values.dateOfBirth, 'yyyy-MM-dd')});
@@ -211,6 +229,25 @@ export default function AdminPage() {
     }
     setIsFormOpen(false);
     setEditingUser(null);
+  }
+  
+  const onCalendarSubmit = (values: CalendarFormValues) => {
+    const file = values.file[0];
+    const newFileName = `${values.scheme}_${values.district}_${values.year}.pdf`;
+    
+    // Here you would typically upload the file to a server.
+    // We'll simulate it with a toast message.
+    console.log("Uploading file:", file.name, "as", newFileName);
+    
+    toast({
+        title: "Upload Successful",
+        description: `File "${file.name}" has been saved as "${newFileName}".`,
+    })
+
+    calendarForm.reset({ year: "2025-2026" });
+    if(calendarFileInputRef.current) {
+        calendarFileInputRef.current.value = "";
+    }
   }
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -290,12 +327,12 @@ export default function AdminPage() {
             setIsFormOpen(isOpen);
             if (!isOpen) {
               setEditingUser(null);
-              form.reset();
+              userForm.reset();
             }
          }}>
             <DialogContent className="sm:max-w-[600px]">
-                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                 <Form {...userForm}>
+                    <form onSubmit={userForm.handleSubmit(onUserSubmit)} className="space-y-6">
                         <DialogHeader>
                             <DialogTitle>{editingUser ? "Edit User" : "Add New User"}</DialogTitle>
                             <DialogDescription>
@@ -305,7 +342,7 @@ export default function AdminPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
@@ -318,7 +355,7 @@ export default function AdminPage() {
                                 )}
                             />
                              <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="employeeCode"
                                 render={({ field }) => (
                                     <FormItem>
@@ -331,7 +368,7 @@ export default function AdminPage() {
                                 )}
                             />
                              <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="designation"
                                 render={({ field }) => (
                                     <FormItem>
@@ -353,7 +390,7 @@ export default function AdminPage() {
                                 )}
                             />
                              <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="mobileNumber"
                                 render={({ field }) => (
                                     <FormItem>
@@ -366,7 +403,7 @@ export default function AdminPage() {
                                 )}
                             />
                             <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="dateOfBirth"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
@@ -407,7 +444,7 @@ export default function AdminPage() {
                                 )}
                             />
                              <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
@@ -420,7 +457,7 @@ export default function AdminPage() {
                                 )}
                             />
                              <FormField
-                                control={form.control}
+                                control={userForm.control}
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
@@ -776,37 +813,143 @@ export default function AdminPage() {
                 </Card>
             </TabsContent>
             <TabsContent value="settings">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Site Settings</CardTitle>
-                         <CardDescription>
-                            Manage global site settings, such as the logo.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium text-primary">Upload Logo</h3>
-                            <p className="text-sm text-muted-foreground">Upload a PNG file to be used as the site logo in the header and footer.</p>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="w-24 h-24 rounded-md border border-dashed flex items-center justify-center bg-muted">
-                               {logoPreview ? (
-                                   <Image src={logoPreview} alt="Logo preview" width={96} height={96} className="object-contain p-1" />
-                               ) : (
-                                   <Upload className="h-8 w-8 text-muted-foreground" />
-                               )}
-                            </div>
-                            <div className="flex flex-col gap-2">
-                               <input type="file" accept="image/png" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" />
-                               <Button onClick={() => fileInputRef.current?.click()}>
-                                   <Upload className="mr-2 h-4 w-4" />
-                                   Choose PNG File
-                                </Button>
-                               <Button onClick={handleSaveLogo} disabled={!logoPreview || logoPreview === logo}>Save Logo</Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                 <Tabs defaultValue="logo-upload" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
+                        <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="logo-upload">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Site Settings</CardTitle>
+                                <CardDescription>
+                                    Manage global site settings, such as the logo.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-medium text-primary">Upload Logo</h3>
+                                    <p className="text-sm text-muted-foreground">Upload a PNG file to be used as the site logo in the header and footer.</p>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="w-24 h-24 rounded-md border border-dashed flex items-center justify-center bg-muted">
+                                    {logoPreview ? (
+                                        <Image src={logoPreview} alt="Logo preview" width={96} height={96} className="object-contain p-1" />
+                                    ) : (
+                                        <Upload className="h-8 w-8 text-muted-foreground" />
+                                    )}
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                    <input type="file" accept="image/png" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" />
+                                    <Button onClick={() => fileInputRef.current?.click()}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Choose PNG File
+                                        </Button>
+                                    <Button onClick={handleSaveLogo} disabled={!logoPreview || logoPreview === logo}>Save Logo</Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="calendar-upload">
+                       <Card>
+                            <CardHeader>
+                                <CardTitle>Calendar Upload</CardTitle>
+                                <CardDescription>
+                                    Upload PDF files for scheme calendars.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Form {...calendarForm}>
+                                    <form onSubmit={calendarForm.handleSubmit(onCalendarSubmit)} className="space-y-6">
+                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                            <FormField
+                                                control={calendarForm.control}
+                                                name="scheme"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Scheme</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={calendarForm.control}
+                                                name="year"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Year</FormLabel>
+                                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                <SelectItem value="2025-2026">2025-2026</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={calendarForm.control}
+                                                name="district"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>District</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                             <FormField
+                                                control={calendarForm.control}
+                                                name="file"
+                                                render={({ field }) => {
+                                                    return (
+                                                    <FormItem>
+                                                        <FormLabel>PDF File</FormLabel>
+                                                        <FormControl>
+                                                            <Input 
+                                                                type="file" 
+                                                                accept=".pdf"
+                                                                ref={calendarFileInputRef}
+                                                                onChange={(e) => field.onChange(e.target.files)}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                    )
+                                                }}
+                                             />
+                                       </div>
+                                       <div className="flex justify-end">
+                                        <Button type="submit">
+                                            <FileUp className="mr-2 h-4 w-4" />
+                                            Upload Calendar
+                                        </Button>
+                                       </div>
+                                    </form>
+                                </Form>
+                            </CardContent>
+                       </Card>
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
         </Tabs>
       </main>

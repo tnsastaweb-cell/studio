@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
+import { usePathname } from 'next/navigation';
 
 const guestMenuItems = [
   { title: "HOME", href: "/" },
@@ -35,7 +37,7 @@ const guestMenuItems = [
     title: "CALENDAR",
     href: "/calendar",
      children: [
-        { title: "MGNREGS", href: "/calendar/mgnregs" },
+        { title: "MGNREGS", href: "/calendar/mgnregs", highlighted: true },
         { title: "PMAY-G", href: "/calendar/pamy-g" },
         { title: "NSAP", href: "/calendar/nsap" },
         { title: "NMP", href: "/calendar/nmp" },
@@ -122,38 +124,40 @@ const signedInMenuItems = [
     },
 ];
 
-const MenuBar = ({ items }: { items: typeof guestMenuItems | typeof signedInMenuItems }) => (
-    <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-        {items.map((item, index) => (
-            <React.Fragment key={item.title}>
-                {item.children ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                        {item.title}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {item.children.map((child) => (
-                        <DropdownMenuItem key={child.title} asChild>
-                          <Link href={child.href}>{child.title}</Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Button asChild variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
-                      <Link href={item.href}>{item.title}</Link>
-                  </Button>
-                )}
-                {index < items.length - 1 && (
-                    <div className="h-4 w-px bg-primary/20" />
-                )}
-            </React.Fragment>
-        ))}
-    </div>
-);
-
+const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {title: string; href: string; highlighted?: boolean}[]})[] }) => {
+    const pathname = usePathname();
+    return (
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
+            {items.map((item, index) => (
+                <React.Fragment key={item.title}>
+                    {item.children ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                            {item.title}
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                        {item.children.map((child) => (
+                            <DropdownMenuItem key={child.title} asChild className={cn(child.highlighted && "bg-accent/80 font-bold")}>
+                            <Link href={child.href}>{child.title}</Link>
+                            </DropdownMenuItem>
+                        ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    ) : (
+                    <Button asChild variant={pathname === item.href ? "secondary" : "ghost"} className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                        <Link href={item.href}>{item.title}</Link>
+                    </Button>
+                    )}
+                    {index < items.length - 1 && (
+                        <div className="h-4 w-px bg-primary/20" />
+                    )}
+                </React.Fragment>
+            ))}
+        </div>
+    );
+};
 
 export function MainNavigation() {
   const { isSignedIn } = useAuth();
@@ -164,8 +168,8 @@ export function MainNavigation() {
         <MenuBar items={guestMenuItems} />
       </div>
       {isSignedIn && (
-        <div className="w-full bg-primary/10 py-2">
-           <MenuBar items={signedInMenuItems} />
+         <div className="py-2 w-full bg-primary/10">
+            <MenuBar items={signedInMenuItems} />
         </div>
       )}
     </nav>
