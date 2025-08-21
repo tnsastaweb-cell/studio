@@ -131,7 +131,7 @@ const galleryFormSchema = z.object({
     if (data.mediaType === 'news' || data.mediaType === 'blog') return sizeInMB <= MAX_DOC_SIZE_MB;
     return true;
 }, {
-    message: `File size exceeds the limit.`,
+    message: `File size exceeds the limit for the selected media type.`,
     path: ['file'],
 });
 
@@ -677,7 +677,7 @@ export default function AdminPage() {
                 <TabsTrigger value="roles">Roles</TabsTrigger>
                 <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
                 <TabsTrigger value="schemes">Schemes</TabsTrigger>
-                <TabsTrigger value="local-bodies">Rural & Urban</TabsTrigger>
+                <TabsTrigger value="local-bodies">Rural &amp; Urban</TabsTrigger>
                 <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
                 <TabsTrigger value="settings">Site Settings</TabsTrigger>
             </TabsList>
