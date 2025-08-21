@@ -36,6 +36,11 @@ export default function WriteToUsPage() {
   
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      feedback: "",
+    },
   });
 
   const onSubmit = (data: FeedbackFormValues) => {
