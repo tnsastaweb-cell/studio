@@ -254,16 +254,12 @@ export default function AdminPage() {
     }, [watchedDistrict, watchedBlock]);
 
     useEffect(() => {
-        if (watchedDistrict) {
-            galleryForm.setValue("block", "");
-            galleryForm.setValue("panchayat", "");
-        }
+        galleryForm.setValue("block", "");
+        galleryForm.setValue("panchayat", "");
     }, [watchedDistrict, galleryForm]);
     
     useEffect(() => {
-        if (watchedBlock) {
-             galleryForm.setValue("panchayat", "");
-        }
+        galleryForm.setValue("panchayat", "");
     }, [watchedBlock, galleryForm]);
 
 
@@ -1257,7 +1253,6 @@ export default function AdminPage() {
                                                         onValueChange={(value) => {
                                                             field.onChange(value);
                                                             galleryForm.setValue("block", "");
-                                                            galleryForm.setValue("panchayat", "");
                                                         }}
                                                         value={field.value}
                                                     >
@@ -1410,4 +1405,5 @@ export default function AdminPage() {
     
 
     
+
 
