@@ -100,7 +100,7 @@ const galleryFormSchema = z.object({
     isWorkRelated: z.enum(["yes", "no"]),
     workName: z.string().optional(),
     workCode: z.string().optional(),
-    file: z.any().refine(file => file, "File is required."),
+    file: z.any().refine(fileList => fileList.length > 0, "File is required."),
 }).refine(data => {
     if (data.isWorkRelated === 'yes') {
         return !!data.workName && !!data.workCode;
@@ -118,7 +118,7 @@ const calendarFormSchema = z.object({
     year: z.string().min(1, "Year is required."),
     district: z.string().min(1, "District is required."),
     type: z.enum(['Calendar', 'Other Letter']),
-    file: z.any().refine(file => file, "File is required."),
+    file: z.any().refine(file => file?.length > 0, "File is required."),
 });
 
 type CalendarFormValues = z.infer<typeof calendarFormSchema>;
@@ -156,6 +156,10 @@ export default function AdminPage() {
 
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const { addItem: addGalleryItem } = useGallery();
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isReadyToUpload, setIsReadyToUpload] = useState(false);
+  const galleryFileInputRef = React.useRef<HTMLInputElement>(null);
 
   const filteredPanchayats = useMemo(() => {
     return MOCK_PANCHAYATS.filter(
@@ -292,12 +296,16 @@ export default function AdminPage() {
     // Gallery Form Logic
     const galleryForm = useForm<GalleryFormValues>({
         resolver: zodResolver(galleryFormSchema),
+        defaultValues: {
+            isWorkRelated: "no",
+        }
     });
     
     const watchedDistrict = galleryForm.watch("district");
     const watchedBlock = galleryForm.watch("block");
     const watchedPanchayat = galleryForm.watch("panchayat");
     const watchedIsWorkRelated = galleryForm.watch("isWorkRelated");
+    const watchedMediaType = galleryForm.watch("mediaType");
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -323,24 +331,78 @@ export default function AdminPage() {
     useEffect(() => {
         galleryForm.setValue("panchayat", "");
     }, [watchedBlock, galleryForm]);
+    
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        setFilePreview(null);
+        setGalleryFile(null);
+        setIsReadyToUpload(false);
+        if (!file) return;
+
+        const mediaType = galleryForm.getValues("mediaType");
+        
+        // Validation logic
+        if (mediaType === 'photo') {
+            if (file.size > 5 * 1024 * 1024) {
+                toast({ variant: 'destructive', title: "File too large", description: "Photo size must not exceed 5MB." });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                const img = new window.Image();
+                img.src = re.target?.result as string;
+                img.onload = () => {
+                    if (img.width < img.height) {
+                         toast({ variant: 'destructive', title: "Invalid Orientation", description: "Please upload landscape photos only." });
+                    } else {
+                        setFilePreview(img.src);
+                        setGalleryFile(file);
+                        setIsReadyToUpload(true); // Enable upload button after successful validation
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        } else if (mediaType === 'video') {
+             if (file.size > 100 * 1024 * 1024) {
+                toast({ variant: 'destructive', title: "File too large", description: "Video size must not exceed 100MB." });
+                return;
+            }
+            setGalleryFile(file);
+            setIsReadyToUpload(true);
+        } else {
+             setGalleryFile(file);
+             setIsReadyToUpload(true);
+        }
+    }
+
 
     const handleGallerySubmit = (values: GalleryFormValues) => {
-        const file = values.file?.[0];
-        if (!file) return;
+        if (!galleryFile) {
+             toast({ variant: "destructive", title: "Upload Failed", description: "No valid file selected." });
+             return;
+        }
 
         const reader = new FileReader();
         reader.onloadend = () => {
             const dataUrl = reader.result as string;
             const newItem: Omit<GalleryItem, 'id' | 'uploadedAt'> = {
                 ...values,
-                originalFilename: file.name,
+                originalFilename: galleryFile.name,
                 dataUrl: dataUrl,
             };
             addGalleryItem(newItem);
-            toast({ title: "Success", description: "Gallery item uploaded successfully." });
-            galleryForm.reset();
+            toast({ title: "Upload Successful", description: `${galleryFile.name} has been uploaded.` });
+            
+            // Clear form after a delay
+            setTimeout(() => {
+                galleryForm.reset();
+                if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
+                setFilePreview(null);
+                setGalleryFile(null);
+                setIsReadyToUpload(false);
+            }, 1000);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(galleryFile);
     };
 
     // Calendar Form Logic
@@ -367,6 +429,9 @@ export default function AdminPage() {
             });
             toast({ title: 'Upload Successful', description: `${newFilename} has been uploaded.` });
             calendarForm.reset();
+             if (calendarForm.control._fields.file?._f.ref) {
+              (calendarForm.control._fields.file._f.ref as HTMLInputElement).value = '';
+            }
         }
         reader.readAsDataURL(file);
     };
@@ -1042,7 +1107,7 @@ export default function AdminPage() {
                                         <FormField control={galleryForm.control} name="mediaType" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Media Type</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={(value) => { field.onChange(value); setFilePreview(null); setGalleryFile(null); setIsReadyToUpload(false); }} defaultValue={field.value}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select media type" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         <SelectItem value="photo">Photo</SelectItem>
@@ -1078,20 +1143,18 @@ export default function AdminPage() {
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
-                                        <div className="space-y-2">
-                                            <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Panchayat</FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
-                                                        <SelectContent>
-                                                            {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )} />
-                                        </div>
+                                        <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Panchayat</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
                                          <div className="space-y-2">
                                             <Label>LGD Code</Label>
                                             <Input value={selectedPanchayatLGD} readOnly className="bg-muted" />
@@ -1144,13 +1207,37 @@ export default function AdminPage() {
                                         )}
                                         <FormField control={galleryForm.control} name="file" render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>File</FormLabel>
-                                                <FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl>
+                                                <FormLabel>Upload File</FormLabel>
+                                                <FormControl>
+                                                    <Input 
+                                                        ref={galleryFileInputRef}
+                                                        type="file" 
+                                                        accept={
+                                                            watchedMediaType === 'photo' ? 'image/jpeg, image/png' :
+                                                            watchedMediaType === 'video' ? 'video/mp4, video/avi, video/mov' : '*'
+                                                        }
+                                                        onChange={(e) => {
+                                                            field.onChange(e.target.files);
+                                                            handleFileChange(e);
+                                                        }} 
+                                                    />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
+                                         {filePreview && watchedMediaType === 'photo' && (
+                                            <div className="col-span-full">
+                                                <Label>Photo Preview</Label>
+                                                <div className="mt-2 p-4 border-2 border-dashed border-primary rounded-lg flex justify-center items-center bg-muted/30">
+                                                    <Image src={filePreview} alt="Preview" width={400} height={300} className="rounded-md object-contain max-h-64" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <Button type="submit">Upload</Button>
+                                    <Button type="submit" disabled={!isReadyToUpload}>
+                                      <Upload className="mr-2" />
+                                      Upload
+                                    </Button>
                                 </form>
                             </Form>
                         </CardContent>
@@ -1165,11 +1252,11 @@ export default function AdminPage() {
                       <CardContent className="space-y-6">
                           <Form {...calendarForm}>
                               <form onSubmit={calendarForm.handleSubmit(handleCalendarSubmit)} className="space-y-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                       <FormField control={calendarForm.control} name="scheme" render={({ field }) => (
                                           <FormItem>
                                               <FormLabel>Scheme</FormLabel>
-                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                   <FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl>
                                                   <SelectContent>{MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
                                               </Select>
@@ -1179,7 +1266,7 @@ export default function AdminPage() {
                                       <FormField control={calendarForm.control} name="year" render={({ field }) => (
                                           <FormItem>
                                               <FormLabel>Year</FormLabel>
-                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                   <FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl>
                                                   <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                                               </Select>
@@ -1189,7 +1276,7 @@ export default function AdminPage() {
                                       <FormField control={calendarForm.control} name="district" render={({ field }) => (
                                           <FormItem>
                                               <FormLabel>District</FormLabel>
-                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                   <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                   <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                               </Select>
@@ -1200,7 +1287,7 @@ export default function AdminPage() {
                                            <FormItem className="space-y-3">
                                                 <FormLabel>Type</FormLabel>
                                                 <FormControl>
-                                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-2 pt-2">
+                                                    <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-2 pt-2">
                                                         <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Calendar" /></FormControl><FormLabel className="font-normal text-xs">Calendar</FormLabel></FormItem>
                                                         <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Other Letter" /></FormControl><FormLabel className="font-normal text-xs">Other Letter</FormLabel></FormItem>
                                                     </RadioGroup>
