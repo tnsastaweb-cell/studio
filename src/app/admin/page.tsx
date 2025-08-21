@@ -109,7 +109,7 @@ const galleryFormSchema = z.object({
     district: z.string().min(1, { message: "District is required." }),
     block: z.string().min(1, { message: "Block is required." }),
     panchayat: z.string().min(1, { message: "Panchayat is required." }),
-    activityType: z.string().min(1, { message: "Activity type is required." }),
+    activityType: z.enum(galleryActivityTypes, { required_error: "Activity type is required." }),
     mediaType: z.enum(galleryMediaTypes),
     file: z.any().refine((files) => files?.length === 1, "A file is required."),
     isWorkRelated: z.enum(["yes", "no"], { required_error: "This field is required." }),
@@ -231,7 +231,7 @@ export default function AdminPage() {
             district: '',
             block: '',
             panchayat: '',
-            activityType: '',
+            activityType: undefined,
             isWorkRelated: 'no',
             workName: '',
             workCode: '',
@@ -242,7 +242,7 @@ export default function AdminPage() {
     const watchedDistrict = galleryForm.watch("district");
     const watchedBlock = galleryForm.watch("block");
     const isWorkRelated = galleryForm.watch("isWorkRelated");
-
+    
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
         return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))].sort();
@@ -254,12 +254,16 @@ export default function AdminPage() {
     }, [watchedDistrict, watchedBlock]);
 
     useEffect(() => {
-        galleryForm.setValue("block", "");
-        galleryForm.setValue("panchayat", "");
+        if (watchedDistrict) {
+            galleryForm.setValue("block", "");
+            galleryForm.setValue("panchayat", "");
+        }
     }, [watchedDistrict, galleryForm]);
-
+    
     useEffect(() => {
-        galleryForm.setValue("panchayat", "");
+        if (watchedBlock) {
+             galleryForm.setValue("panchayat", "");
+        }
     }, [watchedBlock, galleryForm]);
 
 
@@ -374,7 +378,7 @@ export default function AdminPage() {
             district: '',
             block: '',
             panchayat: '',
-            activityType: '',
+            activityType: undefined,
             isWorkRelated: 'no',
             workName: '',
             workCode: '',
@@ -1268,13 +1272,13 @@ export default function AdminPage() {
                                                     <FormLabel>Block</FormLabel>
                                                     <Select
                                                         onValueChange={(value) => {
-                                                            field.onChange(value);
-                                                            galleryForm.setValue("panchayat", "");
+                                                           field.onChange(value);
+                                                           galleryForm.setValue("panchayat", "");
                                                         }}
                                                         value={field.value}
                                                         disabled={!watchedDistrict}
                                                     >
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder={!watchedDistrict ? "Select a District first" : "Select Block"} /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                     <FormMessage />
@@ -1284,8 +1288,8 @@ export default function AdminPage() {
                                                 <FormItem>
                                                     <FormLabel>Panchayat</FormLabel>
                                                     <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
-                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)} (LGD: {p.lgdCode})</SelectItem>)}</SelectContent>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder={!watchedBlock ? "Select a Block first" : "Select Panchayat"} /></SelectTrigger></FormControl>
+                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                     <FormMessage />
                                                 </FormItem>
@@ -1406,3 +1410,4 @@ export default function AdminPage() {
     
 
     
+

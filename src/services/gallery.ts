@@ -22,7 +22,7 @@ export interface GalleryItem {
   scheme: string;
   district: string;
   block: string;
-  panchayat: string;
+  panchayat: string; // This will store the LGD code
   activityType: GalleryActivityType;
   isWorkRelated: 'yes' | 'no';
   workName?: string;
@@ -128,3 +128,4 @@ export const useGallery = () => {
 
     return { items: enrichedItems, loading, addGalleryItem };
 };
+
