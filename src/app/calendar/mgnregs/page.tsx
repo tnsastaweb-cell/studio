@@ -21,14 +21,14 @@ export default function MgnregsCalendarPage() {
     const { calendars } = useCalendars();
     const [selectedScheme, setSelectedScheme] = useState('MGNREGS');
     const [selectedYear, setSelectedYear] = useState('2025-2026');
-    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCalendars = useMemo(() => {
         return calendars.filter(calendar => {
             const schemeMatch = selectedScheme ? calendar.scheme === selectedScheme : true;
             const yearMatch = selectedYear ? calendar.year === selectedYear : true;
-            const districtMatch = selectedDistrict ? calendar.district === selectedDistrict : true;
+            const districtMatch = selectedDistrict && selectedDistrict !== 'all' ? calendar.district === selectedDistrict : true;
             const searchMatch = searchTerm ? calendar.filename.toLowerCase().includes(searchTerm.toLowerCase()) : true;
             return schemeMatch && yearMatch && districtMatch && searchMatch;
         });
@@ -71,7 +71,7 @@ export default function MgnregsCalendarPage() {
                                  <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
                                     <SelectTrigger><SelectValue placeholder="Select District"/></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Districts</SelectItem>
+                                        <SelectItem value="all">All Districts</SelectItem>
                                         {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
