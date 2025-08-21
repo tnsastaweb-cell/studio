@@ -113,12 +113,24 @@ const galleryFormSchema = z.object({
 
 type GalleryFormValues = z.infer<typeof galleryFormSchema>;
 
+const calendarFormSchema = z.object({
+    scheme: z.string().min(1, "Scheme is required."),
+    year: z.string().min(1, "Year is required."),
+    district: z.string().min(1, "District is required."),
+    type: z.enum(['Grama Sabha', 'Block Level', 'District Level', 'State Level']),
+    file: z.any().refine(file => file, "File is required."),
+});
+
+type CalendarFormValues = z.infer<typeof calendarFormSchema>;
+
+
 const toTitleCase = (str: string) => {
   if (!str) return '';
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
+const years = ["2025-2026", "2024-2025", "2023-2024"];
 
 
 export default function AdminPage() {
@@ -141,6 +153,9 @@ export default function AdminPage() {
     panchayat: '',
     lgdCode: '',
   });
+
+  const { calendars, addCalendar, deleteCalendar } = useCalendars();
+  const { addItem: addGalleryItem } = useGallery();
 
   const filteredPanchayats = useMemo(() => {
     return MOCK_PANCHAYATS.filter(
@@ -273,6 +288,81 @@ export default function AdminPage() {
       });
     }
   };
+  
+    // Gallery Form Logic
+    const galleryForm = useForm<GalleryFormValues>({
+        resolver: zodResolver(galleryFormSchema),
+    });
+    
+    const watchedDistrict = galleryForm.watch("district");
+    const watchedBlock = galleryForm.watch("block");
+    const watchedIsWorkRelated = galleryForm.watch("isWorkRelated");
+
+    const blocksForDistrict = useMemo(() => {
+        if (!watchedDistrict) return [];
+        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict]);
+
+    const panchayatsForBlock = useMemo(() => {
+        if (!watchedBlock) return [];
+        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedBlock]);
+    
+    useEffect(() => {
+        galleryForm.setValue("block", "");
+        galleryForm.setValue("panchayat", "");
+    }, [watchedDistrict, galleryForm]);
+
+    useEffect(() => {
+        galleryForm.setValue("panchayat", "");
+    }, [watchedBlock, galleryForm]);
+
+    const handleGallerySubmit = (values: GalleryFormValues) => {
+        const file = values.file?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            const newItem: Omit<GalleryItem, 'id' | 'uploadedAt'> = {
+                ...values,
+                originalFilename: file.name,
+                dataUrl: dataUrl,
+            };
+            addGalleryItem(newItem);
+            toast({ title: "Success", description: "Gallery item uploaded successfully." });
+            galleryForm.reset();
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Calendar Form Logic
+    const calendarForm = useForm<CalendarFormValues>({
+        resolver: zodResolver(calendarFormSchema),
+    });
+
+    const handleCalendarSubmit = (values: CalendarFormValues) => {
+        const file = values.file?.[0];
+        if (!file) {
+            toast({ variant: 'destructive', title: 'File Missing', description: 'Please select a file to upload.' });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            addCalendar({
+                ...values,
+                originalFilename: file.name,
+                filename: file.name,
+                dataUrl: dataUrl,
+            });
+            toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
+            calendarForm.reset();
+        }
+        reader.readAsDataURL(file);
+    };
+
 
   if (loading) {
     return (
@@ -879,9 +969,10 @@ export default function AdminPage() {
           </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
                 <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
+                <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
               </TabsList>
               <TabsContent value="logo-upload">
                 <Card>
@@ -930,16 +1021,236 @@ export default function AdminPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-                <TabsContent value="gallery-upload">
+               <TabsContent value="gallery-upload">
                     <Card>
                         <CardHeader>
                             <CardTitle>Gallery Upload</CardTitle>
                             <CardDescription>Upload new items to the gallery.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                             <p className="text-muted-foreground">This feature is currently under construction.</p>
+                             <Form {...galleryForm}>
+                                <form onSubmit={galleryForm.handleSubmit(handleGallerySubmit)} className="space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <FormField control={galleryForm.control} name="mediaType" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Media Type</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select media type" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="photo">Photo</SelectItem>
+                                                        <SelectItem value="video">Video</SelectItem>
+                                                        <SelectItem value="news">News Report</SelectItem>
+                                                        <SelectItem value="blog">Blog</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={galleryForm.control} name="district" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>District</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                         <FormField control={galleryForm.control} name="block" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Block</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedDistrict}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Panchayat (LGD Code)</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={galleryForm.control} name="scheme" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Scheme</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select scheme" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                         <FormField control={galleryForm.control} name="activityType" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Activity Type</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select activity" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {galleryActivityTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={galleryForm.control} name="isWorkRelated" render={({ field }) => (
+                                            <FormItem className="space-y-3">
+                                                <FormLabel>Work Related?</FormLabel>
+                                                <FormControl>
+                                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                                                        <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
+                                                        <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        {watchedIsWorkRelated === 'yes' && (
+                                            <>
+                                                <FormField control={galleryForm.control} name="workName" render={({ field }) => (
+                                                    <FormItem><FormLabel>Work Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField control={galleryForm.control} name="workCode" render={({ field }) => (
+                                                    <FormItem><FormLabel>Work Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                            </>
+                                        )}
+                                        <FormField control={galleryForm.control} name="file" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>File</FormLabel>
+                                                <FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                    </div>
+                                    <Button type="submit">Upload</Button>
+                                </form>
+                            </Form>
                         </CardContent>
                     </Card>
+              </TabsContent>
+              <TabsContent value="calendar-upload">
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Calendar Upload</CardTitle>
+                          <CardDescription>Upload new audit calendars.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                          <Form {...calendarForm}>
+                              <form onSubmit={calendarForm.handleSubmit(handleCalendarSubmit)} className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                      <FormField control={calendarForm.control} name="scheme" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Scheme</FormLabel>
+                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl>
+                                                  <SelectContent>{MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      <FormField control={calendarForm.control} name="year" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Year</FormLabel>
+                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl>
+                                                  <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      <FormField control={calendarForm.control} name="district" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>District</FormLabel>
+                                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                  <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      <FormField control={calendarForm.control} name="type" render={({ field }) => (
+                                           <FormItem className="space-y-3">
+                                                <FormLabel>Type</FormLabel>
+                                                <FormControl>
+                                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-2 pt-2">
+                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Grama Sabha" /></FormControl><FormLabel className="font-normal text-xs">Grama Sabha</FormLabel></FormItem>
+                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Block Level" /></FormControl><FormLabel className="font-normal text-xs">Block Level</FormLabel></FormItem>
+                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="District Level" /></FormControl><FormLabel className="font-normal text-xs">District Level</FormLabel></FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                      )} />
+                                      <FormField control={calendarForm.control} name="file" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Upload PDF</FormLabel>
+                                              <FormControl><Input type="file" accept=".pdf" onChange={e => field.onChange(e.target.files)} /></FormControl>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                  </div>
+                                  <Button type="submit">Upload Calendar</Button>
+                              </form>
+                          </Form>
+                          <div className="mt-6">
+                            <h3 className="text-lg font-medium text-primary mb-2">Uploaded Calendars</h3>
+                             <div className="border rounded-lg max-h-96 overflow-y-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Filename</TableHead>
+                                    <TableHead>Scheme</TableHead>
+                                    <TableHead>Year</TableHead>
+                                    <TableHead>District</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {calendars.map(cal => (
+                                    <TableRow key={cal.id}>
+                                      <TableCell className="font-medium">{cal.originalFilename}</TableCell>
+                                      <TableCell>{cal.scheme}</TableCell>
+                                      <TableCell>{cal.year}</TableCell>
+                                      <TableCell>{cal.district}</TableCell>
+                                      <TableCell className="text-right">
+                                          <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="sm">Delete</Button>
+                                              </AlertDialogTrigger>
+                                              <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                  <AlertDialogDescription>This will permanently delete the calendar file.</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                  <AlertDialogAction onClick={() => deleteCalendar(cal.id)}>Continue</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                            </AlertDialog>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </div>
+                      </CardContent>
+                  </Card>
               </TabsContent>
             </Tabs>
           </TabsContent>
@@ -950,5 +1261,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    

@@ -16,7 +16,7 @@ import { DISTRICTS } from '@/services/district-offices';
 import { useCalendars, type CalendarFile } from '@/services/calendars';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-const years = ["2025-2026"];
+const years = ["2025-2026", "2024-2025", "2023-2024"];
 
 const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
   if (!highlight.trim()) {
@@ -41,16 +41,16 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
 
 export default function MgnregsCalendarPage() {
     const { calendars, loading: calendarsLoading } = useCalendars();
-    const [selectedScheme, setSelectedScheme] = useState('MGNREGS');
-    const [selectedYear, setSelectedYear] = useState('2025-2026');
+    const [selectedScheme, setSelectedScheme] = useState('all');
+    const [selectedYear, setSelectedYear] = useState('all');
     const [selectedDistrict, setSelectedDistrict] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCalendars = useMemo(() => {
         return calendars.filter(calendar => {
-            const schemeMatch = selectedScheme ? calendar.scheme === selectedScheme : true;
-            const yearMatch = selectedYear ? calendar.year === selectedYear : true;
-            const districtMatch = selectedDistrict && selectedDistrict !== 'all' ? calendar.district === selectedDistrict : true;
+            const schemeMatch = selectedScheme === 'all' ? true : calendar.scheme === selectedScheme;
+            const yearMatch = selectedYear === 'all' ? true : calendar.year === selectedYear;
+            const districtMatch = selectedDistrict === 'all' ? true : calendar.district === selectedDistrict;
             const searchMatch = searchTerm ? calendar.filename.toLowerCase().includes(searchTerm.toLowerCase()) : true;
             return schemeMatch && yearMatch && districtMatch && searchMatch;
         });
@@ -75,6 +75,7 @@ export default function MgnregsCalendarPage() {
                                  <Select value={selectedScheme} onValueChange={setSelectedScheme}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="all">All Schemes</SelectItem>
                                         {MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -84,6 +85,7 @@ export default function MgnregsCalendarPage() {
                                  <Select value={selectedYear} onValueChange={setSelectedYear}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="all">All Years</SelectItem>
                                         {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                     </SelectContent>
                                 </Select>

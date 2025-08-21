@@ -137,3 +137,4 @@ export const useGallery = () => {
     return { items: enrichedItems, loading, addItem };
 };
 
+
