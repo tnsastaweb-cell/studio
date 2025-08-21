@@ -169,12 +169,12 @@ export default function AdminPage() {
 
   const [panchayatCurrentPage, setPanchayatCurrentPage] = useState(1);
   const [panchayatsPerPage, setPanchayatsPerPage] = useState(100);
-  const [panchayatFilters, setPanchayatFilters] = useState({ district: 'All', block: 'All', panchayat: '', lgdCode: '' });
+  const [panchayatFilters, setPanchayatFilters] = useState({ district: '', block: '', panchayat: '', lgdCode: '' });
 
   const filteredPanchayats = useMemo(() => {
     return MOCK_PANCHAYATS.filter(p => 
-        (panchayatFilters.district === 'All' || p.district.toLowerCase() === panchayatFilters.district.toLowerCase()) &&
-        (panchayatFilters.block === 'All' || p.block.toLowerCase() === panchayatFilters.block.toLowerCase()) &&
+        p.district.toLowerCase().includes(panchayatFilters.district.toLowerCase()) &&
+        p.block.toLowerCase().includes(panchayatFilters.block.toLowerCase()) &&
         p.name.toLowerCase().includes(panchayatFilters.panchayat.toLowerCase()) &&
         p.lgdCode.toString().includes(panchayatFilters.lgdCode)
     );
@@ -189,20 +189,9 @@ export default function AdminPage() {
   }, [panchayatCurrentPage, panchayatsPerPage, filteredPanchayats]);
 
   const handlePanchayatFilterChange = (field: keyof typeof panchayatFilters, value: string) => {
-    setPanchayatFilters(prev => {
-        const newFilters = {...prev, [field]: value};
-        if(field === 'district') {
-            newFilters.block = 'All';
-        }
-        return newFilters;
-    });
+    setPanchayatFilters(prev => ({...prev, [field]: value}));
     setPanchayatCurrentPage(1);
   }
-
-  const panchayatFilterBlocks = useMemo(() => {
-     if (panchayatFilters.district === 'All') return [];
-     return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === panchayatFilters.district).map(p => p.block))].sort();
-  }, [panchayatFilters.district]);
   
   const handlePanchayatsPerPageChange = (value: string) => {
     setPanchayatsPerPage(Number(value));
@@ -908,23 +897,11 @@ export default function AdminPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4 p-4 border rounded-lg">
                                     <div>
                                         <Label>District</Label>
-                                        <Select value={panchayatFilters.district} onValueChange={(value) => handlePanchayatFilterChange('district', value)}>
-                                            <SelectTrigger><SelectValue/></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="All">All Districts</SelectItem>
-                                                {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
+                                        <Input placeholder="Filter by District..." value={panchayatFilters.district} onChange={(e) => handlePanchayatFilterChange('district', e.target.value)} />
                                     </div>
                                     <div>
                                         <Label>Block</Label>
-                                        <Select value={panchayatFilters.block} onValueChange={(value) => handlePanchayatFilterChange('block', value)} disabled={panchayatFilters.district === 'All'}>
-                                            <SelectTrigger><SelectValue/></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="All">All Blocks</SelectItem>
-                                                {panchayatFilterBlocks.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
+                                        <Input placeholder="Filter by Block..." value={panchayatFilters.block} onChange={(e) => handlePanchayatFilterChange('block', e.target.value)} />
                                     </div>
                                     <div>
                                      <Label>Panchayat</Label>
