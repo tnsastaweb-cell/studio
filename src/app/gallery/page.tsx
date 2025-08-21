@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGallery, GalleryItem } from '@/services/gallery';
 import Image from 'next/image';
 
@@ -16,17 +16,21 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Camera, Video, Newspaper, BookOpen } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MOCK_SCHEMES } from '@/services/schemes';
+import { Camera, Video, Newspaper, BookOpen, Loader2 } from 'lucide-react';
 
 
-function GalleryGrid({ items }: { items: GalleryItem[] }) {
-    if (items.length === 0) {
-        return <p className="text-muted-foreground text-center col-span-full">No items to display in this category yet.</p>;
+function GalleryGrid({ items, mediaType }: { items: GalleryItem[]; mediaType: string }) {
+    const filteredItems = items.filter(item => item.mediaType === mediaType);
+
+    if (filteredItems.length === 0) {
+        return <p className="text-muted-foreground text-center col-span-full pt-8">No items to display in this category for the selected scheme.</p>;
     }
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {items.map(item => (
+            {filteredItems.map(item => (
                 <Dialog key={item.id}>
                     <DialogTrigger asChild>
                         <Card className="overflow-hidden bg-card hover:shadow-xl transition-shadow duration-300 cursor-pointer">
@@ -55,6 +59,7 @@ function GalleryGrid({ items }: { items: GalleryItem[] }) {
                         </Card>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl p-0">
+                         <DialogTitle className="sr-only">{item.activityType}</DialogTitle>
                         {item.mediaType === 'photo' ? (
                              <Image
                                 src={item.dataUrl}
@@ -80,11 +85,12 @@ function GalleryGrid({ items }: { items: GalleryItem[] }) {
 
 export default function GalleryPage() {
     const { items: galleryItems, loading } = useGallery();
+    const [selectedScheme, setSelectedScheme] = useState('all');
 
-    const photos = galleryItems.filter(item => item.mediaType === 'photo');
-    const videos = galleryItems.filter(item => item.mediaType === 'video');
-    const newsReports = galleryItems.filter(item => item.mediaType === 'news');
-    const blogs = galleryItems.filter(item => item.mediaType === 'blog');
+    const filteredItems = useMemo(() => {
+        if (selectedScheme === 'all') return galleryItems;
+        return galleryItems.filter(item => item.scheme === selectedScheme);
+    }, [galleryItems, selectedScheme]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -93,10 +99,27 @@ export default function GalleryPage() {
       <main className="flex-1 container mx-auto px-4 py-8 pb-24">
         <Card>
             <CardHeader>
-                <CardTitle>Gallery</CardTitle>
-                <CardDescription>
-                    Browse photos, videos, and reports from our social audit activities across various regions.
-                </CardDescription>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <CardTitle>Gallery</CardTitle>
+                        <CardDescription>
+                            Browse photos, videos, and reports from our social audit activities.
+                        </CardDescription>
+                    </div>
+                    <div className="mt-4 sm:mt-0">
+                        <Select value={selectedScheme} onValueChange={setSelectedScheme}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Filter by Scheme" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Schemes</SelectItem>
+                                {MOCK_SCHEMES.map(scheme => (
+                                    <SelectItem key={scheme.id} value={scheme.name}>{scheme.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
             </CardHeader>
             <CardContent>
                 <Tabs defaultValue="photos" className="w-full">
@@ -106,18 +129,26 @@ export default function GalleryPage() {
                         <TabsTrigger value="news">News Reports</TabsTrigger>
                         <TabsTrigger value="blogs">Blog</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="photos" className="pt-6">
-                        <GalleryGrid items={photos} />
-                    </TabsContent>
-                    <TabsContent value="videos" className="pt-6">
-                        <GalleryGrid items={videos} />
-                    </TabsContent>
-                    <TabsContent value="news" className="pt-6">
-                        <GalleryGrid items={newsReports} />
-                    </TabsContent>
-                    <TabsContent value="blogs" className="pt-6">
-                       <GalleryGrid items={blogs} />
-                    </TabsContent>
+                    {loading ? (
+                         <div className="flex justify-center items-center h-64">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                         </div>
+                    ) : (
+                    <>
+                        <TabsContent value="photos" className="pt-6">
+                            <GalleryGrid items={filteredItems} mediaType="photo" />
+                        </TabsContent>
+                        <TabsContent value="videos" className="pt-6">
+                            <GalleryGrid items={filteredItems} mediaType="video" />
+                        </TabsContent>
+                        <TabsContent value="news" className="pt-6">
+                            <GalleryGrid items={filteredItems} mediaType="news" />
+                        </TabsContent>
+                        <TabsContent value="blogs" className="pt-6">
+                           <GalleryGrid items={filteredItems} mediaType="blog" />
+                        </TabsContent>
+                    </>
+                    )}
                 </Tabs>
             </CardContent>
         </Card>

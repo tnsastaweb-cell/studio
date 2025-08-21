@@ -19,6 +19,7 @@ export type GalleryMediaType = typeof galleryMediaTypes[number];
 
 export interface GalleryItem {
   id: number;
+  scheme: string;
   district: string;
   block: string;
   panchayat: string;
@@ -82,7 +83,7 @@ export const useGallery = () => {
                 blockName: panchayatInfo ? toTitleCase(panchayatInfo.block) : 'N/A',
                 districtName: panchayatInfo ? toTitleCase(panchayatInfo.district) : 'N/A',
             };
-        });
+        }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
     }, [items, panchayatNameMap]);
 
     const loadItems = useCallback(() => {

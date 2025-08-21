@@ -105,6 +105,7 @@ const MAX_VIDEO_SIZE_MB = 100;
 const MAX_DOC_SIZE_MB = 5;
 
 const galleryFormSchema = z.object({
+    scheme: z.string().min(1, { message: "Scheme is required." }),
     district: z.string().min(1, { message: "District is required." }),
     block: z.string().min(1, { message: "Block is required." }),
     panchayat: z.string().min(1, { message: "Panchayat is required." }),
@@ -237,6 +238,7 @@ export default function AdminPage() {
    const galleryForm = useForm<GalleryFormValues>({
         resolver: zodResolver(galleryFormSchema),
         defaultValues: {
+            scheme: '',
             district: '',
             block: '',
             panchayat: '',
@@ -261,6 +263,15 @@ export default function AdminPage() {
         if (!selectedDistrict || !selectedBlock) return [];
         return MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict && p.block === selectedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [selectedDistrict, selectedBlock]);
+
+    useEffect(() => {
+        galleryForm.setValue("block", "");
+        galleryForm.setValue("panchayat", "");
+    }, [selectedDistrict, galleryForm]);
+
+    useEffect(() => {
+        galleryForm.setValue("panchayat", "");
+    }, [selectedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -370,7 +381,8 @@ export default function AdminPage() {
           });
 
           galleryForm.reset({
-             district: '',
+            scheme: '',
+            district: '',
             block: '',
             panchayat: '',
             activityType: '',
@@ -1240,13 +1252,23 @@ export default function AdminPage() {
                             <CardContent>
                                 <Form {...galleryForm}>
                                     <form onSubmit={galleryForm.handleSubmit(onGallerySubmit)} className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            <FormField control={galleryForm.control} name="scheme" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Scheme</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl>
+                                                        <SelectContent>{MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
                                             <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>District</FormLabel>
                                                     <Select
                                                         onValueChange={(value) => {
-                                                            field.onChange(value);
+                                                            galleryForm.setValue("district", value);
                                                             galleryForm.setValue("block", "");
                                                             galleryForm.setValue("panchayat", "");
                                                         }}
@@ -1263,7 +1285,7 @@ export default function AdminPage() {
                                                     <FormLabel>Block</FormLabel>
                                                     <Select
                                                         onValueChange={(value) => {
-                                                            field.onChange(value);
+                                                            galleryForm.setValue("block", value);
                                                             galleryForm.setValue("panchayat", "");
                                                         }}
                                                         value={field.value}
