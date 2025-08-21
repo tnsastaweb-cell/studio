@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -61,7 +61,6 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -77,6 +76,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from '@/hooks/use-auth';
 import { useLogo } from '@/hooks/use-logo';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
 
 const userFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -124,7 +124,7 @@ const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
-  const [isFormOpen, useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
@@ -208,7 +208,7 @@ export default function AdminPage() {
       email: user.email || '',
       password: user.password,
     });
-    useState(true);
+    setIsFormOpen(true);
   };
 
   const handleAddNewUser = () => {
@@ -222,7 +222,7 @@ export default function AdminPage() {
       email: '',
       password: 'password123', // Default password for new users
     });
-    useState(true);
+    setIsFormOpen(true);
   };
 
   const onUserSubmit = (values: UserFormValues) => {
@@ -242,7 +242,7 @@ export default function AdminPage() {
         description: 'The new user has been successfully created.',
       });
     }
-    useState(false);
+    setIsFormOpen(false);
     setEditingUser(null);
   };
 
@@ -321,7 +321,7 @@ export default function AdminPage() {
         <Dialog
           open={isFormOpen}
           onOpenChange={(isOpen) => {
-            useState(isOpen);
+            setIsFormOpen(isOpen);
             if (!isOpen) {
               setEditingUser(null);
               userForm.reset();
@@ -484,7 +484,7 @@ export default function AdminPage() {
 
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="secondary" onClick={() => useState(false)}>
+                    <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
                       Cancel
                     </Button>
                   </DialogClose>
@@ -937,7 +937,7 @@ export default function AdminPage() {
                             <CardDescription>Upload new items to the gallery.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">This feature is currently under construction.</p>
+                             <p className="text-muted-foreground">This feature is currently under construction.</p>
                         </CardContent>
                     </Card>
               </TabsContent>
@@ -950,3 +950,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    
