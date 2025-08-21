@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Eye, Loader2 } from 'lucide-react';
+import { Search, Eye, Loader2, Download } from 'lucide-react';
 import { useLibrary, libraryCategories } from '@/services/library';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -61,12 +61,6 @@ export default function LibraryPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
     
-    const canBeViewedInBrowser = (filename: string) => {
-        const viewableExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
-        const extension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
-        return viewableExtensions.includes(extension);
-    };
-
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
@@ -122,7 +116,7 @@ export default function LibraryPage() {
                                         <TableHead>Category</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Size</TableHead>
-                                        <TableHead className="text-center w-24">View</TableHead>
+                                        <TableHead className="text-center w-24">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                              <TableBody>
@@ -150,12 +144,9 @@ export default function LibraryPage() {
                                                 <Button variant="outline" size="sm" asChild>
                                                     <a 
                                                         href={item.dataUrl} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        // Conditionally add download attribute for non-viewable types
-                                                        {...(!canBeViewedInBrowser(item.filename) && { download: item.filename })}
+                                                        download={item.filename}
                                                     >
-                                                      <Eye className="mr-2 h-4 w-4" /> View
+                                                      <Download className="mr-2 h-4 w-4" /> Download
                                                     </a>
                                                 </Button>
                                             </TableCell>

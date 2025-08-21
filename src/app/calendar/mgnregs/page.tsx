@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Eye, Loader2 } from 'lucide-react';
+import { Search, Download, Loader2 } from 'lucide-react';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { DISTRICTS } from '@/services/district-offices';
 import { useCalendars, type CalendarFile } from '@/services/calendars';
@@ -117,7 +117,7 @@ export default function MgnregsCalendarPage() {
                                 <TableRow>
                                     <TableHead className="w-[50px]">S.No</TableHead>
                                     <TableHead>Particulars</TableHead>
-                                    <TableHead className="text-center w-24">View</TableHead>
+                                    <TableHead className="text-center w-24">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                              <TableBody>
@@ -139,8 +139,8 @@ export default function MgnregsCalendarPage() {
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Button variant="outline" size="sm" asChild>
-                                                    <a href={cal.dataUrl} target="_blank" rel="noopener noreferrer">
-                                                      <Eye className="mr-2 h-4 w-4" /> View
+                                                    <a href={cal.dataUrl} download={cal.filename}>
+                                                      <Download className="mr-2 h-4 w-4" /> Download
                                                     </a>
                                                 </Button>
                                             </TableCell>
