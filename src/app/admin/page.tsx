@@ -65,7 +65,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -118,6 +118,8 @@ export default function AdminPage() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const calendarFileInputRef = React.useRef<HTMLInputElement>(null);
   
+  const canDeleteCalendar = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
+
   const [panchayatCurrentPage, setPanchayatCurrentPage] = useState(1);
   const [panchayatsPerPage, setPanchayatsPerPage] = useState(100);
   const [panchayatFilters, setPanchayatFilters] = useState({ district: '', block: '', panchayat: '', lgdCode: '' });
@@ -999,7 +1001,7 @@ export default function AdminPage() {
                                                     <TableHead>Scheme</TableHead>
                                                     <TableHead>District</TableHead>
                                                     <TableHead>Year</TableHead>
-                                                    <TableHead className="text-right">Actions</TableHead>
+                                                    {canDeleteCalendar && <TableHead className="text-right">Actions</TableHead>}
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -1011,6 +1013,7 @@ export default function AdminPage() {
                                                             <TableCell>{cal.scheme}</TableCell>
                                                             <TableCell>{cal.district}</TableCell>
                                                             <TableCell>{cal.year}</TableCell>
+                                                            {canDeleteCalendar && (
                                                             <TableCell className="text-right">
                                                                 <AlertDialog>
                                                                     <AlertDialogTrigger asChild>
@@ -1034,11 +1037,12 @@ export default function AdminPage() {
                                                                     </AlertDialogContent>
                                                                 </AlertDialog>
                                                             </TableCell>
+                                                            )}
                                                         </TableRow>
                                                     ))
                                                 ) : (
                                                     <TableRow>
-                                                        <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                                        <TableCell colSpan={canDeleteCalendar ? 6 : 5} className="text-center h-24 text-muted-foreground">
                                                             No calendars uploaded yet.
                                                         </TableCell>
                                                     </TableRow>
