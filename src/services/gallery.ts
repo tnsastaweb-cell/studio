@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { MOCK_PANCHAYATS } from './panchayats';
+import { MOCK_SCHEMES } from './schemes';
 
 export const galleryActivityTypes = [
   "Orientation Meeting", "Habitation Meeting", "Record Verification", "Door to Door Visit",
@@ -103,29 +104,6 @@ export const useGallery = () => {
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [loadItems]);
-    
-    const syncItems = useCallback((updatedItems: GalleryItem[]) => {
-        setItems(updatedItems);
-        if (typeof window !== 'undefined') {
-            try {
-                localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(updatedItems));
-                window.dispatchEvent(new StorageEvent('storage', { key: GALLERY_STORAGE_KEY, newValue: JSON.stringify(updatedItems) }));
-            } catch (error) {
-                console.error("Failed to save gallery items to localStorage:", error);
-            }
-        }
-    }, []);
 
-    const addGalleryItem = useCallback((itemData: Omit<GalleryItem, 'id' | 'uploadedAt'>) => {
-        const newItem: GalleryItem = {
-            ...itemData,
-            id: Date.now(),
-            uploadedAt: new Date().toISOString(),
-        };
-        const updatedItems = [newItem, ...getInitialGalleryItems()];
-        syncItems(updatedItems);
-    }, [syncItems]);
-
-    return { items: enrichedItems, loading, addGalleryItem };
+    return { items: enrichedItems, loading };
 };
-
