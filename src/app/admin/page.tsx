@@ -242,21 +242,26 @@ export default function AdminPage() {
 
   const blocksForDistrict = useMemo(() => {
     if (!selectedDistrict) return [];
-    return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))].sort();
+    const blocks = MOCK_PANCHAYATS
+      .filter(p => p.district === selectedDistrict)
+      .map(p => p.block);
+    return [...new Set(blocks)].sort();
   }, [selectedDistrict]);
 
   const panchayatsForBlock = useMemo(() => {
-      if (!selectedBlock) return [];
-      return MOCK_PANCHAYATS.filter(p => p.block === selectedBlock);
-  }, [selectedBlock]);
+      if (!selectedBlock || !selectedDistrict) return [];
+      return MOCK_PANCHAYATS
+        .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
+        .sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedDistrict, selectedBlock]);
 
   useEffect(() => {
-      galleryForm.resetField("block", { defaultValue: '' });
-      galleryForm.resetField("panchayat", { defaultValue: '' });
+    galleryForm.resetField("block", { defaultValue: '' });
+    galleryForm.resetField("panchayat", { defaultValue: '' });
   }, [selectedDistrict, galleryForm]);
 
   useEffect(() => {
-      galleryForm.resetField("panchayat", { defaultValue: '' });
+    galleryForm.resetField("panchayat", { defaultValue: '' });
   }, [selectedBlock, galleryForm]);
 
 
@@ -390,9 +395,23 @@ export default function AdminPage() {
       if (file) {
           const mediaType = galleryForm.getValues('mediaType');
           let maxSizeMB = 0;
-          if (mediaType === 'photo') maxSizeMB = MAX_PHOTO_SIZE_MB;
-          else if (mediaType === 'video') maxSizeMB = MAX_VIDEO_SIZE_MB;
-          else if (mediaType === 'news' || mediaType === 'blog') maxSizeMB = MAX_DOC_SIZE_MB;
+          let acceptedTypes: string[] = [];
+
+          if (mediaType === 'photo') {
+              maxSizeMB = MAX_PHOTO_SIZE_MB;
+              acceptedTypes = ['image/jpeg', 'image/png'];
+          } else if (mediaType === 'video') {
+              maxSizeMB = MAX_VIDEO_SIZE_MB;
+              acceptedTypes = ['video/mp4', 'video/avi', 'video/mov'];
+          } else if (mediaType === 'news' || mediaType === 'blog') {
+              maxSizeMB = MAX_DOC_SIZE_MB;
+              acceptedTypes = ['application/pdf'];
+          }
+          
+          if (!acceptedTypes.includes(file.type)) {
+              toast({ variant: 'destructive', title: 'Invalid File Type', description: `Please select a valid file type for ${mediaType}.` });
+              return;
+          }
 
           if (file.size > maxSizeMB * 1024 * 1024) { 
               toast({ variant: 'destructive', title: 'File too large', description: `Please select a file smaller than ${maxSizeMB}MB.` });
@@ -1207,7 +1226,7 @@ export default function AdminPage() {
                                             <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>District</FormLabel>
-                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('block', ''); galleryForm.setValue('panchayat', ''); }} value={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                         <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1217,7 +1236,7 @@ export default function AdminPage() {
                                              <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
-                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value} disabled={!selectedDistrict}>
+                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('panchayat', ''); }} value={field.value} disabled={!selectedDistrict}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1312,7 +1331,11 @@ export default function AdminPage() {
                                                 <div className="space-y-4">
                                                     <p className="font-medium">Preview</p>
                                                     <div className="border-4 border-dashed rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
-                                                         <Image src={galleryFilePreview} alt="Preview" width={200} height={180} className="max-h-full w-auto object-contain rounded"/>
+                                                         {galleryForm.getValues('mediaType') === 'photo' || galleryForm.getValues('mediaType') === 'video' ? (
+                                                            <Image src={galleryFilePreview} alt="Preview" width={200} height={180} className="max-h-full w-auto object-contain rounded"/>
+                                                          ) : (
+                                                            <span>PDF Preview not available.</span>
+                                                          )}
                                                     </div>
                                                     <div className="flex justify-end">
                                                         <Button type="button" onClick={() => setIsGalleryFileConfirmed(true)} disabled={isGalleryFileConfirmed}>
@@ -1342,6 +1365,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-
-    
