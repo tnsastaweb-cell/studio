@@ -38,10 +38,10 @@ const guestMenuItems = [
     href: "/calendar/mgnregs",
      children: [
         { title: "MGNREGS", href: "/calendar/mgnregs", disabled: false },
-        { title: "PMAY-G", href: "#", disabled: false },
-        { title: "NSAP", href: "#", disabled: false },
-        { title: "NMP", href: "#", disabled: false },
-        { title: "15th CFC", href: "#", disabled: false },
+        { title: "PMAY-G", href: "#", disabled: true },
+        { title: "NSAP", href: "#", disabled: true },
+        { title: "NMP", href: "#", disabled: true },
+        { title: "15th CFC", href: "#", disabled: true },
     ]
   },
   {

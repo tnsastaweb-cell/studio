@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -358,13 +358,14 @@ export default function AdminPage() {
         const reader = new FileReader();
         reader.onloadend = () => {
             const dataUrl = reader.result as string;
+            const newFilename = `${values.scheme}_${values.district}_${values.year}.pdf`;
             addCalendar({
                 ...values,
                 originalFilename: file.name,
-                filename: file.name,
+                filename: newFilename,
                 dataUrl: dataUrl,
             });
-            toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
+            toast({ title: 'Upload Successful', description: `${newFilename} has been uploaded.` });
             calendarForm.reset();
         }
         reader.readAsDataURL(file);
@@ -1234,7 +1235,7 @@ export default function AdminPage() {
                                 <TableBody>
                                   {calendars.map(cal => (
                                     <TableRow key={cal.id}>
-                                      <TableCell className="font-medium">{cal.originalFilename}</TableCell>
+                                      <TableCell className="font-medium">{cal.filename}</TableCell>
                                       <TableCell>{cal.scheme}</TableCell>
                                       <TableCell>{cal.year}</TableCell>
                                       <TableCell>{cal.district}</TableCell>
