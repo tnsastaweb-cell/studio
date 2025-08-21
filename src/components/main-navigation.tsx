@@ -38,10 +38,10 @@ const guestMenuItems = [
     href: "/calendar/mgnregs",
      children: [
         { title: "MGNREGS", href: "/calendar/mgnregs" },
-        { title: "PMAY-G", href: "#", disabled: true },
-        { title: "NSAP", href: "#", disabled: true },
-        { title: "NMP", href: "#", disabled: true },
-        { title: "15th CFC", href: "#", disabled: true },
+        { title: "PMAY-G", href: "#", disabled: false },
+        { title: "NSAP", href: "#", disabled: false },
+        { title: "NMP", href: "#", disabled: false },
+        { title: "15th CFC", href: "#", disabled: false },
     ]
   },
   {
@@ -50,7 +50,7 @@ const guestMenuItems = [
     children: [
       { title: "Photos", href: "/gallery/photos" },
       { title: "Videos", href: "/gallery/videos" },
-      { title: "New's Repots", href: "/gallery/news-reports" },
+      { title: "News Repots", href: "/gallery/news-reports" },
       { title: "Blog", href: "/gallery/blog" },
     ],
   },
@@ -173,3 +173,4 @@ export function MainNavigation() {
     </nav>
   );
 }
+

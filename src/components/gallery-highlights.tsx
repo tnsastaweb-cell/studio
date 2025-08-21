@@ -4,6 +4,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Autoplay from "embla-carousel-autoplay";
+import { useGallery } from '@/services/gallery';
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
@@ -18,27 +19,10 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-const galleryItems = [
-  { title: "Orientation Meeting", hint: "meeting presentation" },
-  { title: "Habitation Meeting", hint: "community meeting" },
-  { title: "Record Verification", hint: "documents records" },
-  { title: "Door to Door Visit", hint: "community outreach" },
-  { title: "Community Engagement", hint: "people talking" },
-  { title: "Report Preparation", hint: "writing report" },
-  { title: "Special Grama Sabha", hint: "village assembly" },
-  { title: "Social Justice Program", hint: "social justice" },
-  { title: "Noon Meals Program", hint: "school lunch" },
-  { title: "Training", hint: "training session" },
-  { title: "HLC Meeting", hint: "formal meeting" },
-  { title: "Team Visit", hint: "team discussion" },
-  { title: "Beneficiary Sabha", hint: "public meeting" },
-  { title: "District Assembly", hint: "government meeting" },
-  { title: "State Assembly", hint: "official assembly" },
-  { title: "Others", hint: "miscellaneous event" },
-];
+import { galleryActivityTypes } from '@/services/gallery';
 
 const chunkArray = (array: any[], size: number) => {
+  if (!array || array.length === 0) return [];
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
     chunks.push(array.slice(i, i + size));
@@ -46,12 +30,24 @@ const chunkArray = (array: any[], size: number) => {
   return chunks;
 };
 
-const imageBatches = chunkArray(galleryItems, 8);
 
 export function GalleryHighlights() {
+  const { items, loading } = useGallery();
   const plugin = React.useRef(
     Autoplay({ delay: 60000, stopOnInteraction: true })
   );
+
+  const galleryItems = galleryActivityTypes.map(activity => {
+      const photosForActivity = items.filter(item => item.activityType === activity && item.mediaType === 'photo');
+      return {
+          title: activity,
+          imageUrl: photosForActivity.length > 0 ? photosForActivity[0].dataUrl : `https://placehold.co/600x400.png`,
+          hint: activity.toLowerCase().split(' ').slice(0, 2).join(' '),
+          data: photosForActivity.length > 0 ? photosForActivity[0] : null
+      }
+  });
+
+  const imageBatches = chunkArray(galleryItems, 8);
 
   return (
     <section>
@@ -66,19 +62,18 @@ export function GalleryHighlights() {
           {imageBatches.map((batch, batchIndex) => (
             <CarouselItem key={batchIndex}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {batch.map((item, itemIndex) => {
-                  const imageUrl = `https://placehold.co/600x400.png`;
+                {batch.map((item) => {
                   return (
                     <Dialog key={item.title}>
                       <DialogTrigger asChild>
                         <Card className="overflow-hidden bg-card hover:shadow-xl transition-shadow duration-300 cursor-pointer">
                           <CardContent className="p-0">
                             <Image
-                              src={imageUrl}
+                              src={item.imageUrl}
                               alt={item.title}
                               width={600}
                               height={400}
-                              className="w-full h-auto object-cover"
+                              className="w-full h-48 object-cover"
                               data-ai-hint={item.hint}
                             />
                           </CardContent>
@@ -89,7 +84,7 @@ export function GalleryHighlights() {
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl p-0">
                          <Image
-                            src={imageUrl}
+                            src={item.imageUrl}
                             alt={item.title}
                             width={1200}
                             height={800}

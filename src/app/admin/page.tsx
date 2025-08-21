@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { useCalendars, CalendarFile } from '@/services/calendars';
+import { useGallery, galleryActivityTypes, GalleryMediaType, galleryMediaTypes } from '@/services/gallery';
 import { cn } from "@/lib/utils";
 
 import {
@@ -59,16 +60,17 @@ import {
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
+    FormDescription
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { useLogo } from '@/hooks/use-logo';
@@ -97,7 +99,31 @@ const calendarFormSchema = z.object({
 
 type CalendarFormValues = z.infer<typeof calendarFormSchema>;
 
+const galleryFormSchema = z.object({
+    district: z.string().min(1, { message: "District is required." }),
+    block: z.string().min(1, { message: "Block is required." }),
+    panchayat: z.string().min(1, { message: "Panchayat is required." }),
+    activityType: z.string().min(1, { message: "Activity type is required." }),
+    mediaType: z.enum(galleryMediaTypes),
+    file: z.any().refine(file => file?.length == 1, "A file is required."),
+    isWorkRelated: z.enum(["yes", "no"], { required_error: "This field is required." }),
+    workName: z.string().optional(),
+    workCode: z.string().optional(),
+}).refine(data => {
+    if (data.isWorkRelated === "yes") {
+        return !!data.workName && !!data.workCode;
+    }
+    return true;
+}, {
+    message: "Work Name and Work Code are required when Work Related is 'Yes'.",
+    path: ["workName"],
+});
+
+
+type GalleryFormValues = z.infer<typeof galleryFormSchema>;
+
 const toTitleCase = (str: string) => {
+    if (!str) return '';
     return str.replace(
         /\w\S*/g,
         (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
@@ -108,6 +134,7 @@ export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
+  const { addGalleryItem } = useGallery();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -117,6 +144,10 @@ export default function AdminPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(logo);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const calendarFileInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const [galleryFilePreview, setGalleryFilePreview] = useState<string | null>(null);
+  const [isGalleryFileConfirmed, setIsGalleryFileConfirmed] = useState(false);
   
   const canDeleteCalendar = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
@@ -175,7 +206,46 @@ export default function AdminPage() {
     defaultValues: {
         year: "2025-2026",
     }
-  })
+  });
+
+   const galleryForm = useForm<GalleryFormValues>({
+        resolver: zodResolver(galleryFormSchema),
+        defaultValues: {
+            district: '',
+            block: '',
+            panchayat: '',
+            activityType: '',
+            isWorkRelated: 'no',
+            workName: '',
+            workCode: '',
+            mediaType: 'photo'
+        }
+    });
+
+  const selectedDistrict = galleryForm.watch("district");
+  const selectedBlock = galleryForm.watch("block");
+  const isWorkRelated = galleryForm.watch("isWorkRelated");
+
+  const blocksForDistrict = useMemo(() => {
+        if (!selectedDistrict) return [];
+        const uniqueBlocks = [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))];
+        return uniqueBlocks;
+    }, [selectedDistrict]);
+
+    const panchayatsForBlock = useMemo(() => {
+        if (!selectedBlock) return [];
+        return MOCK_PANCHAYATS.filter(p => p.block === selectedBlock);
+    }, [selectedBlock]);
+
+    useEffect(() => {
+        galleryForm.setValue("block", "");
+        galleryForm.setValue("panchayat", "");
+    }, [selectedDistrict, galleryForm]);
+
+     useEffect(() => {
+        galleryForm.setValue("panchayat", "");
+    }, [selectedBlock, galleryForm]);
+
 
   const handleDeleteUser = (userId: number) => {
     deleteUser(userId);
@@ -265,7 +335,50 @@ export default function AdminPage() {
     };
     reader.readAsDataURL(file);
   }
-  
+
+  const onGallerySubmit = (values: GalleryFormValues) => {
+      const file = values.file[0];
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          addGalleryItem({
+              ...values,
+              dataUrl,
+              originalFilename: file.name,
+          });
+
+          toast({
+              title: "Upload Successful",
+              description: "Your file has been added to the gallery.",
+          });
+
+          galleryForm.reset();
+          setGalleryFilePreview(null);
+          setIsGalleryFileConfirmed(false);
+          if (galleryFileInputRef.current) {
+              galleryFileInputRef.current.value = "";
+          }
+      };
+      reader.readAsDataURL(file);
+  }
+
+  const handleGalleryFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+          if (file.size > 5 * 1024 * 1024) { // 5MB limit
+              toast({ variant: 'destructive', title: 'File too large', description: 'Please select a file smaller than 5MB.' });
+              return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setGalleryFilePreview(reader.result as string);
+              setIsGalleryFileConfirmed(false);
+          };
+          reader.readAsDataURL(file);
+      }
+  }
+
   const handleCalendarDelete = (id: number) => {
       deleteCalendar(id);
       toast({
@@ -839,9 +952,10 @@ export default function AdminPage() {
             </TabsContent>
             <TabsContent value="settings">
                  <Tabs defaultValue="logo-upload" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
                         <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
+                        <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
                     </TabsList>
                     <TabsContent value="logo-upload">
                         <Card>
@@ -1001,7 +1115,7 @@ export default function AdminPage() {
                                                     <TableHead>Scheme</TableHead>
                                                     <TableHead>District</TableHead>
                                                     <TableHead>Year</TableHead>
-                                                    {canDeleteCalendar && <TableHead className="text-right">Actions</TableHead>}
+                                                    <TableHead>Actions</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -1013,11 +1127,10 @@ export default function AdminPage() {
                                                             <TableCell>{cal.scheme}</TableCell>
                                                             <TableCell>{cal.district}</TableCell>
                                                             <TableCell>{cal.year}</TableCell>
-                                                            {canDeleteCalendar && (
                                                             <TableCell className="text-right">
                                                                 <AlertDialog>
                                                                     <AlertDialogTrigger asChild>
-                                                                        <Button variant="destructive" size="icon">
+                                                                        <Button variant="destructive" size="icon" disabled={!canDeleteCalendar}>
                                                                             <Trash2 className="h-4 w-4"/>
                                                                         </Button>
                                                                     </AlertDialogTrigger>
@@ -1037,12 +1150,11 @@ export default function AdminPage() {
                                                                     </AlertDialogContent>
                                                                 </AlertDialog>
                                                             </TableCell>
-                                                            )}
                                                         </TableRow>
                                                     ))
                                                 ) : (
                                                     <TableRow>
-                                                        <TableCell colSpan={canDeleteCalendar ? 6 : 5} className="text-center h-24 text-muted-foreground">
+                                                        <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                                             No calendars uploaded yet.
                                                         </TableCell>
                                                     </TableRow>
@@ -1053,6 +1165,137 @@ export default function AdminPage() {
                                 </div>
                             </CardContent>
                        </Card>
+                    </TabsContent>
+                    <TabsContent value="gallery-upload">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Gallery Upload</CardTitle>
+                                <CardDescription>Upload photos, videos, or documents to the site gallery.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Form {...galleryForm}>
+                                    <form onSubmit={galleryForm.handleSubmit(onGallerySubmit)} className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <FormField control={galleryForm.control} name="district" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>District</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                        <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                             <FormField control={galleryForm.control} name="block" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Block</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
+                                                        <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Panchayat</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBlock}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
+                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={galleryForm.control} name="activityType" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Type of Activity</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Activity" /></SelectTrigger></FormControl>
+                                                        <SelectContent>{galleryActivityTypes.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={galleryForm.control} name="isWorkRelated" render={({ field }) => (
+                                                <FormItem className="space-y-3">
+                                                    <FormLabel>Work Related?</FormLabel>
+                                                    <FormControl>
+                                                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
+                                                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
+                                                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                                        </RadioGroup>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                        </div>
+                                        {isWorkRelated === 'yes' && (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                                                <FormField control={galleryForm.control} name="workName" render={({ field }) => (
+                                                    <FormItem><FormLabel>Work Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={galleryForm.control} name="workCode" render={({ field }) => (
+                                                    <FormItem><FormLabel>Work Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                            </div>
+                                        )}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                                            <div>
+                                                <FormField control={galleryForm.control} name="mediaType" render={({ field }) => (
+                                                    <FormItem className="space-y-3">
+                                                        <FormLabel>Media Type</FormLabel>
+                                                        <FormControl>
+                                                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                                                                {galleryMediaTypes.map(type => (
+                                                                     <FormItem key={type} className="flex items-center space-x-2"><FormControl><RadioGroupItem value={type} /></FormControl><FormLabel className="font-normal capitalize">{type}</FormLabel></FormItem>
+                                                                ))}
+                                                            </RadioGroup>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )} />
+                                                <FormField control={galleryForm.control} name="file" render={({ field }) => (
+                                                     <FormItem className="mt-4">
+                                                        <FormLabel>File Upload (Max 5MB)</FormLabel>
+                                                        <FormControl>
+                                                            <Input 
+                                                                type="file" 
+                                                                accept="image/jpeg,image/png,video/mp4,video/avi,video/mov,.pdf"
+                                                                ref={galleryFileInputRef}
+                                                                onChange={(e) => {
+                                                                    field.onChange(e.target.files)
+                                                                    handleGalleryFileChange(e);
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )} />
+                                            </div>
+                                            {galleryFilePreview && (
+                                                <div className="space-y-4">
+                                                    <p className="font-medium">Preview</p>
+                                                    <div className="border-4 border-dashed rounded-lg p-2 bg-muted h-48 flex items-center justify-center">
+                                                         <Image src={galleryFilePreview} alt="Preview" width={200} height={180} className="max-h-full w-auto object-contain rounded"/>
+                                                    </div>
+                                                    <div className="flex justify-end">
+                                                        <Button type="button" onClick={() => setIsGalleryFileConfirmed(true)} disabled={isGalleryFileConfirmed}>
+                                                            {isGalleryFileConfirmed ? "Confirmed" : "Confirm"}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                         <div className="flex justify-end">
+                                            <Button type="submit" disabled={!isGalleryFileConfirmed}>
+                                                <FileUp className="mr-2 h-4 w-4" />
+                                                Upload to Gallery
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </Form>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             </TabsContent>

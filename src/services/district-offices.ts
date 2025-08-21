@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface DistrictOffice {
   id: number;
@@ -46,31 +46,47 @@ const MOCK_OFFICES: DistrictOffice[] = [
 
 const OFFICE_STORAGE_KEY = 'sasta-district-offices';
 
+const getInitialOffices = (): DistrictOffice[] => {
+    if (typeof window === 'undefined') return MOCK_OFFICES;
+    try {
+        const stored = localStorage.getItem(OFFICE_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : MOCK_OFFICES;
+    } catch (error) {
+        console.error("Failed to access localStorage for offices:", error);
+        return MOCK_OFFICES;
+    }
+}
+
 export const useDistrictOffices = () => {
     const [offices, setOffices] = useState<DistrictOffice[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useState(() => {
-        try {
-            const stored = localStorage.getItem(OFFICE_STORAGE_KEY);
-            if (stored) {
-                setOffices(JSON.parse(stored));
-            } else {
-                localStorage.setItem(OFFICE_STORAGE_KEY, JSON.stringify(MOCK_OFFICES));
-                setOffices(MOCK_OFFICES);
-            }
-        } catch (error) {
-            console.error("Failed to access localStorage for offices:", error);
-            setOffices(MOCK_OFFICES);
-        } finally {
-            setLoading(false);
+     const loadOffices = useCallback(() => {
+        setLoading(true);
+        const data = getInitialOffices();
+        setOffices(data);
+        if (typeof window !== 'undefined' && !localStorage.getItem(OFFICE_STORAGE_KEY)) {
+             localStorage.setItem(OFFICE_STORAGE_KEY, JSON.stringify(data));
         }
-    });
+        setLoading(false);
+    }, []);
+
+    useEffect(() => {
+        loadOffices();
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === OFFICE_STORAGE_KEY) {
+                loadOffices();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [loadOffices]);
 
     const syncOffices = (updatedOffices: DistrictOffice[]) => {
         setOffices(updatedOffices);
         try {
             localStorage.setItem(OFFICE_STORAGE_KEY, JSON.stringify(updatedOffices));
+             window.dispatchEvent(new StorageEvent('storage', { key: OFFICE_STORAGE_KEY, newValue: JSON.stringify(updatedOffices) }));
         } catch (error) {
             console.error("Failed to save offices to localStorage:", error);
         }
@@ -106,3 +122,4 @@ export const useDistrictOffices = () => {
 
     return { offices, loading, addOffice, updateOffice, deleteOffice };
 };
+
