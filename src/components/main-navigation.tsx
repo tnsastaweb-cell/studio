@@ -37,7 +37,7 @@ const guestMenuItems = [
     title: "CALENDAR",
     href: "/calendar/mgnregs",
      children: [
-        { title: "MGNREGS", href: "/calendar/mgnregs" },
+        { title: "MGNREGS", href: "/calendar/mgnregs", disabled: false },
         { title: "PMAY-G", href: "#", disabled: false },
         { title: "NSAP", href: "#", disabled: false },
         { title: "NMP", href: "#", disabled: false },

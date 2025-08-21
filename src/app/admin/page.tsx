@@ -117,7 +117,7 @@ const calendarFormSchema = z.object({
     scheme: z.string().min(1, "Scheme is required."),
     year: z.string().min(1, "Year is required."),
     district: z.string().min(1, "District is required."),
-    type: z.enum(['Grama Sabha', 'Block Level', 'District Level', 'State Level']),
+    type: z.enum(['Calendar', 'Other Letter']),
     file: z.any().refine(file => file, "File is required."),
 });
 
@@ -296,6 +296,7 @@ export default function AdminPage() {
     
     const watchedDistrict = galleryForm.watch("district");
     const watchedBlock = galleryForm.watch("block");
+    const watchedPanchayat = galleryForm.watch("panchayat");
     const watchedIsWorkRelated = galleryForm.watch("isWorkRelated");
 
     const blocksForDistrict = useMemo(() => {
@@ -307,6 +308,12 @@ export default function AdminPage() {
         if (!watchedBlock) return [];
         return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [watchedBlock]);
+
+    const selectedPanchayatLGD = useMemo(() => {
+        if (!watchedPanchayat) return '';
+        const panchayat = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat);
+        return panchayat ? panchayat.lgdCode : '';
+    }, [watchedPanchayat]);
     
     useEffect(() => {
         galleryForm.setValue("block", "");
@@ -1049,7 +1056,7 @@ export default function AdminPage() {
                                         <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>District</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('block', ''); galleryForm.setValue('panchayat', ''); }} value={field.value}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -1061,7 +1068,7 @@ export default function AdminPage() {
                                          <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Block</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedDistrict}>
+                                                <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('panchayat', ''); }} value={field.value} disabled={!watchedDistrict}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -1070,18 +1077,24 @@ export default function AdminPage() {
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
-                                        <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Panchayat (LGD Code)</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
-                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
-                                                    <SelectContent>
-                                                        {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )} />
+                                        <div className="space-y-2">
+                                            <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Panchayat</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
+                                                        <SelectContent>
+                                                            {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label>LGD Code</Label>
+                                            <Input value={selectedPanchayatLGD} readOnly className="bg-muted" />
+                                         </div>
                                         <FormField control={galleryForm.control} name="scheme" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Scheme</FormLabel>
@@ -1187,9 +1200,8 @@ export default function AdminPage() {
                                                 <FormLabel>Type</FormLabel>
                                                 <FormControl>
                                                     <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-2 pt-2">
-                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Grama Sabha" /></FormControl><FormLabel className="font-normal text-xs">Grama Sabha</FormLabel></FormItem>
-                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Block Level" /></FormControl><FormLabel className="font-normal text-xs">Block Level</FormLabel></FormItem>
-                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="District Level" /></FormControl><FormLabel className="font-normal text-xs">District Level</FormLabel></FormItem>
+                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Calendar" /></FormControl><FormLabel className="font-normal text-xs">Calendar</FormLabel></FormItem>
+                                                        <FormItem className="flex items-center space-x-1"><FormControl><RadioGroupItem value="Other Letter" /></FormControl><FormLabel className="font-normal text-xs">Other Letter</FormLabel></FormItem>
                                                     </RadioGroup>
                                                 </FormControl>
                                                 <FormMessage />
