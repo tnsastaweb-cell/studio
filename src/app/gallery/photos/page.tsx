@@ -3,5 +3,5 @@
 import GalleryPage from '../page';
 
 export default function PhotosPage() {
-    return <GalleryPage />;
+    return <GalleryPage mediaType="photo" />;
 }

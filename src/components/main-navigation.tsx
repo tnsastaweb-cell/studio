@@ -50,7 +50,7 @@ const guestMenuItems = [
     children: [
       { title: "Photos", href: "/gallery/photos" },
       { title: "Videos", href: "/gallery/videos" },
-      { title: "News Repots", href: "/gallery/news-reports" },
+      { title: "News Reports", href: "/gallery/news-reports" },
       { title: "Blog", href: "/gallery/blog" },
     ],
   },

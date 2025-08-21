@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useGallery, GalleryItem } from '@/services/gallery';
+import { useGallery, GalleryItem, GalleryMediaType } from '@/services/gallery';
 import Image from 'next/image';
 
 import { Header } from '@/components/header';
@@ -14,23 +14,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { Camera, Video, Newspaper, BookOpen, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
-
-function GalleryGrid({ items, mediaType }: { items: GalleryItem[]; mediaType: string }) {
-    const filteredItems = items.filter(item => item.mediaType === mediaType);
-
-    if (filteredItems.length === 0) {
-        return <p className="text-muted-foreground text-center col-span-full pt-8">No items to display in this category for the selected scheme.</p>;
+function GalleryGrid({ items }: { items: GalleryItem[] }) {
+    if (items.length === 0) {
+        return <p className="text-muted-foreground text-center col-span-full pt-8">No items to display in this category.</p>;
     }
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredItems.map(item => (
+            {items.map(item => (
                 <Dialog key={item.id}>
                     <DialogTrigger asChild>
                         <Card className="overflow-hidden bg-card hover:shadow-xl transition-shadow duration-300 cursor-pointer">
@@ -83,14 +83,23 @@ function GalleryGrid({ items, mediaType }: { items: GalleryItem[]; mediaType: st
 }
 
 
-export default function GalleryPage() {
+export default function GalleryPage({ mediaType }: { mediaType: GalleryMediaType }) {
     const { items: galleryItems, loading } = useGallery();
-    const [selectedScheme, setSelectedScheme] = useState('all');
+    const pathname = usePathname();
 
-    const filteredItems = useMemo(() => {
-        if (selectedScheme === 'all') return galleryItems;
-        return galleryItems.filter(item => item.scheme === selectedScheme);
-    }, [galleryItems, selectedScheme]);
+    const mediaTypeLinks = [
+        { name: 'Photos', href: '/gallery/photos' },
+        { name: 'Videos', href: '/gallery/videos' },
+        { name: 'News Reports', href: '/gallery/news-reports' },
+        { name: 'Blogs', href: '/gallery/blog' },
+    ];
+    
+    const schemesForTabs = [{ id: 'all', name: 'All Schemes' }, ...MOCK_SCHEMES];
+
+    const filteredByMediaType = useMemo(() => {
+        return galleryItems.filter(item => item.mediaType === mediaType);
+    }, [galleryItems, mediaType]);
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -99,35 +108,34 @@ export default function GalleryPage() {
       <main className="flex-1 container mx-auto px-4 py-8 pb-24">
         <Card>
             <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>Gallery</CardTitle>
-                        <CardDescription>
-                            Browse photos, videos, and reports from our social audit activities.
-                        </CardDescription>
-                    </div>
-                    <div className="mt-4 sm:mt-0">
-                        <Select value={selectedScheme} onValueChange={setSelectedScheme}>
-                            <SelectTrigger className="w-full sm:w-[200px]">
-                                <SelectValue placeholder="Filter by Scheme" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Schemes</SelectItem>
-                                {MOCK_SCHEMES.map(scheme => (
-                                    <SelectItem key={scheme.id} value={scheme.name}>{scheme.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+                <CardTitle>Gallery</CardTitle>
+                <CardDescription>
+                    Browse photos, videos, and reports from our social audit activities.
+                </CardDescription>
             </CardHeader>
             <CardContent>
-                <Tabs defaultValue="photos" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="photos">Photos</TabsTrigger>
-                        <TabsTrigger value="videos">Videos</TabsTrigger>
-                        <TabsTrigger value="news">News Reports</TabsTrigger>
-                        <TabsTrigger value="blogs">Blog</TabsTrigger>
+                <div className="mb-6 border-b">
+                    <nav className="flex space-x-1 -mb-px">
+                        {mediaTypeLinks.map(link => (
+                            <Link 
+                                key={link.name} 
+                                href={link.href} 
+                                className={cn(
+                                    "py-2 px-4 inline-flex items-center gap-2 -mb-px text-sm font-medium text-center border rounded-t-lg",
+                                    pathname === link.href 
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'text-gray-500 bg-transparent border-transparent hover:text-primary hover:border-gray-300'
+                                )}>
+                                {link.name}
+                            </Link>
+                        ))}
+                    </nav>
+                </div>
+                 <Tabs defaultValue="all" className="w-full">
+                    <TabsList>
+                         {schemesForTabs.map(scheme => (
+                           <TabsTrigger key={scheme.id} value={scheme.name}>{scheme.name}</TabsTrigger>
+                        ))}
                     </TabsList>
                     {loading ? (
                          <div className="flex justify-center items-center h-64">
@@ -135,18 +143,15 @@ export default function GalleryPage() {
                          </div>
                     ) : (
                     <>
-                        <TabsContent value="photos" className="pt-6">
-                            <GalleryGrid items={filteredItems} mediaType="photo" />
-                        </TabsContent>
-                        <TabsContent value="videos" className="pt-6">
-                            <GalleryGrid items={filteredItems} mediaType="video" />
-                        </TabsContent>
-                        <TabsContent value="news" className="pt-6">
-                            <GalleryGrid items={filteredItems} mediaType="news" />
-                        </TabsContent>
-                        <TabsContent value="blogs" className="pt-6">
-                           <GalleryGrid items={filteredItems} mediaType="blog" />
-                        </TabsContent>
+                        {schemesForTabs.map(scheme => (
+                            <TabsContent key={scheme.id} value={scheme.name} className="pt-6">
+                                <GalleryGrid items={
+                                    scheme.name === 'All Schemes' 
+                                    ? filteredByMediaType 
+                                    : filteredByMediaType.filter(item => item.scheme === scheme.name)
+                                } />
+                            </TabsContent>
+                        ))}
                     </>
                     )}
                 </Tabs>
