@@ -36,6 +36,13 @@ const guestMenuItems = [
   {
     title: "CALENDAR",
     href: "/calendar/mgnregs",
+     children: [
+        { title: "MGNREGS", href: "/calendar/mgnregs" },
+        { title: "PMAY-G", href: "#", disabled: true },
+        { title: "NSAP", href: "#", disabled: true },
+        { title: "NMP", href: "#", disabled: true },
+        { title: "15th CFC", href: "#", disabled: true },
+    ]
   },
   {
     title: "GALLERY",
@@ -115,7 +122,7 @@ const signedInMenuItems = [
     },
 ];
 
-const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {title: string; href: string; highlighted?: boolean}[]})[] }) => {
+const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {title: string; href: string; highlighted?: boolean, disabled?: boolean}[]})[] }) => {
     const pathname = usePathname();
     return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
@@ -130,8 +137,8 @@ const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {ti
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                         {item.children.map((child) => (
-                            <DropdownMenuItem key={child.title} asChild className={cn(child.highlighted && "bg-accent/80 font-bold")}>
-                            <Link href={child.href}>{child.title}</Link>
+                            <DropdownMenuItem key={child.title} asChild className={cn(pathname === child.href && "bg-accent/80 font-bold")} disabled={child.disabled}>
+                                <Link href={child.href}>{child.title}</Link>
                             </DropdownMenuItem>
                         ))}
                         </DropdownMenuContent>

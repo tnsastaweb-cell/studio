@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, Loader2 } from 'lucide-react';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { DISTRICTS } from '@/services/district-offices';
 import { useCalendars } from '@/services/calendars';
@@ -39,7 +40,7 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
 };
 
 export default function MgnregsCalendarPage() {
-    const { calendars } = useCalendars();
+    const { calendars, loading: calendarsLoading } = useCalendars();
     const [selectedScheme, setSelectedScheme] = useState('MGNREGS');
     const [selectedYear, setSelectedYear] = useState('2025-2026');
     const [selectedDistrict, setSelectedDistrict] = useState('all');
@@ -118,7 +119,16 @@ export default function MgnregsCalendarPage() {
                                 </TableRow>
                             </TableHeader>
                              <TableBody>
-                                {filteredCalendars.length > 0 ? (
+                                {calendarsLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center h-24">
+                                            <div className="flex items-center justify-center">
+                                                <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                                                <span>Loading Calendars...</span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredCalendars.length > 0 ? (
                                     filteredCalendars.map((cal, index) => (
                                         <TableRow key={cal.id}>
                                             <TableCell>{index + 1}</TableCell>
