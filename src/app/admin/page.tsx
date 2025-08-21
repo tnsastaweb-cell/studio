@@ -242,26 +242,26 @@ export default function AdminPage() {
 
   const blocksForDistrict = useMemo(() => {
     if (!selectedDistrict) return [];
-    const blocks = MOCK_PANCHAYATS
+    const uniqueBlocks = [...new Set(MOCK_PANCHAYATS
       .filter(p => p.district === selectedDistrict)
-      .map(p => p.block);
-    return [...new Set(blocks)].sort();
+      .map(p => p.block))];
+    return uniqueBlocks.sort();
   }, [selectedDistrict]);
 
   const panchayatsForBlock = useMemo(() => {
-      if (!selectedBlock || !selectedDistrict) return [];
+      if (!selectedDistrict || !selectedBlock) return [];
       return MOCK_PANCHAYATS
         .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
         .sort((a, b) => a.name.localeCompare(b.name));
   }, [selectedDistrict, selectedBlock]);
 
   useEffect(() => {
-    galleryForm.resetField("block", { defaultValue: '' });
-    galleryForm.resetField("panchayat", { defaultValue: '' });
+    galleryForm.setValue('block', '');
+    galleryForm.setValue('panchayat', '');
   }, [selectedDistrict, galleryForm]);
-
+  
   useEffect(() => {
-    galleryForm.resetField("panchayat", { defaultValue: '' });
+    galleryForm.setValue('panchayat', '');
   }, [selectedBlock, galleryForm]);
 
 
@@ -910,7 +910,7 @@ export default function AdminPage() {
                                         <TableHead>District</TableHead>
                                         <TableHead>Block</TableHead>
                                         <TableHead>Panchayat</TableHead>
-                                        <TableHead>LDG Code</TableHead>
+                                        <TableHead>LGD Code</TableHead>
                                     </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -1226,7 +1226,7 @@ export default function AdminPage() {
                                             <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>District</FormLabel>
-                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('block', ''); galleryForm.setValue('panchayat', ''); }} value={field.value}>
+                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                         <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1236,7 +1236,7 @@ export default function AdminPage() {
                                              <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
-                                                    <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('panchayat', ''); }} value={field.value} disabled={!selectedDistrict}>
+                                                    <Select onValueChange={(value) => field.onChange(value)} value={field.value} disabled={!selectedDistrict}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
