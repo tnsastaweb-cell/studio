@@ -172,8 +172,8 @@ export default function AdminPage() {
 
   const filteredPanchayats = useMemo(() => {
     return MOCK_PANCHAYATS.filter(p => 
-        (panchayatFilters.district === 'All' || p.district.toLowerCase().includes(panchayatFilters.district.toLowerCase())) &&
-        (panchayatFilters.block === 'All' || p.block.toLowerCase().includes(panchayatFilters.block.toLowerCase())) &&
+        (panchayatFilters.district === 'All' || p.district.toLowerCase() === panchayatFilters.district.toLowerCase()) &&
+        (panchayatFilters.block === 'All' || p.block.toLowerCase() === panchayatFilters.block.toLowerCase()) &&
         p.name.toLowerCase().includes(panchayatFilters.panchayat.toLowerCase()) &&
         p.lgdCode.toString().includes(panchayatFilters.lgdCode)
     );
@@ -254,32 +254,13 @@ export default function AdminPage() {
 
     const blocksForDistrict = useMemo(() => {
         if (!selectedDistrict) return [];
-        return [...new Set(
-            MOCK_PANCHAYATS
-                .filter(p => p.district === selectedDistrict)
-                .map(p => p.block)
-        )].sort();
+        return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))].sort();
     }, [selectedDistrict]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!selectedDistrict || !selectedBlock) return [];
-        return MOCK_PANCHAYATS
-            .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
-            .sort((a, b) => a.name.localeCompare(b.name));
+        return MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict && p.block === selectedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [selectedDistrict, selectedBlock]);
-
-    useEffect(() => {
-        if (selectedDistrict) {
-            galleryForm.setValue("block", "");
-            galleryForm.setValue("panchayat", "");
-        }
-    }, [selectedDistrict, galleryForm]);
-
-    useEffect(() => {
-        if (selectedBlock) {
-           galleryForm.setValue("panchayat", "");
-        }
-    }, [selectedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -1254,7 +1235,7 @@ export default function AdminPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Gallery Upload</CardTitle>
-                                <CardDescription>Upload photos, videos, or documents to the site gallery.</CardDescription>
+                                <CardDescription>Upload photos, videos, news reports, or blogs to the site gallery.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Form {...galleryForm}>
@@ -1372,7 +1353,7 @@ export default function AdminPage() {
                                                             />
                                                         </FormControl>
                                                         <FormDescription>
-                                                             Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), News/Blog (PDF - Max 5MB).
+                                                            Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), News/Blog (PDF - Max 5MB).
                                                         </FormDescription>
                                                         <FormMessage />
                                                     </FormItem>
