@@ -40,6 +40,20 @@ export const useCalendars = () => {
         // It guarantees that the component will re-render with the loaded data.
         setCalendars(getInitialCalendars());
         setLoading(false);
+
+        const handleStorageChange = (event: StorageEvent) => {
+          if (event.key === CALENDAR_STORAGE_KEY) {
+            setLoading(true);
+            setCalendars(getInitialCalendars());
+            setLoading(false);
+          }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+          window.removeEventListener('storage', handleStorageChange);
+        };
+
     }, []);
 
     const syncCalendars = useCallback((updatedCalendars: CalendarFile[]) => {
