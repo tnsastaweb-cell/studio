@@ -28,6 +28,8 @@ import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
 import { useGallery, galleryActivityTypes, GalleryMediaType, GalleryItem } from '@/services/gallery';
+import { useLibrary, libraryCategories, LibraryItem, LibraryCategory } from '@/services/library';
+
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -123,6 +125,14 @@ const calendarFormSchema = z.object({
 
 type CalendarFormValues = z.infer<typeof calendarFormSchema>;
 
+const libraryFormSchema = z.object({
+    scheme: z.string().min(1, "Scheme is required."),
+    category: z.enum(libraryCategories),
+    file: z.any().refine(file => file?.[0], "File is required."),
+});
+
+type LibraryFormValues = z.infer<typeof libraryFormSchema>;
+
 
 const toTitleCase = (str: string) => {
   if (!str) return '';
@@ -156,6 +166,8 @@ export default function AdminPage() {
 
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const { addItem: addGalleryItem } = useGallery();
+  const { libraryItems, addLibraryItem, deleteLibraryItem } = useLibrary();
+
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isReadyToUpload, setIsReadyToUpload] = useState(false);
@@ -324,12 +336,16 @@ export default function AdminPage() {
     }, [watchedPanchayat]);
     
     useEffect(() => {
-        galleryForm.setValue("block", "");
-        galleryForm.setValue("panchayat", "");
+        if (watchedDistrict) {
+            galleryForm.setValue("block", "");
+            galleryForm.setValue("panchayat", "");
+        }
     }, [watchedDistrict, galleryForm]);
 
     useEffect(() => {
-        galleryForm.setValue("panchayat", "");
+        if (watchedBlock) {
+           galleryForm.setValue("panchayat", "");
+        }
     }, [watchedBlock, galleryForm]);
     
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,6 +447,41 @@ export default function AdminPage() {
             calendarForm.reset();
              if (calendarForm.control._fields.file?._f.ref) {
               (calendarForm.control._fields.file._f.ref as HTMLInputElement).value = '';
+            }
+        }
+        reader.readAsDataURL(file);
+    };
+
+     // Library Form Logic
+    const libraryForm = useForm<LibraryFormValues>({
+        resolver: zodResolver(libraryFormSchema),
+    });
+    
+    const handleLibrarySubmit = (values: LibraryFormValues) => {
+        const file = values.file?.[0];
+        if (!file) {
+            toast({ variant: 'destructive', title: 'File Missing', description: 'Please select a file to upload.' });
+            return;
+        }
+
+        if (file.size > 100 * 1024 * 1024) { // 100MB limit
+             toast({ variant: 'destructive', title: "File too large", description: "File size must not exceed 100MB." });
+             return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            addLibraryItem({
+                ...values,
+                filename: file.name,
+                size: file.size,
+                dataUrl: dataUrl,
+            });
+            toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
+            libraryForm.reset();
+            if (libraryForm.control._fields.file?._f.ref) {
+              (libraryForm.control._fields.file._f.ref as HTMLInputElement).value = '';
             }
         }
         reader.readAsDataURL(file);
@@ -1042,10 +1093,11 @@ export default function AdminPage() {
           </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
-                <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
-                <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
+               <TabsList className="grid w-full grid-cols-4">
+                 <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
+                 <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
+                 <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
+                 <TabsTrigger value="library-upload">Library Upload</TabsTrigger>
               </TabsList>
               <TabsContent value="logo-upload">
                 <Card>
@@ -1122,7 +1174,7 @@ export default function AdminPage() {
                                         <FormField control={galleryForm.control} name="district" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>District</FormLabel>
-                                                <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('block', ''); galleryForm.setValue('panchayat', ''); }} value={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -1134,7 +1186,7 @@ export default function AdminPage() {
                                          <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Block</FormLabel>
-                                                <Select onValueChange={(value) => { field.onChange(value); galleryForm.setValue('panchayat', ''); }} value={field.value} disabled={!watchedDistrict}>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedDistrict}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -1146,7 +1198,7 @@ export default function AdminPage() {
                                         <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Panchayat</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedBlock}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
@@ -1162,7 +1214,7 @@ export default function AdminPage() {
                                         <FormField control={galleryForm.control} name="scheme" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Scheme</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select scheme" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
@@ -1174,7 +1226,7 @@ export default function AdminPage() {
                                          <FormField control={galleryForm.control} name="activityType" render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Activity Type</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select activity" /></SelectTrigger></FormControl>
                                                     <SelectContent>
                                                         {galleryActivityTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
@@ -1187,7 +1239,7 @@ export default function AdminPage() {
                                             <FormItem className="space-y-3">
                                                 <FormLabel>Work Related?</FormLabel>
                                                 <FormControl>
-                                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                                                    <RadioGroup onValueChange={field.onChange} value={field.value ?? "no"} className="flex space-x-4">
                                                         <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                                                         <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                                                     </RadioGroup>
@@ -1352,6 +1404,93 @@ export default function AdminPage() {
                       </CardContent>
                   </Card>
               </TabsContent>
+               <TabsContent value="library-upload">
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Library Upload</CardTitle>
+                          <CardDescription>Upload new documents to the library.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                           <Form {...libraryForm}>
+                              <form onSubmit={libraryForm.handleSubmit(handleLibrarySubmit)} className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                      <FormField control={libraryForm.control} name="scheme" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Scheme</FormLabel>
+                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl>
+                                                  <SelectContent>{MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      <FormField control={libraryForm.control} name="category" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Category</FormLabel>
+                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl>
+                                                  <SelectContent>{libraryCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                              </Select>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                       <FormField control={libraryForm.control} name="file" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Upload File</FormLabel>
+                                              <FormControl><Input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.png,.jpg,.jpeg,.psd,.zip,.rar" onChange={e => field.onChange(e.target.files)} /></FormControl>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                  </div>
+                                  <Button type="submit">Upload Document</Button>
+                              </form>
+                           </Form>
+                            <div className="mt-6">
+                                <h3 className="text-lg font-medium text-primary mb-2">Uploaded Library Items</h3>
+                                <div className="border rounded-lg max-h-96 overflow-y-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Filename</TableHead>
+                                            <TableHead>Scheme</TableHead>
+                                            <TableHead>Category</TableHead>
+                                            <TableHead>Size (KB)</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                    {libraryItems.map(item => (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="font-medium">{item.filename}</TableCell>
+                                            <TableCell>{item.scheme}</TableCell>
+                                            <TableCell>{item.category}</TableCell>
+                                            <TableCell>{(item.size / 1024).toFixed(2)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm">Delete</Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>This will permanently delete the library file.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => deleteLibraryItem(item.id)}>Continue</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table>
+                                </div>
+                            </div>
+                      </CardContent>
+                  </Card>
+              </TabsContent>
             </Tabs>
           </TabsContent>
         </Tabs>
@@ -1361,3 +1500,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
