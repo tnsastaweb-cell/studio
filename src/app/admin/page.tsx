@@ -250,28 +250,28 @@ export default function AdminPage() {
         }
     });
 
-    const selectedDistrict = galleryForm.watch("district");
-    const selectedBlock = galleryForm.watch("block");
+    const watchedDistrict = galleryForm.watch("district");
+    const watchedBlock = galleryForm.watch("block");
     const isWorkRelated = galleryForm.watch("isWorkRelated");
 
     const blocksForDistrict = useMemo(() => {
-        if (!selectedDistrict) return [];
-        return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))].sort();
-    }, [selectedDistrict]);
+        if (!watchedDistrict) return [];
+        return [...new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))].sort();
+    }, [watchedDistrict]);
 
     const panchayatsForBlock = useMemo(() => {
-        if (!selectedDistrict || !selectedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict && p.block === selectedBlock).sort((a, b) => a.name.localeCompare(b.name));
-    }, [selectedDistrict, selectedBlock]);
+        if (!watchedDistrict || !watchedBlock) return [];
+        return MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict && p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedDistrict, watchedBlock]);
 
     useEffect(() => {
         galleryForm.setValue("block", "");
         galleryForm.setValue("panchayat", "");
-    }, [selectedDistrict, galleryForm]);
+    }, [watchedDistrict, galleryForm]);
 
     useEffect(() => {
         galleryForm.setValue("panchayat", "");
-    }, [selectedBlock, galleryForm]);
+    }, [watchedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -926,8 +926,14 @@ export default function AdminPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <Input placeholder="Filter by Panchayat..." value={panchayatFilters.panchayat} onChange={(e) => handlePanchayatFilterChange('panchayat', e.target.value)} />
-                                    <Input placeholder="Filter by LGD Code..." value={panchayatFilters.lgdCode} onChange={(e) => handlePanchayatFilterChange('lgdCode', e.target.value)} />
+                                    <div>
+                                     <Label>Panchayat</Label>
+                                     <Input placeholder="Filter by Panchayat..." value={panchayatFilters.panchayat} onChange={(e) => handlePanchayatFilterChange('panchayat', e.target.value)} />
+                                    </div>
+                                    <div>
+                                     <Label>LGD Code</Label>
+                                     <Input placeholder="Filter by LGD Code..." value={panchayatFilters.lgdCode} onChange={(e) => handlePanchayatFilterChange('lgdCode', e.target.value)} />
+                                    </div>
                                     <Button className="self-end">Get Reports</Button>
                                 </div>
                                 <div className="border rounded-lg">
@@ -1268,7 +1274,7 @@ export default function AdminPage() {
                                                     <FormLabel>District</FormLabel>
                                                     <Select
                                                         onValueChange={(value) => {
-                                                            galleryForm.setValue("district", value);
+                                                            field.onChange(value);
                                                             galleryForm.setValue("block", "");
                                                             galleryForm.setValue("panchayat", "");
                                                         }}
@@ -1285,11 +1291,11 @@ export default function AdminPage() {
                                                     <FormLabel>Block</FormLabel>
                                                     <Select
                                                         onValueChange={(value) => {
-                                                            galleryForm.setValue("block", value);
+                                                            field.onChange(value);
                                                             galleryForm.setValue("panchayat", "");
                                                         }}
                                                         value={field.value}
-                                                        disabled={!selectedDistrict}
+                                                        disabled={!watchedDistrict}
                                                     >
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
@@ -1300,7 +1306,7 @@ export default function AdminPage() {
                                             <FormField control={galleryForm.control} name="panchayat" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Panchayat</FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBlock}>
+                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
                                                         <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)} (LGD: {p.lgdCode})</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1420,4 +1426,6 @@ export default function AdminPage() {
   );
 }
     
+    
+
     
