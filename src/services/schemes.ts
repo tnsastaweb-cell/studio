@@ -21,6 +21,7 @@ export const MOCK_SCHEMES: Scheme[] = [
   { id: '4', name: 'NMP', type: 'Nutrition', category: 'Health', subCategory: 'Mid-day Meal', code: 'SCHM004' },
   { id: '5', name: '15th CFC Grant', type: 'Finance', category: 'Grant', subCategory: 'Devolution', code: 'SCHM005' },
   { id: '6', name: 'DSJE', type: 'Social Justice', category: 'Empowerment', subCategory: 'Grant-in-Aid', code: 'SCHM006' },
+  { id: '7', name: 'Other', type: 'Miscellaneous', category: 'General', subCategory: 'N/A', code: 'SCHM007' },
 ];
 
 export const SCHEME_NAMES = MOCK_SCHEMES.map(s => s.name);
