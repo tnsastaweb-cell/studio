@@ -16,6 +16,7 @@ import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
+import { useCalendars } from '@/services/calendars';
 import { cn } from "@/lib/utils";
 
 import {
@@ -90,6 +91,7 @@ const calendarFormSchema = z.object({
     scheme: z.string().min(1, "Please select a scheme."),
     year: z.string().min(1, "Please select a year."),
     district: z.string().min(1, "Please select a district."),
+    type: z.string().min(1, "Please select a type."),
     file: z.any().refine(file => file?.length == 1, "File is required."),
 })
 
@@ -105,6 +107,7 @@ const toTitleCase = (str: string) => {
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
+  const { addCalendar } = useCalendars();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -235,19 +238,30 @@ export default function AdminPage() {
     const file = values.file[0];
     const newFileName = `${values.scheme}_${values.district}_${values.year}.pdf`;
     
-    // Here you would typically upload the file to a server.
-    // We'll simulate it with a toast message.
-    console.log("Uploading file:", file.name, "as", newFileName);
-    
-    toast({
-        title: "Upload Successful",
-        description: `File "${file.name}" has been saved as "${newFileName}".`,
-    })
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const fileDataUrl = e.target?.result as string;
+        addCalendar({
+            scheme: values.scheme,
+            year: values.year,
+            district: values.district,
+            type: values.type,
+            originalFilename: file.name,
+            filename: newFileName,
+            dataUrl: fileDataUrl,
+        });
 
-    calendarForm.reset({ year: "2025-2026" });
-    if(calendarFileInputRef.current) {
-        calendarFileInputRef.current.value = "";
-    }
+        toast({
+            title: "Upload Successful",
+            description: `File "${file.name}" has been saved as "${newFileName}".`,
+        })
+
+        calendarForm.reset({ year: "2025-2026", district: "", scheme: "", type: "" });
+        if(calendarFileInputRef.current) {
+            calendarFileInputRef.current.value = "";
+        }
+    };
+    reader.readAsDataURL(file);
   }
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -862,14 +876,14 @@ export default function AdminPage() {
                             <CardContent>
                                 <Form {...calendarForm}>
                                     <form onSubmit={calendarForm.handleSubmit(onCalendarSubmit)} className="space-y-6">
-                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                                             <FormField
                                                 control={calendarForm.control}
                                                 name="scheme"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Scheme</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select onValueChange={field.onChange} value={field.value} defaultValue="">
                                                             <FormControl>
                                                                 <SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger>
                                                             </FormControl>
@@ -887,7 +901,7 @@ export default function AdminPage() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Year</FormLabel>
-                                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                         <Select onValueChange={field.onChange} value={field.value} defaultValue={"2025-2026"}>
                                                             <FormControl>
                                                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                                             </FormControl>
@@ -905,12 +919,31 @@ export default function AdminPage() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>District</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <Select onValueChange={field.onChange} value={field.value} defaultValue="">
                                                             <FormControl>
                                                                 <SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger>
                                                             </FormControl>
                                                             <SelectContent>
                                                                 {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={calendarForm.control}
+                                                name="type"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Type</FormLabel>
+                                                        <Select onValueChange={field.onChange} value={field.value} defaultValue="">
+                                                            <FormControl>
+                                                                <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                <SelectItem value="Calendar">Calendar</SelectItem>
+                                                                <SelectItem value="Other">Other</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                         <FormMessage />
