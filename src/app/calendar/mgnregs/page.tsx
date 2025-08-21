@@ -55,15 +55,6 @@ export default function MgnregsCalendarPage() {
             return schemeMatch && yearMatch && districtMatch && searchMatch;
         });
     }, [calendars, selectedScheme, selectedYear, selectedDistrict, searchTerm]);
-    
-    const handleViewClick = (calendar: CalendarFile) => {
-        if (calendar.dataUrl) {
-            const newWindow = window.open();
-            if(newWindow) {
-                newWindow.location.href = calendar.dataUrl;
-            }
-        }
-    };
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -145,8 +136,10 @@ export default function MgnregsCalendarPage() {
                                                 <HighlightedText text={cal.filename} highlight={searchTerm} />
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Button variant="outline" size="sm" onClick={() => handleViewClick(cal)}>
-                                                    <Eye className="mr-2 h-4 w-4" /> View
+                                                <Button variant="outline" size="sm" asChild>
+                                                    <a href={cal.dataUrl} target="_blank" rel="noopener noreferrer">
+                                                      <Eye className="mr-2 h-4 w-4" /> View
+                                                    </a>
                                                 </Button>
                                             </TableCell>
                                         </TableRow>

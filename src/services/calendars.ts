@@ -35,17 +35,20 @@ export const useCalendars = () => {
     const [calendars, setCalendars] = useState<CalendarFile[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // This effect runs once on component mount to load data from localStorage.
-        // It guarantees that the component will re-render with the loaded data.
-        setCalendars(getInitialCalendars());
+    const loadCalendars = useCallback(() => {
+        setLoading(true);
+        const data = getInitialCalendars();
+        setCalendars(data);
         setLoading(false);
+    }, []);
+
+    useEffect(() => {
+        // Load initially
+        loadCalendars();
 
         const handleStorageChange = (event: StorageEvent) => {
           if (event.key === CALENDAR_STORAGE_KEY) {
-            setLoading(true);
-            setCalendars(getInitialCalendars());
-            setLoading(false);
+            loadCalendars();
           }
         };
         
@@ -53,14 +56,15 @@ export const useCalendars = () => {
         return () => {
           window.removeEventListener('storage', handleStorageChange);
         };
-
-    }, []);
+    }, [loadCalendars]);
 
     const syncCalendars = useCallback((updatedCalendars: CalendarFile[]) => {
         setCalendars(updatedCalendars);
         if (typeof window !== 'undefined') {
             try {
                 localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(updatedCalendars));
+                 // Dispatch a storage event to notify other tabs
+                window.dispatchEvent(new StorageEvent('storage', { key: CALENDAR_STORAGE_KEY, newValue: JSON.stringify(updatedCalendars) }));
             } catch (error) {
                 console.error("Failed to save calendars to localStorage:", error);
             }
@@ -70,7 +74,7 @@ export const useCalendars = () => {
     const addCalendar = useCallback((calendarData: Omit<CalendarFile, 'id' | 'uploadedAt'>) => {
         const newCalendar: CalendarFile = {
             ...calendarData,
-            id: Date.now(), // Use timestamp for a more robust unique ID
+            id: Date.now(),
             uploadedAt: new Date().toISOString(),
         };
         const updatedCalendars = [...getInitialCalendars(), newCalendar];
