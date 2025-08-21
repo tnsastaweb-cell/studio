@@ -17,6 +17,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { galleryActivityTypes } from '@/services/gallery';
@@ -83,6 +86,12 @@ export function GalleryHighlights() {
                         </Card>
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl p-0">
+                          <DialogHeader className="sr-only">
+                              <DialogTitle>{item.title}</DialogTitle>
+                              <DialogDescription>
+                                A larger view of the gallery image for {item.title}.
+                              </DialogDescription>
+                          </DialogHeader>
                          <Image
                             src={item.imageUrl}
                             alt={item.title}
