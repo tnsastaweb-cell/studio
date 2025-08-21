@@ -29,7 +29,7 @@ export const useCalendars = () => {
             if (stored) {
                 setCalendars(JSON.parse(stored));
             } else {
-                localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(MOCK_CALENDARS));
+                // Initialize with an empty array if nothing is stored
                 setCalendars(MOCK_CALENDARS);
             }
         } catch (error) {
@@ -61,6 +61,15 @@ export const useCalendars = () => {
             return newCalendars;
         });
     }, []);
+    
+    const deleteCalendar = useCallback((id: number) => {
+        setCalendars(prev => {
+            const newCalendars = prev.filter(cal => cal.id !== id);
+            syncCalendars(newCalendars);
+            return newCalendars;
+        });
+    }, []);
 
-    return { calendars, loading, addCalendar };
+
+    return { calendars, loading, addCalendar, deleteCalendar };
 };

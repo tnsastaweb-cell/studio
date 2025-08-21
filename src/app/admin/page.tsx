@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload, ChevronLeft, ChevronRight, FileUp } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, Eye, EyeOff, Upload, ChevronLeft, ChevronRight, FileUp, Trash2 } from "lucide-react";
 
 import { useUsers, User, ROLES } from '@/services/users';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
@@ -16,7 +16,7 @@ import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
-import { useCalendars } from '@/services/calendars';
+import { useCalendars, CalendarFile } from '@/services/calendars';
 import { cn } from "@/lib/utils";
 
 import {
@@ -65,7 +65,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -107,7 +107,7 @@ const toTitleCase = (str: string) => {
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
   const { feedbacks } = useFeedback();
-  const { addCalendar } = useCalendars();
+  const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -262,6 +262,15 @@ export default function AdminPage() {
         }
     };
     reader.readAsDataURL(file);
+  }
+  
+  const handleCalendarDelete = (id: number) => {
+      deleteCalendar(id);
+      toast({
+          title: "File Deleted",
+          description: "The calendar file has been successfully deleted.",
+          variant: "destructive"
+      })
   }
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -979,6 +988,65 @@ export default function AdminPage() {
                                        </div>
                                     </form>
                                 </Form>
+                                <div className="mt-8">
+                                    <h3 className="text-lg font-medium text-primary mb-4">Uploaded Calendars</h3>
+                                    <div className="border rounded-lg">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>S.No</TableHead>
+                                                    <TableHead>Filename</TableHead>
+                                                    <TableHead>Scheme</TableHead>
+                                                    <TableHead>District</TableHead>
+                                                    <TableHead>Year</TableHead>
+                                                    <TableHead className="text-right">Actions</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {calendars.length > 0 ? (
+                                                    calendars.map((cal, index) => (
+                                                        <TableRow key={cal.id}>
+                                                            <TableCell>{index + 1}</TableCell>
+                                                            <TableCell className="font-medium">{cal.filename}</TableCell>
+                                                            <TableCell>{cal.scheme}</TableCell>
+                                                            <TableCell>{cal.district}</TableCell>
+                                                            <TableCell>{cal.year}</TableCell>
+                                                            <TableCell className="text-right">
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger asChild>
+                                                                        <Button variant="destructive" size="icon">
+                                                                            <Trash2 className="h-4 w-4"/>
+                                                                        </Button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                This will permanently delete the file "{cal.filename}". This action cannot be undone.
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                            <AlertDialogAction onClick={() => handleCalendarDelete(cal.id)}>
+                                                                                Delete
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                                            No calendars uploaded yet.
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
                             </CardContent>
                        </Card>
                     </TabsContent>

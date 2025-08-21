@@ -9,13 +9,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Eye, Download } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { DISTRICTS } from '@/services/district-offices';
 import { useCalendars } from '@/services/calendars';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const years = ["2025-2026"];
+
+const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
+  if (!highlight.trim()) {
+    return <span>{text}</span>;
+  }
+  const regex = new RegExp(`(${highlight})`, 'gi');
+  const parts = text.split(regex);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-300 px-0">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+};
 
 export default function MgnregsCalendarPage() {
     const { calendars } = useCalendars();
@@ -43,7 +64,7 @@ export default function MgnregsCalendarPage() {
                     <CardHeader>
                         <CardTitle>MGNREGS Audit Calendar</CardTitle>
                         <CardDescription>
-                            Find and download the social audit calendars for the MGNREGS scheme.
+                            Find and view the social audit calendars for the MGNREGS scheme.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -79,7 +100,7 @@ export default function MgnregsCalendarPage() {
                              <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <Input 
-                                    placeholder="Search..." 
+                                    placeholder="Search by filename..." 
                                     className="pl-10" 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -94,7 +115,6 @@ export default function MgnregsCalendarPage() {
                                     <TableHead className="w-[50px]">S.No</TableHead>
                                     <TableHead>Particulars</TableHead>
                                     <TableHead className="text-center w-24">View</TableHead>
-                                    <TableHead className="text-center w-24">Download</TableHead>
                                 </TableRow>
                             </TableHeader>
                              <TableBody>
@@ -102,7 +122,9 @@ export default function MgnregsCalendarPage() {
                                     filteredCalendars.map((cal, index) => (
                                         <TableRow key={cal.id}>
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell className="font-medium">{cal.filename}</TableCell>
+                                            <TableCell className="font-medium">
+                                                <HighlightedText text={cal.filename} highlight={searchTerm} />
+                                            </TableCell>
                                             <TableCell className="text-center">
                                                 <Button variant="outline" size="sm" asChild>
                                                     <a href={cal.dataUrl} target="_blank" rel="noopener noreferrer">
@@ -110,18 +132,11 @@ export default function MgnregsCalendarPage() {
                                                     </a>
                                                 </Button>
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                <Button variant="outline" size="sm" asChild>
-                                                     <a href={cal.dataUrl} download={cal.filename}>
-                                                        <Download className="mr-2 h-4 w-4" /> Download
-                                                    </a>
-                                                </Button>
-                                            </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                        <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
                                              Please select filters to view available calendars.
                                         </TableCell>
                                     </TableRow>
