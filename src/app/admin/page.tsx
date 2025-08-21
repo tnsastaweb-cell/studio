@@ -99,13 +99,17 @@ const calendarFormSchema = z.object({
 
 type CalendarFormValues = z.infer<typeof calendarFormSchema>;
 
+const MAX_PHOTO_SIZE_MB = 5;
+const MAX_VIDEO_SIZE_MB = 100;
+const MAX_DOC_SIZE_MB = 5;
+
 const galleryFormSchema = z.object({
     district: z.string().min(1, { message: "District is required." }),
     block: z.string().min(1, { message: "Block is required." }),
     panchayat: z.string().min(1, { message: "Panchayat is required." }),
     activityType: z.string().min(1, { message: "Activity type is required." }),
     mediaType: z.enum(galleryMediaTypes),
-    file: z.any().refine(file => file?.length == 1, "A file is required."),
+    file: z.any().refine((files) => files?.length === 1, "A file is required."),
     isWorkRelated: z.enum(["yes", "no"], { required_error: "This field is required." }),
     workName: z.string().optional(),
     workCode: z.string().optional(),
@@ -117,6 +121,16 @@ const galleryFormSchema = z.object({
 }, {
     message: "Work Name and Work Code are required when Work Related is 'Yes'.",
     path: ["workName"],
+}).refine(data => {
+    if (!data.file || data.file.length === 0) return true;
+    const sizeInMB = data.file[0].size / (1024*1024);
+    if (data.mediaType === 'photo') return sizeInMB <= MAX_PHOTO_SIZE_MB;
+    if (data.mediaType === 'video') return sizeInMB <= MAX_VIDEO_SIZE_MB;
+    if (data.mediaType === 'news' || data.mediaType === 'blog') return sizeInMB <= MAX_DOC_SIZE_MB;
+    return true;
+}, {
+    message: `File size exceeds the limit.`,
+    path: ['file'],
 });
 
 
@@ -353,7 +367,16 @@ export default function AdminPage() {
               description: "Your file has been added to the gallery.",
           });
 
-          galleryForm.reset();
+          galleryForm.reset({
+             district: '',
+            block: '',
+            panchayat: '',
+            activityType: '',
+            isWorkRelated: 'no',
+            workName: '',
+            workCode: '',
+            mediaType: 'photo'
+          });
           setGalleryFilePreview(null);
           setIsGalleryFileConfirmed(false);
           if (galleryFileInputRef.current) {
@@ -366,8 +389,14 @@ export default function AdminPage() {
   const handleGalleryFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (file) {
-          if (file.size > 5 * 1024 * 1024) { // 5MB limit
-              toast({ variant: 'destructive', title: 'File too large', description: 'Please select a file smaller than 5MB.' });
+          const mediaType = galleryForm.getValues('mediaType');
+          let maxSizeMB = 0;
+          if (mediaType === 'photo') maxSizeMB = MAX_PHOTO_SIZE_MB;
+          else if (mediaType === 'video') maxSizeMB = MAX_VIDEO_SIZE_MB;
+          else if (mediaType === 'news' || mediaType === 'blog') maxSizeMB = MAX_DOC_SIZE_MB;
+
+          if (file.size > maxSizeMB * 1024 * 1024) { 
+              toast({ variant: 'destructive', title: 'File too large', description: `Please select a file smaller than ${maxSizeMB}MB.` });
               return;
           }
           const reader = new FileReader();
@@ -1189,7 +1218,10 @@ export default function AdminPage() {
                                              <FormField control={galleryForm.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDistrict}>
+                                                    <Select onValueChange={(value) => {
+                                                        field.onChange(value);
+                                                        galleryForm.setValue('panchayat', '');
+                                                    }} value={field.value} disabled={!selectedDistrict}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent>
                                                     </Select>
@@ -1201,7 +1233,7 @@ export default function AdminPage() {
                                                     <FormLabel>Panchayat</FormLabel>
                                                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBlock}>
                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
-                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent>
+                                                        <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>(LGD: {p.lgdCode}) {toTitleCase(p.name)}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                     <FormMessage />
                                                 </FormItem>
@@ -1256,11 +1288,11 @@ export default function AdminPage() {
                                                 )} />
                                                 <FormField control={galleryForm.control} name="file" render={({ field }) => (
                                                      <FormItem className="mt-4">
-                                                        <FormLabel>File Upload (Max 5MB)</FormLabel>
+                                                        <FormLabel>File Upload</FormLabel>
                                                         <FormControl>
                                                             <Input 
                                                                 type="file" 
-                                                                accept="image/jpeg,image/png,video/mp4,video/avi,video/mov,.pdf"
+                                                                accept="image/jpeg,image/png,video/mp4,video/avi,video/mov,application/pdf"
                                                                 ref={galleryFileInputRef}
                                                                 onChange={(e) => {
                                                                     field.onChange(e.target.files)
@@ -1268,6 +1300,9 @@ export default function AdminPage() {
                                                                 }}
                                                             />
                                                         </FormControl>
+                                                        <FormDescription>
+                                                          Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), Documents (PDF - Max 5MB).
+                                                        </FormDescription>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )} />

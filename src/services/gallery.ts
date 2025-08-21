@@ -53,6 +53,14 @@ const getInitialGalleryItems = (): GalleryItem[] => {
     }
 };
 
+const toTitleCase = (str: string) => {
+    if (!str) return '';
+    return str.replace(
+        /\w\S*/g,
+        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+};
+
 export const useGallery = () => {
     const [items, setItems] = useState<GalleryItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -118,12 +126,4 @@ export const useGallery = () => {
     }, [syncItems]);
 
     return { items: enrichedItems, loading, addGalleryItem };
-};
-
-const toTitleCase = (str: string) => {
-    if (!str) return '';
-    return str.replace(
-        /\w\S*/g,
-        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
 };
