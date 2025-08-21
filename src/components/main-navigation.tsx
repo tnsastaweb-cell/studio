@@ -35,16 +35,7 @@ const guestMenuItems = [
   },
   {
     title: "CALENDAR",
-    href: "/calendar",
-     children: [
-        { title: "MGNREGS", href: "/calendar/mgnregs", highlighted: true },
-        { title: "PMAY-G", href: "/calendar/pmay-g" },
-        { title: "NSAP", href: "/calendar/nsap" },
-        { title: "NMP", href: "/calendar/nmp" },
-        { title: "FFCG", href: "/calendar/ffcg" },
-        { title: "DSJE", href: "/calendar/dsje" },
-        { title: "OTHERS", href: "/calendar/others" },
-    ]
+    href: "/calendar/mgnregs",
   },
   {
     title: "GALLERY",

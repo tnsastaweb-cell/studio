@@ -17,28 +17,28 @@ export interface CalendarFile {
 
 const CALENDAR_STORAGE_KEY = 'sasta-calendars';
 
-// This function now returns a new empty array to avoid mutation issues.
-const getInitialCalendars = (): CalendarFile[] => [];
+const getInitialCalendars = (): CalendarFile[] => {
+    // This function runs only on the client side.
+    if (typeof window === 'undefined') {
+        return [];
+    }
+    try {
+        const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+        console.error("Failed to access localStorage for calendars:", error);
+        return [];
+    }
+};
 
 export const useCalendars = () => {
     const [calendars, setCalendars] = useState<CalendarFile[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
-            if (stored) {
-                setCalendars(JSON.parse(stored));
-            } else {
-                // Initialize with an empty array if nothing is stored
-                setCalendars(getInitialCalendars());
-            }
-        } catch (error) {
-            console.error("Failed to access localStorage for calendars:", error);
-            setCalendars(getInitialCalendars());
-        } finally {
-            setLoading(false);
-        }
+        // Load initial data from localStorage.
+        setCalendars(getInitialCalendars());
+        setLoading(false);
     }, []);
 
     const syncCalendars = (updatedCalendars: CalendarFile[]) => {
