@@ -121,8 +121,8 @@ export default function MgnregsCalendarPage() {
                              <TableBody>
                                 {calendarsLoading ? (
                                     <TableRow>
-                                        <TableCell colSpan={3} className="text-center h-24">
-                                            <div className="flex items-center justify-center">
+                                        <TableCell colSpan={3} className="h-24 text-center">
+                                            <div className="flex justify-center items-center">
                                                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                                                 <span>Loading Calendars...</span>
                                             </div>
