@@ -17,7 +17,8 @@ export interface CalendarFile {
 
 const CALENDAR_STORAGE_KEY = 'sasta-calendars';
 
-const MOCK_CALENDARS: CalendarFile[] = [];
+// This function now returns a new empty array to avoid mutation issues.
+const getInitialCalendars = (): CalendarFile[] => [];
 
 export const useCalendars = () => {
     const [calendars, setCalendars] = useState<CalendarFile[]>([]);
@@ -30,11 +31,11 @@ export const useCalendars = () => {
                 setCalendars(JSON.parse(stored));
             } else {
                 // Initialize with an empty array if nothing is stored
-                setCalendars(MOCK_CALENDARS);
+                setCalendars(getInitialCalendars());
             }
         } catch (error) {
             console.error("Failed to access localStorage for calendars:", error);
-            setCalendars(MOCK_CALENDARS);
+            setCalendars(getInitialCalendars());
         } finally {
             setLoading(false);
         }
@@ -53,7 +54,7 @@ export const useCalendars = () => {
         setCalendars(prev => {
             const newCalendar = {
                 ...calendarData,
-                id: (prev[prev.length - 1]?.id ?? 0) + 1,
+                id: (prev.reduce((maxId, cal) => Math.max(cal.id, maxId), 0)) + 1,
                 uploadedAt: new Date().toISOString(),
             };
             const newCalendars = [...prev, newCalendar];
