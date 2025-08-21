@@ -25,7 +25,7 @@ import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { useCalendars } from '@/services/calendars';
 import { DISTRICTS } from '@/services/district-offices';
-import { useFeedback } from '@/services/feedback';
+import { useFeedback, Feedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
 import { useGallery, galleryActivityTypes, GalleryMediaType, GalleryItem } from '@/services/gallery';
 import { useLibrary, libraryCategories, LibraryItem, LibraryCategory } from '@/services/library';
@@ -145,7 +145,7 @@ const years = ["2025-2026", "2024-2025", "2023-2024"];
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
-  const { feedbacks } = useFeedback();
+  const { feedbacks, deleteFeedback } = useFeedback();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -485,6 +485,11 @@ export default function AdminPage() {
             }
         }
         reader.readAsDataURL(file);
+    };
+
+    const handleDeleteFeedback = (feedbackId: number) => {
+        deleteFeedback(feedbackId);
+        toast({ title: "Feedback Deleted", description: "The feedback has been removed." });
     };
 
 
@@ -1068,6 +1073,7 @@ export default function AdminPage() {
                         <TableHead>Type</TableHead>
                         <TableHead>Feedback</TableHead>
                         <TableHead>Submitted At</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1079,9 +1085,34 @@ export default function AdminPage() {
                           <TableCell>
                             <Badge variant="outline">{feedback.type}</Badge>
                           </TableCell>
-                          <TableCell className="max-w-xs truncate">{feedback.feedback}</TableCell>
+                          <TableCell className="max-w-xs text-left whitespace-pre-wrap">
+                            {feedback.feedback}
+                          </TableCell>
                           <TableCell>
                             {format(new Date(feedback.submittedAt), 'dd/MM/yyyy hh:mm a')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                             <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this feedback.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteFeedback(feedback.id)}>
+                                    Continue
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </TableCell>
                         </TableRow>
                       ))}

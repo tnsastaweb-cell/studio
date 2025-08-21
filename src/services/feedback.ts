@@ -74,5 +74,10 @@ export const useFeedback = () => {
     syncFeedbacks(updatedFeedbacks);
   }, []);
 
-  return { feedbacks, loading, addFeedback };
+  const deleteFeedback = useCallback((feedbackId: number) => {
+      const updatedFeedbacks = getInitialFeedbacks().filter(f => f.id !== feedbackId);
+      syncFeedbacks(updatedFeedbacks);
+  }, []);
+
+  return { feedbacks, loading, addFeedback, deleteFeedback };
 };
