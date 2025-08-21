@@ -240,29 +240,21 @@ export default function AdminPage() {
   const selectedBlock = galleryForm.watch("block");
   const isWorkRelated = galleryForm.watch("isWorkRelated");
 
-  const blocksForDistrict = useMemo(() => {
-    if (!selectedDistrict) return [];
-    const uniqueBlocks = [...new Set(MOCK_PANCHAYATS
-      .filter(p => p.district === selectedDistrict)
-      .map(p => p.block))];
-    return uniqueBlocks.sort();
-  }, [selectedDistrict]);
+    const blocksForDistrict = useMemo(() => {
+        if (!selectedDistrict) return [];
+        return [...new Set(
+            MOCK_PANCHAYATS
+                .filter(p => p.district === selectedDistrict)
+                .map(p => p.block)
+        )].sort();
+    }, [selectedDistrict]);
 
-  const panchayatsForBlock = useMemo(() => {
-      if (!selectedDistrict || !selectedBlock) return [];
-      return MOCK_PANCHAYATS
-        .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
-        .sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedDistrict, selectedBlock]);
-
-  useEffect(() => {
-      galleryForm.setValue("block", "");
-      galleryForm.setValue("panchayat", "");
-  }, [selectedDistrict, galleryForm]);
-
-  useEffect(() => {
-      galleryForm.setValue("panchayat", "");
-  }, [selectedBlock, galleryForm]);
+    const panchayatsForBlock = useMemo(() => {
+        if (!selectedDistrict || !selectedBlock) return [];
+        return MOCK_PANCHAYATS
+            .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [selectedDistrict, selectedBlock]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -1335,7 +1327,7 @@ export default function AdminPage() {
                                                             />
                                                         </FormControl>
                                                         <FormDescription>
-                                                            Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), News/Blog (PDF - Max 5MB).
+                                                             Photos (JPG, PNG - Max 5MB), Videos (MP4, AVI, MOV - Max 100MB), News/Blog (PDF - Max 5MB).
                                                         </FormDescription>
                                                         <FormMessage />
                                                     </FormItem>
@@ -1379,8 +1371,5 @@ export default function AdminPage() {
     </div>
   );
 }
-
-
-
     
     
