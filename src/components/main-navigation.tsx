@@ -69,12 +69,13 @@ const guestMenuItems = [
     href: "/library",
   },
   {
-    title: "GRIEVANCES",
-    href: "/grievances",
+    title: "CONNECT",
+    href: "/connect",
     children: [
-        { title: "Apply for Grievance", href: "/grievances/apply" },
-        { title: "Grievance Status", href: "/grievances/status" },
-        { title: "Grievance Summary", href: "/grievances/summary" },
+        { title: "Location", href: "/registration/district-office" },
+        { title: "Careers", href: "/connect/careers" },
+        { title: "Write to Us", href: "/connect/write-to-us" },
+        { title: "Grievances", href: "/grievances" },
     ]
   },
 ];
@@ -173,4 +174,3 @@ export function MainNavigation() {
     </nav>
   );
 }
-

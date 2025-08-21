@@ -40,7 +40,7 @@ export function Footer() {
         });
         return;
     }
-    addFeedback({ name, email, feedback });
+    addFeedback({ name, email, feedback, type: 'Issue' });
     setIsSubmitted(true);
     toast({
         title: "Success",

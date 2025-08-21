@@ -146,7 +146,7 @@ const toTitleCase = (str: string) => {
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
-  const { feedbacks } = useFeedback();
+  const { feedbacks, loading: feedbackLoading } = useFeedback();
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const { addGalleryItem } = useGallery();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -240,21 +240,34 @@ export default function AdminPage() {
   const selectedBlock = galleryForm.watch("block");
   const isWorkRelated = galleryForm.watch("isWorkRelated");
 
-    const blocksForDistrict = useMemo(() => {
-        if (!selectedDistrict) return [];
-        return [...new Set(
-            MOCK_PANCHAYATS
-                .filter(p => p.district === selectedDistrict)
-                .map(p => p.block)
-        )].sort();
-    }, [selectedDistrict]);
+  const blocksForDistrict = useMemo(() => {
+    if (!selectedDistrict) return [];
+    return [...new Set(
+        MOCK_PANCHAYATS
+            .filter(p => p.district === selectedDistrict)
+            .map(p => p.block)
+    )].sort();
+  }, [selectedDistrict]);
 
-    const panchayatsForBlock = useMemo(() => {
-        if (!selectedDistrict || !selectedBlock) return [];
-        return MOCK_PANCHAYATS
-            .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
-            .sort((a, b) => a.name.localeCompare(b.name));
-    }, [selectedDistrict, selectedBlock]);
+  const panchayatsForBlock = useMemo(() => {
+    if (!selectedDistrict || !selectedBlock) return [];
+    return MOCK_PANCHAYATS
+        .filter(p => p.district === selectedDistrict && p.block === selectedBlock)
+        .sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedDistrict, selectedBlock]);
+
+  useEffect(() => {
+      if (selectedDistrict) {
+          galleryForm.setValue("block", "");
+          galleryForm.setValue("panchayat", "");
+      }
+  }, [selectedDistrict, galleryForm]);
+
+  useEffect(() => {
+      if (selectedBlock) {
+          galleryForm.setValue("panchayat", "");
+      }
+  }, [selectedBlock, galleryForm]);
 
 
   const handleDeleteUser = (userId: number) => {
@@ -969,6 +982,7 @@ export default function AdminPage() {
                                 <TableHead>S.No</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
+                                <TableHead>Type</TableHead>
                                 <TableHead>Feedback</TableHead>
                                 <TableHead>Submitted At</TableHead>
                               </TableRow>
@@ -979,6 +993,7 @@ export default function AdminPage() {
                                   <TableCell>{index + 1}</TableCell>
                                   <TableCell className="font-medium">{feedback.name}</TableCell>
                                   <TableCell>{feedback.email}</TableCell>
+                                   <TableCell><Badge variant="outline">{feedback.type}</Badge></TableCell>
                                   <TableCell className="max-w-xs truncate">{feedback.feedback}</TableCell>
                                   <TableCell>{format(new Date(feedback.submittedAt), 'dd/MM/yyyy hh:mm a')}</TableCell>
                                 </TableRow>
