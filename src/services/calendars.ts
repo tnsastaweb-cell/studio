@@ -17,8 +17,8 @@ export interface CalendarFile {
 
 const CALENDAR_STORAGE_KEY = 'sasta-calendars';
 
+// This function should only be called on the client side.
 const getInitialCalendars = (): CalendarFile[] => {
-    // This function runs only on the client side.
     if (typeof window === 'undefined') {
         return [];
     }
@@ -36,40 +36,37 @@ export const useCalendars = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Load initial data from localStorage.
+        // This effect runs once on component mount to load data from localStorage.
+        // It guarantees that the component will re-render with the loaded data.
         setCalendars(getInitialCalendars());
         setLoading(false);
     }, []);
 
-    const syncCalendars = (updatedCalendars: CalendarFile[]) => {
+    const syncCalendars = useCallback((updatedCalendars: CalendarFile[]) => {
         setCalendars(updatedCalendars);
-        try {
-            localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(updatedCalendars));
-        } catch (error) {
-            console.error("Failed to save calendars to localStorage:", error);
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(updatedCalendars));
+            } catch (error) {
+                console.error("Failed to save calendars to localStorage:", error);
+            }
         }
-    };
+    }, []);
 
     const addCalendar = useCallback((calendarData: Omit<CalendarFile, 'id' | 'uploadedAt'>) => {
-        setCalendars(prev => {
-            const newCalendar = {
-                ...calendarData,
-                id: (prev.reduce((maxId, cal) => Math.max(cal.id, maxId), 0)) + 1,
-                uploadedAt: new Date().toISOString(),
-            };
-            const newCalendars = [...prev, newCalendar];
-            syncCalendars(newCalendars);
-            return newCalendars;
-        });
-    }, []);
+        const newCalendar: CalendarFile = {
+            ...calendarData,
+            id: Date.now(), // Use timestamp for a more robust unique ID
+            uploadedAt: new Date().toISOString(),
+        };
+        const updatedCalendars = [...getInitialCalendars(), newCalendar];
+        syncCalendars(updatedCalendars);
+    }, [syncCalendars]);
     
     const deleteCalendar = useCallback((id: number) => {
-        setCalendars(prev => {
-            const newCalendars = prev.filter(cal => cal.id !== id);
-            syncCalendars(newCalendars);
-            return newCalendars;
-        });
-    }, []);
+        const updatedCalendars = getInitialCalendars().filter(cal => cal.id !== id);
+        syncCalendars(updatedCalendars);
+    }, [syncCalendars]);
 
 
     return { calendars, loading, addCalendar, deleteCalendar };
