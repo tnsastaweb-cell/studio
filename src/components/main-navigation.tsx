@@ -48,6 +48,7 @@ const guestMenuItems = [
     title: "GALLERY",
     href: "/gallery",
     children: [
+      { title: "All", href: "/gallery" },
       { title: "Photos", href: "/gallery/photos" },
       { title: "Videos", href: "/gallery/videos" },
       { title: "News Reports", href: "/gallery/news-reports" },
