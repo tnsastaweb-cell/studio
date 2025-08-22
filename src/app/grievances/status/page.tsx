@@ -18,6 +18,8 @@ import { useGrievances, Grievance } from '@/services/grievances';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileQuestion, Badge, Paperclip } from "lucide-react";
+import { Label } from '@/components/ui/label';
+
 
 const searchSchema = z.object({
   searchType: z.enum(['regNo', 'aadhaarNo']),

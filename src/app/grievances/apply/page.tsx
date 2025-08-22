@@ -283,8 +283,8 @@ export default function ApplyGrievancePage() {
                               <AlertDialogTrigger asChild>
                                  <Button type="button" onClick={onFormTrigger} id="form-trigger">Submit</Button>
                               </AlertDialogTrigger>
-                              {/* Regular Submission Dialog */}
-                                <AlertDialogContent id="submit-dialog">
+                              
+                               <AlertDialogContent id="submit-dialog">
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
                                     <AlertDialogDescription>Are you sure you want to submit this grievance? Please review all details before proceeding.</AlertDialogDescription>
@@ -296,6 +296,7 @@ export default function ApplyGrievancePage() {
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
+
                                {isAnonymous && (
                                 <AlertDialogContent id="anonymous-dialog">
                                     <AlertDialogHeader>
@@ -310,12 +311,12 @@ export default function ApplyGrievancePage() {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                                )}
+                               
+                               {/* Hidden trigger for programatic open */}
+                               <AlertDialogTrigger asChild>
+                                 <button id="submit-trigger" className="hidden"></button>
+                               </AlertDialogTrigger>
                            </AlertDialog>
-                           {/* Hidden trigger for programatic open */}
-                           <AlertDialogTrigger asChild>
-                             <button id="submit-trigger" className="hidden"></button>
-                           </AlertDialogTrigger>
-
                         </div>
                      </form>
                 </Form>
