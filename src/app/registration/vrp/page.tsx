@@ -29,7 +29,7 @@ import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useAuth } from '@/hooks/use-auth';
 
-// Base schema for common fields
+
 const baseSchema = z.object({
   name: z.string().min(1, "Name as per bank is required"),
   address: z.string().min(1, "Full Address is required"),
@@ -51,7 +51,6 @@ const baseSchema = z.object({
   pfmsId: z.string().min(1, "PFMS ID is required"),
 });
 
-// Schema for VRPs with an existing employee code
 const yesEmployeeCodeSchema = baseSchema.extend({
   hasEmployeeCode: z.literal("yes").default("yes"),
   district: z.string().min(1, "District is required"),
@@ -61,7 +60,6 @@ const yesEmployeeCodeSchema = baseSchema.extend({
   mgnregaEmpCode: z.string().min(1, "MGNREGA Employee Code is required"),
 });
 
-// Schema for VRPs without an existing employee code
 const noEmployeeCodeSchema = baseSchema.extend({
   hasEmployeeCode: z.literal("no").default("no"),
   scheme: z.string().min(1, "Scheme is required"),
@@ -655,4 +653,3 @@ export default function VrpRegistrationPage() {
         </div>
     );
 }
-
