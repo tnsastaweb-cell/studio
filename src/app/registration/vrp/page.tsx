@@ -30,7 +30,6 @@ import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useAuth } from '@/hooks/use-auth';
 
-
 const baseSchema = z.object({
   name: z.string().min(1, "Name as per bank is required"),
   address: z.string().min(1, "Full Address is required"),
