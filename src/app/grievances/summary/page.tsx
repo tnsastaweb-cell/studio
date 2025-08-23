@@ -9,7 +9,7 @@ import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useGrievances, Grievance } from '@/services/grievances';
+import { useGrievances, Grievance, GRIEVANCE_STATUSES } from '@/services/grievances';
 import { useAuth } from '@/hooks/use-auth';
 import { format } from 'date-fns';
 import { Paperclip, Loader2, FileText, HelpCircle, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
@@ -46,20 +46,19 @@ export default function GrievanceSummaryPage() {
     const summaryCounts = useMemo(() => {
         return {
             total: grievances.length,
-            submitted: grievances.filter(g => g.status === 'Submitted').length,
             inProgress: grievances.filter(g => g.status === 'In Progress').length,
             resolved: grievances.filter(g => g.status === 'Resolved').length,
             rejected: grievances.filter(g => g.status === 'Rejected').length,
         };
     }, [grievances]);
-    
+
     const filteredGrievances = useMemo(() => {
         return grievances.filter(g => {
             const searchLower = searchTerm.toLowerCase();
             const statusMatch = statusFilter === 'All Statuses' ? true : g.status === statusFilter;
             const searchMatch = !searchTerm ? true : (
                 g.regNo.toLowerCase().includes(searchLower) ||
-                g.fromName.toLowerCase().includes(searchLower) ||
+                (!g.isAnonymous && g.fromName.toLowerCase().includes(searchLower)) ||
                 g.subject.toLowerCase().includes(searchLower) ||
                 g.contactNumber?.includes(searchLower) ||
                 g.aadhaarNumber?.includes(searchLower)
@@ -109,11 +108,9 @@ export default function GrievanceSummaryPage() {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="All Statuses">All Statuses</SelectItem>
-                                                <SelectItem value="Submitted">Submitted</SelectItem>
-                                                <SelectItem value="In Progress">In Progress</SelectItem>
-                                                <SelectItem value="Resolved">Resolved</SelectItem>
-                                                <SelectItem value="Rejected">Rejected</SelectItem>
-                                                <SelectItem value="Anonymous - No Reply">Anonymous - No Reply</SelectItem>
+                                                {GRIEVANCE_STATUSES.filter(s => s !== 'Submitted').map(status => (
+                                                   <SelectItem key={status} value={status}>{status}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <Button className="bg-primary/90 hover:bg-primary text-primary-foreground">Export to Excel</Button>
