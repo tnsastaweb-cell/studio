@@ -29,6 +29,7 @@ import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useAuth } from '@/hooks/use-auth';
 
+const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 
 const baseSchema = z.object({
   name: z.string().min(1, "Name as per bank is required"),
@@ -52,7 +53,7 @@ const baseSchema = z.object({
 });
 
 const yesEmployeeCodeSchema = baseSchema.extend({
-  hasEmployeeCode: z.literal("yes").default("yes"),
+  hasEmployeeCode: z.literal("yes"),
   district: z.string().min(1, "District is required"),
   block: z.string().min(1, "Block is required"),
   panchayat: z.string().min(1, "Panchayat is required"),
@@ -61,7 +62,7 @@ const yesEmployeeCodeSchema = baseSchema.extend({
 });
 
 const noEmployeeCodeSchema = baseSchema.extend({
-  hasEmployeeCode: z.literal("no").default("no"),
+  hasEmployeeCode: z.literal("no"),
   scheme: z.string().min(1, "Scheme is required"),
   locationType: z.enum(["rural", "urban"]),
   district: z.string().min(1, "District is required"),
@@ -177,7 +178,7 @@ const VrpFormWithCode = () => {
                                 <FormLabel>District</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
-                                    <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                 </Select>
                                 <FormMessage />
                             </FormItem>
@@ -443,7 +444,7 @@ const VrpFormWithoutCode = () => {
                                 <FormLabel>District</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
-                                    <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                 </Select>
                                 <FormMessage />
                             </FormItem>
