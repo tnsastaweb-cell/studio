@@ -12,42 +12,40 @@ import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
-const PublicOfficeCard = ({ office }: { office: DistrictOffice }) => (
-    <Card>
-        <CardHeader>
-            <CardTitle>{office.district}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-             <div className="font-normal text-foreground/90">
-                <p className="font-semibold text-primary">Office Address:</p>
-                <p>{office.buildingName},</p>
-                <p>{office.address},</p>
-                <p>{office.pincode}</p>
-             </div>
-             <div className="font-normal text-foreground/90">
-                <p className="font-semibold text-primary">Contact:</p>
-                <p>{office.contactPerson}</p>
-                <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <span>{office.email}</span>
-                </div>
-                 <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    <span>{office.contactNumbers.join(', ')}</span>
-                </div>
-             </div>
+const PublicOfficeRow = ({ office }: { office: DistrictOffice }) => (
+    <TableRow>
+        <TableCell className="font-bold text-primary">{office.district}</TableCell>
+        <TableCell>
+            <p className="font-normal text-foreground/90">{office.buildingName},</p>
+            <p className="font-normal text-foreground/90">{office.address},</p>
+            <p className="font-normal text-foreground/90">{office.pincode}</p>
+        </TableCell>
+        <TableCell>
+             <p className="font-normal text-foreground/90">{office.contactPerson}</p>
+             <div className="flex items-center gap-2 font-normal text-foreground/90">
+                <Mail className="h-4 w-4" />
+                <span>{office.email}</span>
+            </div>
+             <div className="flex items-center gap-2 font-normal text-foreground/90">
+                <Phone className="h-4 w-4" />
+                <span>{office.contactNumbers.join(', ')}</span>
+            </div>
+        </TableCell>
+        <TableCell>
              {office.mapsLink && (
                  <Button asChild size="sm">
                      <a href={office.mapsLink} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" /> View on Map
+                        <ExternalLink className="mr-2 h-4 w-4" /> View Map
                      </a>
                  </Button>
              )}
-        </CardContent>
-    </Card>
-)
+        </TableCell>
+    </TableRow>
+);
+
 
 export default function DistrictOfficePage() {
     const { offices, loading: officesLoading } = useDistrictOffices();
@@ -67,7 +65,7 @@ export default function DistrictOfficePage() {
       <MainNavigation />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                     <CardTitle>Our Locations</CardTitle>
                     <CardDescription>
@@ -93,12 +91,28 @@ export default function DistrictOfficePage() {
                          <span className="ml-4">Loading Offices...</span>
                      </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                        {filteredOffices.length > 0 ? (
-                            filteredOffices.map(office => <PublicOfficeCard key={office.id} office={office} />)
-                        ) : (
-                            <p className="col-span-full text-center text-muted-foreground">No offices found for the selected district.</p>
-                        )}
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>District</TableHead>
+                                    <TableHead>Office Address</TableHead>
+                                    <TableHead>Contact</TableHead>
+                                    <TableHead>Map</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredOffices.length > 0 ? (
+                                    filteredOffices.map(office => <PublicOfficeRow key={office.id} office={office} />)
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="h-24 text-center">
+                                            No offices found for the selected district.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
             </CardContent>
@@ -109,4 +123,3 @@ export default function DistrictOfficePage() {
     </div>
   );
 }
-
