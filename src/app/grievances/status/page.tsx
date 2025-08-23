@@ -2,10 +2,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { MainNavigation } from '@/components/main-navigation';
@@ -16,9 +16,9 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useGrievances, Grievance } from '@/services/grievances';
 import { useToast } from '@/hooks/use-toast';
-import { FileQuestion, Badge, Paperclip } from "lucide-react";
+import { FileQuestion, Badge, Paperclip, ChevronLeft, Search as SearchIcon } from "lucide-react";
 import { Label } from '@/components/ui/label';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const searchSchema = z.object({
   searchType: z.enum(['regNo', 'aadhaarNo']),
@@ -119,7 +119,7 @@ export default function CheckGrievanceStatusPage() {
     const onSubmit = (data: SearchFormValues) => {
         let results: Grievance[] = [];
         if (data.searchType === 'regNo') {
-            results = grievances.filter(g => g.regNo === data.searchTerm);
+            results = grievances.filter(g => g.regNo.toLowerCase() === data.searchTerm.toLowerCase());
         } else {
             results = grievances.filter(g => g.aadhaarNumber === data.searchTerm);
         }
@@ -135,6 +135,8 @@ export default function CheckGrievanceStatusPage() {
             });
         }
     };
+    
+    const searchType = form.watch('searchType');
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -142,39 +144,66 @@ export default function CheckGrievanceStatusPage() {
       <MainNavigation />
       <main className="flex-1 container mx-auto px-4 py-8 pb-24">
         <Card>
-            <CardHeader>
-                <CardTitle>Check Grievance Status</CardTitle>
-                <CardDescription>
-                    Enter your Grievance Registration Number or Aadhaar Number to check the status.
-                </CardDescription>
+            <CardHeader className="flex flex-row justify-between items-center border-b">
+                 <div>
+                    <CardTitle>View Grievance Status</CardTitle>
+                 </div>
+                <Button variant="outline" asChild>
+                    <Link href="/grievances"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Grievance Options</Link>
+                </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-lg mx-auto">
-                         <FormField control={form.control} name="searchType" render={({ field }) => (
-                           <FormItem className="space-y-2">
-                                <FormControl>
-                                    <div className="flex items-center space-x-4">
-                                        <div className="flex items-center space-x-2">
-                                            <input type="radio" value="regNo" checked={field.value === 'regNo'} onChange={field.onChange} id="regNo" />
-                                            <Label htmlFor="regNo">Registration Number</Label>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                         <Card className="max-w-3xl mx-auto p-6 bg-card border-none shadow-none">
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                <FormField
+                                    control={form.control}
+                                    name="searchType"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Search By</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select search type" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="regNo">Registration ID</SelectItem>
+                                                <SelectItem value="aadhaarNo">Aadhaar Number</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="searchTerm"
+                                    render={({ field }) => (
+                                    <FormItem className="md:col-span-2">
+                                        <FormLabel>
+                                        {searchType === 'regNo' ? 'Registration ID (GRV-XXXXXX)' : 'Aadhaar Number'}
+                                        </FormLabel>
+                                        <div className="flex gap-2">
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder={searchType === 'regNo' ? 'Enter GRV-...' : 'Enter Aadhaar Number...'} 
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <Button type="submit" className="bg-primary/90 hover:bg-primary text-primary-foreground">
+                                                <SearchIcon className="mr-2 h-4 w-4" />
+                                                Search
+                                            </Button>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <input type="radio" value="aadhaarNo" checked={field.value === 'aadhaarNo'} onChange={field.onChange} id="aadhaarNo" />
-                                            <Label htmlFor="aadhaarNo">Aadhaar Number</Label>
-                                        </div>
-                                    </div>
-                                </FormControl>
-                           </FormItem>
-                         )} />
-                        
-                         <FormField control={form.control} name="searchTerm" render={({ field }) => (
-                           <FormItem><FormLabel className="sr-only">Search Term</FormLabel><FormControl><Input placeholder="Enter your number..." {...field} /></FormControl><FormMessage /></FormItem>
-                         )} />
-                         
-                         <div className="flex justify-end">
-                            <Button type="submit">Search</Button>
-                         </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                             </div>
+                         </Card>
                     </form>
                 </Form>
 

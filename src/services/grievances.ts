@@ -47,7 +47,12 @@ export interface Grievance {
 const GRIEVANCE_STORAGE_KEY = 'sasta-grievances';
 
 const generateRegNo = () => {
-    return `SASTA-GRV-${new Date().getFullYear()}${String(Date.now()).slice(-6)}`;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'GRV-';
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 const getInitialGrievances = (): Grievance[] => {
