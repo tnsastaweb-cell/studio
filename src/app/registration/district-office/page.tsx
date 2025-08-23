@@ -249,7 +249,7 @@ export default function DistrictOfficePage() {
       </main>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
+        <DialogContent className="overflow-y-auto max-h-[90vh]">
             <DialogHeader>
                  <DialogTitle>{editingOffice ? 'Edit Office Details' : 'Register Office'}</DialogTitle>
                  <DialogDescription>
