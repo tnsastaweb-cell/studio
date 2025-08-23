@@ -39,6 +39,7 @@ const baseSchema = z.object({
   familyName: z.string().min(1, "Father/Husband name is required"),
   caste: z.string().min(1, "Caste is required"),
   dob: z.date({ required_error: "Date of Birth is required" }),
+  gender: z.literal("Female"),
   qualification: z.string().min(1, "Qualification is required"),
   contactNumber1: z.string().regex(/^\d{10}$/, "Must be a 10-digit number"),
   contactNumber2: z.string().regex(/^\d{10}$/, "Must be a 10-digit number").optional().or(z.literal('')),
@@ -148,6 +149,15 @@ export default function VrpRegistrationPage() {
 
     const onSubmit = (data: VrpFormValues) => {
         let employeeCode = '';
+        let panchayatName = '';
+        let blockName = '';
+
+        const panchayatInfo = MOCK_PANCHAYATS.find(p => p.lgdCode === data.panchayat);
+        if (panchayatInfo) {
+            panchayatName = panchayatInfo.name;
+            blockName = panchayatInfo.block;
+        }
+
         if (data.hasEmployeeCode === 'no') {
             employeeCode = generateEmployeeCode(data.district);
         } else {
@@ -160,6 +170,8 @@ export default function VrpRegistrationPage() {
             employeeCode: employeeCode,
             dob: format(data.dob, 'yyyy-MM-dd'),
             age: parseInt(age, 10),
+            panchayatName: panchayatName,
+            block: blockName,
             lgdCode: lgdCode,
         };
 
@@ -208,7 +220,7 @@ export default function VrpRegistrationPage() {
                                         <FormItem className="space-y-3">
                                             <FormLabel>Does the VRP have an existing Employee Code?</FormLabel>
                                             <FormControl>
-                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
                                                     <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                                                     <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                                                 </RadioGroup>
@@ -272,7 +284,7 @@ export default function VrpRegistrationPage() {
                                             </FormItem>
                                         )} />
                                         
-                                        {(hasEmployeeCode === 'yes' || locationType === 'rural') && <>
+                                        {(hasEmployeeCode === 'yes' || (hasEmployeeCode === 'no' && locationType === 'rural')) && <>
                                             <FormField control={form.control} name="block" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Block</FormLabel>
@@ -354,7 +366,9 @@ export default function VrpRegistrationPage() {
                                                     </Select>
                                                 <FormMessage /></FormItem>
                                             )} />
-                                            <FormItem><FormLabel>Gender</FormLabel><FormControl><Input value="Female" readOnly className="bg-muted" /></FormControl></FormItem>
+                                            <FormField control={form.control} name="gender" render={({ field }) => (
+                                                <FormItem><FormLabel>Gender</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>
+                                            )}/>
                                         </div>
                                          <div className="grid grid-cols-2 gap-4">
                                              <FormField control={form.control} name="dob" render={({ field }) => (

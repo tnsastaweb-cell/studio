@@ -37,6 +37,7 @@ export interface VrpWithCode extends BaseVrp {
   block: string;
   panchayat: string; // LGD Code
   lgdCode: string;
+  panchayatName: string;
   mgnregaJobCard: string;
 }
 
@@ -49,6 +50,7 @@ export interface VrpWithoutCode extends BaseVrp {
   block?: string;
   panchayat?: string; // LGD Code
   lgdCode?: string;
+  panchayatName?: string;
   urbanBodyType?: 'town_panchayat' | 'municipality' | 'corporation';
   urbanBodyName?: string;
 }
@@ -58,14 +60,14 @@ export type Vrp = (VrpWithCode | VrpWithoutCode) & { id: number };
 const VRP_STORAGE_KEY = 'sasta-vrps';
 
 const DISTRICT_CODE_MAP: { [key: string]: string } = {
-  "Chennai": "00", "Tiruvallur": "01", "Kancheepuram": "02", "Vellore": "03", "Tiruvannamalai": "04",
-  "Viluppuram": "05", "Dharmapuri": "06", "Krishnagiri": "07", "Salem": "08", "Coimbatore": "09",
-  "The Nilgiris": "10", "Erode": "11", "Tiruppur": "12", "Tiruchirappalli": "13", "Karur": "14",
-  "Perambalur": "15", "Ariyalur": "16", "Cuddalore": "17", "Nagapattinam": "18", "Tiruvarur": "19",
-  "Thanjavur": "20", "Pudukkottai": "21", "Sivaganga": "22", "Madurai": "23", "Theni": "24",
-  "Dindigul": "25", "Ramanathapuram": "26", 'Virudhunagar': "27", "Tirunelveli": "28", "Thoothukudi": "29",
-  "Kanniyakumari": "30", "Tenkasi": "31", "Kallakurichi": "32", "Chengalpattu": "33", "Ranipet": "34",
-  "Tirupathur": "35", "Mayiladuthurai": "36"
+  "Ariyalur": "16", "Chengalpattu": "33", "Chennai": "00", "Coimbatore": "09", "Cuddalore": "17",
+  "Dharmapuri": "06", "Dindigul": "25", "Erode": "11", "Kallakurichi": "32", "Kancheepuram": "02",
+  "Kanniyakumari": "30", "Karur": "14", "Krishnagiri": "07", "Madurai": "23", "Mayiladuthurai": "36",
+  "Nagapattinam": "18", "Namakkal": "08", "Nilgiris": "10", "Perambalur": "15", "Pudukkottai": "21",
+  "Ramanathapuram": "26", "Ranipet": "34", "Salem": "08", "Sivaganga": "22", "Tenkasi": "31",
+  "Thanjavur": "20", "Theni": "24", "Thoothukudi": "29", "Tiruchirappalli": "13", "Tirunelveli": "28",
+  "Tirupathur": "35", "Tiruppur": "12", "Tiruvallur": "01", "Tiruvannamalai": "04", "Tiruvarur": "19",
+  "Vellore": "03", "Viluppuram": "05", "Virudhunagar": "27"
 };
 
 
@@ -83,6 +85,25 @@ const getInitialVRPs = (): Vrp[] => {
 export const useVRPs = () => {
     const [vrps, setVrps] = useState<Vrp[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const panchayatNameMap = useMemo(() => {
+        const map = new Map<string, { panchayat: string, block: string }>();
+        MOCK_PANCHAYATS.forEach(p => {
+            map.set(p.lgdCode, { panchayat: p.name, block: p.block });
+        });
+        return map;
+    }, []);
+
+    const enrichedVrps = useMemo(() => {
+        return vrps.map(vrp => {
+            const panchayatInfo = vrp.panchayat ? panchayatNameMap.get(vrp.panchayat) : undefined;
+            return {
+                ...vrp,
+                panchayatName: panchayatInfo ? panchayatInfo.panchayat : vrp.panchayatName || '',
+                block: panchayatInfo ? panchayatInfo.block : vrp.block || '',
+            };
+        });
+    }, [vrps, panchayatNameMap]);
 
     const loadVRPs = useCallback(() => {
         setLoading(true);
@@ -140,5 +161,5 @@ export const useVRPs = () => {
         syncVRPs(updatedVRPs);
     }, []);
 
-    return { vrps, loading, addVrp, updateVrp, deleteVrp, generateEmployeeCode };
+    return { vrps: enrichedVrps, loading, addVrp, updateVrp, deleteVrp, generateEmployeeCode };
 };
