@@ -86,11 +86,10 @@ export default function GrievanceSummaryPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                            <SummaryCard title="Total Grievances" count={summaryCounts.total} icon={<FileText className="h-8 w-8 text-muted-foreground"/>} />
-                           <SummaryCard title="Submitted" count={summaryCounts.submitted} icon={<HelpCircle className="h-8 w-8 text-blue-500"/>} />
-                           <SummaryCard title="In-Progress" count={summaryCounts.inProgress} icon={<RefreshCw className="h-8 w-8 text-yellow-500"/>} />
                            <SummaryCard title="Resolved" count={summaryCounts.resolved} icon={<CheckCircle className="h-8 w-8 text-green-500"/>} />
+                           <SummaryCard title="In-Progress" count={summaryCounts.inProgress} icon={<RefreshCw className="h-8 w-8 text-yellow-500"/>} />
                            <SummaryCard title="Rejected" count={summaryCounts.rejected} icon={<XCircle className="h-8 w-8 text-red-500"/>} />
                         </div>
                         
