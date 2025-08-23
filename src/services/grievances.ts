@@ -10,6 +10,9 @@ export interface Grievance {
     id: number;
     regNo: string;
     fromName: string;
+    fromAddress: string;
+    district: string;
+    pincode: string;
     contactNumber: string;
     aadhaarNumber?: string;
     email: string;

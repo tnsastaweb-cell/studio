@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useGrievances, Grievance } from '@/services/grievances';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FileQuestion, Badge, Paperclip } from "lucide-react";
 import { Label } from '@/components/ui/label';
 
@@ -44,8 +43,16 @@ const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
             <CardContent>
                 <div className="p-6 border rounded-lg space-y-4 bg-background">
                     <div className="flex justify-between">
-                       <p><strong>From:</strong> {grievance.fromName}</p>
-                       <p><strong>To:</strong> The Director, SASTA</p>
+                       <div className="text-sm">
+                           <p className="font-semibold">From:</p>
+                           <p>{grievance.fromName}</p>
+                           <p>{grievance.fromAddress}</p>
+                           <p>{grievance.district}, {grievance.pincode}</p>
+                       </div>
+                       <div className="text-sm text-right">
+                            <p className="font-semibold">To:</p>
+                            <p>The Director, SASTA</p>
+                       </div>
                     </div>
                      <p><strong>Subject:</strong> {grievance.subject}</p>
                      <p className="whitespace-pre-wrap font-normal text-foreground/90 border-t pt-4">{grievance.content}</p>
