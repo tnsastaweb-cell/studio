@@ -595,9 +595,9 @@ export default function AdminPage() {
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-primary">Admin Panel - Master Data</h1>
-          <Link href="/" className="text-sm text-primary hover:underline">
-            &larr; Back to Home
-          </Link>
+            <Button variant="outline" asChild>
+                <Link href="/"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
+            </Button>
         </div>
 
         <Dialog
