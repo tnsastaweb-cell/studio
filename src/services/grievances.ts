@@ -2,9 +2,10 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useUsers } from './users';
 
-export type GrievanceStatus = 'Submitted' | 'In Progress' | 'Resolved' | 'Rejected' | 'Anonymous - No Reply';
+export const GRIEVANCE_STATUSES = ['Submitted', 'In Progress', 'Resolved', 'Rejected', 'Anonymous - No Reply'] as const;
+
+export type GrievanceStatus = typeof GRIEVANCE_STATUSES[number];
 
 export interface Grievance {
     id: number;
@@ -40,7 +41,8 @@ export interface Grievance {
         },
         repliedBy: string; // User's name
         repliedAt: string;
-    }
+    };
+    petitionerFeedback?: 'Satisfied' | 'Partially Satisfied' | 'Not Satisfied';
 }
 
 
@@ -69,7 +71,6 @@ const getInitialGrievances = (): Grievance[] => {
 export const useGrievances = () => {
     const [grievances, setGrievances] = useState<Grievance[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user } = useUsers();
 
     const loadGrievances = useCallback(() => {
         setLoading(true);
@@ -118,19 +119,16 @@ export const useGrievances = () => {
         return newGrievance;
     }, []);
 
-    const addReply = useCallback((grievanceId: number, replyContent: string, replyAttachment?: Grievance['reply']['attachment']) => {
-        if (!user) return; // Or handle error
-
+    const addReply = useCallback((grievanceId: number, replyContent: string, repliedBy: string, replyAttachment?: Grievance['reply']['attachment']) => {
         setGrievances(prev => {
             const updatedGrievances = prev.map(g => {
                 if (g.id === grievanceId) {
                     return {
                         ...g,
-                        status: 'Resolved' as GrievanceStatus,
                         reply: {
                             content: replyContent,
                             attachment: replyAttachment,
-                            repliedBy: user.name,
+                            repliedBy: repliedBy,
                             repliedAt: new Date().toISOString(),
                         }
                     }
@@ -140,7 +138,20 @@ export const useGrievances = () => {
             syncGrievances(updatedGrievances);
             return updatedGrievances;
         });
-    }, [user]);
+    }, []);
+
+    const updateGrievanceStatus = useCallback((grievanceId: number, status: GrievanceStatus) => {
+        setGrievances(prev => {
+            const updatedGrievances = prev.map(g => g.id === grievanceId ? { ...g, status } : g);
+            syncGrievances(updatedGrievances);
+            return updatedGrievances;
+        });
+    }, []);
+
+    const deleteGrievance = useCallback((grievanceId: number) => {
+        const updatedGrievances = getInitialGrievances().filter(g => g.id !== grievanceId);
+        syncGrievances(updatedGrievances);
+    }, []);
     
-    return { grievances, loading, addGrievance, addReply };
+    return { grievances, loading, addGrievance, addReply, updateGrievanceStatus, deleteGrievance };
 };

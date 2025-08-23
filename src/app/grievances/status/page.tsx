@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from 'next/link';
@@ -16,13 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useGrievances, Grievance } from '@/services/grievances';
 import { useToast } from '@/hooks/use-toast';
-import { FileQuestion, Badge, Paperclip, ChevronLeft, Search as SearchIcon } from "lucide-react";
+import { FileQuestion, Badge, Paperclip, ChevronLeft, Search as SearchIcon, Smile, Meh, Frown } from "lucide-react";
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const searchSchema = z.object({
-  searchType: z.enum(['regNo', 'aadhaarNo']),
-  searchTerm: z.string().min(1, "Search term is required."),
+  searchTerm: z.string().min(1, "Registration Number is required."),
 });
 
 type SearchFormValues = z.infer<typeof searchSchema>;
@@ -94,6 +92,14 @@ const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
                                 <p>{new Date(grievance.reply.repliedAt).toLocaleString()}</p>
                             </div>
                         </div>
+                        <div className="mt-4 text-center p-4 border rounded-md">
+                           <p className="font-semibold mb-2">Are you satisfied with the reply?</p>
+                           <div className="flex justify-center gap-4">
+                             <Button variant="outline" size="sm" className="gap-2"><Smile className="h-4 w-4 text-green-500" /> Yes</Button>
+                             <Button variant="outline" size="sm" className="gap-2"><Meh className="h-4 w-4 text-yellow-500" /> Partially</Button>
+                             <Button variant="outline" size="sm" className="gap-2"><Frown className="h-4 w-4 text-red-500" /> No</Button>
+                           </div>
+                        </div>
                     </div>
                 )}
             </CardContent>
@@ -104,40 +110,32 @@ const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
 
 export default function CheckGrievanceStatusPage() {
     const { grievances } = useGrievances();
-    const [foundGrievances, setFoundGrievances] = useState<Grievance[]>([]);
+    const [foundGrievance, setFoundGrievance] = useState<Grievance | null>(null);
     const [searchPerformed, setSearchPerformed] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<SearchFormValues>({
         resolver: zodResolver(searchSchema),
         defaultValues: {
-            searchType: 'regNo',
             searchTerm: "",
         },
     });
 
     const onSubmit = (data: SearchFormValues) => {
-        let results: Grievance[] = [];
-        if (data.searchType === 'regNo') {
-            results = grievances.filter(g => g.regNo.toLowerCase() === data.searchTerm.toLowerCase());
-        } else {
-            results = grievances.filter(g => g.aadhaarNumber === data.searchTerm);
-        }
+        let result = grievances.find(g => g.regNo.toLowerCase() === data.searchTerm.toLowerCase());
         
-        setFoundGrievances(results);
+        setFoundGrievance(result || null);
         setSearchPerformed(true);
 
-        if (results.length === 0) {
+        if (!result) {
             toast({
                 variant: 'destructive',
                 title: "Not Found",
-                description: "No grievance found with the provided details.",
+                description: "No grievance found with the provided Registration Number.",
             });
         }
     };
     
-    const searchType = form.watch('searchType');
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -155,41 +153,18 @@ export default function CheckGrievanceStatusPage() {
             <CardContent className="pt-6">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                         <Card className="max-w-3xl mx-auto p-6 bg-card border-none shadow-none">
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <FormField
-                                    control={form.control}
-                                    name="searchType"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Search By</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select search type" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="regNo">Registration ID</SelectItem>
-                                                <SelectItem value="aadhaarNo">Aadhaar Number</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
+                         <Card className="max-w-xl mx-auto p-6 bg-card border-none shadow-none">
+                             <div className="grid grid-cols-1 gap-4 items-end">
                                 <FormField
                                     control={form.control}
                                     name="searchTerm"
                                     render={({ field }) => (
-                                    <FormItem className="md:col-span-2">
-                                        <FormLabel>
-                                        {searchType === 'regNo' ? 'Registration ID (GRV-XXXXXX)' : 'Aadhaar Number'}
-                                        </FormLabel>
+                                    <FormItem>
+                                        <FormLabel>Registration Number (e.g., GRV-XXXXXX)</FormLabel>
                                         <div className="flex gap-2">
                                             <FormControl>
                                                 <Input 
-                                                    placeholder={searchType === 'regNo' ? 'Enter GRV-...' : 'Enter Aadhaar Number...'} 
+                                                    placeholder="Enter your GRV Number..." 
                                                     {...field} 
                                                 />
                                             </FormControl>
@@ -207,18 +182,14 @@ export default function CheckGrievanceStatusPage() {
                     </form>
                 </Form>
 
-                {searchPerformed && foundGrievances.length > 0 && (
-                    <div className="mt-8 space-y-6">
-                        {foundGrievances.map(grievance => (
-                           <GrievanceDetails key={grievance.id} grievance={grievance} />
-                        ))}
-                    </div>
+                {searchPerformed && foundGrievance && (
+                    <GrievanceDetails grievance={foundGrievance} />
                 )}
-                 {searchPerformed && foundGrievances.length === 0 && (
+                 {searchPerformed && !foundGrievance && (
                     <div className="mt-8 text-center">
                         <FileQuestion className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h3 className="mt-4 text-lg font-medium text-muted-foreground">No Grievances Found</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">Please check your details and try again.</p>
+                        <h3 className="mt-4 text-lg font-medium text-muted-foreground">No Grievance Found</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">Please check your Registration Number and try again.</p>
                     </div>
                 )}
             </CardContent>
