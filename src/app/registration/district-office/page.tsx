@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -117,6 +117,7 @@ export default function DistrictOfficePage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingOffice, setEditingOffice] = useState<DistrictOffice | null>(null);
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [selectedDistrict, setSelectedDistrict] = useState('all');
     
     const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT', 'DRP', 'DRP I/C'].includes(user.designation);
 
@@ -143,7 +144,9 @@ export default function DistrictOfficePage() {
 
     const handleAddNew = () => {
         setEditingOffice(null);
-        form.reset();
+        form.reset({
+             contactNumbers: [{ value: '' }]
+        });
         setIsFormOpen(true);
     };
 
@@ -206,6 +209,13 @@ export default function DistrictOfficePage() {
             }
         );
     };
+    
+    const filteredOffices = useMemo(() => {
+        if (selectedDistrict === 'all') {
+            return offices;
+        }
+        return offices.filter(office => office.district === selectedDistrict);
+    }, [offices, selectedDistrict]);
 
     if (authLoading || officesLoading) {
         return (
@@ -228,10 +238,29 @@ export default function DistrictOfficePage() {
                 <MainNavigation />
                  <main className="flex-1 container mx-auto px-4 py-8">
                      <div className="space-y-4">
-                        <h1 className="text-3xl font-bold text-primary">Our Locations</h1>
-                        <p className="text-muted-foreground">Find the contact and location details for our district offices below.</p>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                             <div>
+                                <h1 className="text-3xl font-bold text-primary">Our Locations</h1>
+                                <p className="text-muted-foreground">Find the contact and location details for our district offices below.</p>
+                            </div>
+                            <div className="w-full md:w-64">
+                                <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Filter by District" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                           {offices.map(office => <PublicOfficeCard key={office.id} office={office} />)}
+                           {filteredOffices.length > 0 ? (
+                                filteredOffices.map(office => <PublicOfficeCard key={office.id} office={office} />)
+                            ) : (
+                                <p className="col-span-full text-center text-muted-foreground">No offices found for the selected district.</p>
+                            )}
                         </div>
                      </div>
                 </main>
@@ -265,7 +294,7 @@ export default function DistrictOfficePage() {
                             <FormField control={form.control} name="district" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>State/District</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="Select a district" /></SelectTrigger>
                                         </FormControl>
@@ -317,7 +346,7 @@ export default function DistrictOfficePage() {
                              <FormField control={form.control} name="contactPerson" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Contact Person</FormLabel>
-                                    <FormControl><Input {...field} readOnly={!canEdit} className={!canEdit ? 'bg-muted' : ''} /></FormControl>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                              )} />
@@ -390,7 +419,7 @@ export default function DistrictOfficePage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>District</TableHead>
+                                <TableHead>State/District</TableHead>
                                 <TableHead>Office Address</TableHead>
                                 <TableHead>Contact Person</TableHead>
                                 <TableHead>Contact Numbers</TableHead>
@@ -442,4 +471,5 @@ export default function DistrictOfficePage() {
       <BottomNavigation />
     </div>
   );
-}
+
+    
