@@ -55,8 +55,12 @@ const formSchema = z.object({
   recoveredAmount: z.coerce.number().min(0).optional(),
   fir: z.enum(['yes', 'no']),
   firNo: z.string().optional(),
+  firDetails: z.string().optional(),
+  firCopy: z.any().optional(),
   charges: z.enum(['yes', 'no']),
   chargeDetails: z.string().optional(),
+  chargesDescription: z.string().optional(),
+  chargesCopy: z.any().optional(),
   actionTaken: z.string().optional(),
   hlcMinutesFile: z.any().optional(),
   mgnregsDetails: mgnregsSchema.optional(),
@@ -73,7 +77,9 @@ const HlcForm = ({ scheme }: { scheme: string }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedRegNo, setGeneratedRegNo] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [hlcFile, setHlcFile] = useState<File | null>(null);
+  const [firFile, setFirFile] = useState<File | null>(null);
+  const [chargesFile, setChargesFile] = useState<File | null>(null);
 
   const drps = useMemo(() => {
     return users.filter(u => u.designation === 'DRP' || u.designation === 'DRP I/C');
@@ -110,52 +116,63 @@ const HlcForm = ({ scheme }: { scheme: string }) => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (selectedFile.size > 50 * 1024 * 1024) { // 50MB limit
-      toast({ variant: 'destructive', title: "File too large", description: "HLC Minutes file must be 50MB or smaller." });
-      e.target.value = "";
-      return;
+  const handleFileUpload = (file: File | null, setter: React.Dispatch<React.SetStateAction<File | null>>, fieldName: string) => {
+    if (file && file.size > 50 * 1024 * 1024) { // 50MB limit
+      toast({ variant: 'destructive', title: "File too large", description: `${fieldName} file must be 50MB or smaller.` });
+      return false;
     }
-    setFile(selectedFile);
+    setter(file);
+    return true;
   };
   
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     if (!generatedRegNo) {
       toast({ variant: 'destructive', title: "Submission Failed", description: "Please generate a registration number first." });
       return;
     }
     setIsSubmitting(true);
-    
-    const processSubmit = (fileDataUrl?: string) => {
+
+    const readFileAsDataURL = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
+    try {
+        const hlcMinutesData = hlcFile ? { name: generatedRegNo + '_minutes', originalName: hlcFile.name, dataUrl: await readFileAsDataURL(hlcFile) } : undefined;
+        const firCopyData = firFile ? { name: generatedRegNo + '_fir', originalName: firFile.name, dataUrl: await readFileAsDataURL(firFile) } : undefined;
+        const chargesCopyData = chargesFile ? { name: generatedRegNo + '_charges', originalName: chargesFile.name, dataUrl: await readFileAsDataURL(chargesFile) } : undefined;
+
         const finalData: Omit<HlcItem, 'id'> = {
             ...data,
             regNo: generatedRegNo,
             pendingParas: pendingParas,
             hlcDate: format(data.hlcDate, 'yyyy-MM-dd'),
             proceedingDate: format(data.proceedingDate, 'yyyy-MM-dd'),
-            hlcMinutes: file
-                ? { name: generatedRegNo, originalName: file.name, dataUrl: fileDataUrl! }
-                : undefined,
+            hlcMinutes: hlcMinutesData,
+            firCopy: firCopyData,
+            chargesCopy: chargesCopyData,
         };
+        
         addHlc(finalData);
         toast({ title: "Success!", description: `HLC entry ${generatedRegNo} has been saved.` });
-        form.reset();
+        form.reset({
+            scheme,
+            fir: 'no',
+            charges: 'no',
+            mgnregsDetails: { fmParas: 0, fmAmount: 0, fdParas: 0, fdAmount: 0, pvParas: 0, pvAmount: 0, grParas: 0, grAmount: 0 },
+        });
         setGeneratedRegNo(null);
-        setFile(null);
+        setHlcFile(null);
+        setFirFile(null);
+        setChargesFile(null);
+    } catch (error) {
+        toast({ variant: "destructive", title: "File Upload Failed", description: "Could not process one of the files. Please try again." });
+    } finally {
         setIsSubmitting(false);
-    }
-    
-    if (file) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            processSubmit(reader.result as string);
-        }
-    } else {
-        processSubmit();
     }
   };
 
@@ -197,7 +214,7 @@ const HlcForm = ({ scheme }: { scheme: string }) => {
              )} />
              <FormField control={form.control} name="placedParas" render={({ field }) => (<FormItem><FormLabel>No. of Paras Placed</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
              <FormField control={form.control} name="closedParas" render={({ field }) => (<FormItem><FormLabel>No. of Paras Closed</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-             <FormItem><FormLabel>Pending</FormLabel><FormControl><Input value={pendingParas} readOnly className="bg-muted" /></FormControl></FormItem>
+             <FormItem><FormLabel>Pending</FormLabel><FormControl><Input value={pendingParas < 0 ? 'Invalid' : pendingParas} readOnly className="bg-muted" /></FormControl></FormItem>
           </CardContent>
         </Card>
 
@@ -220,35 +237,64 @@ const HlcForm = ({ scheme }: { scheme: string }) => {
         <Card>
             <CardHeader><CardTitle>Action & Recovery</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <FormField control={form.control} name="recoveredAmount" render={({ field }) => (<FormItem><FormLabel>Recovered Amount in HLC</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                 <FormField control={form.control} name="fir" render={({ field }) => (
-                    <FormItem className="space-y-3"><FormLabel>FIR</FormLabel><FormControl>
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
-                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem>
-                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem>
-                        </RadioGroup></FormControl><FormMessage /></FormItem>
-                )} />
-                {form.watch('fir') === 'yes' && (
-                    <FormField control={form.control} name="firNo" render={({ field }) => (<FormItem><FormLabel>NO OF FIR / FIR No.</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                )}
-                 <FormField control={form.control} name="charges" render={({ field }) => (
-                    <FormItem className="space-y-3"><FormLabel>Charges</FormLabel><FormControl>
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
-                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem>
-                            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem>
-                        </RadioGroup></FormControl><FormMessage /></FormItem>
-                 )} />
-                 {form.watch('charges') === 'yes' && (
-                     <FormField control={form.control} name="chargeDetails" render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>NO OF CHARGES / What kind of charges?</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                 )}
-                  <FormField control={form.control} name="actionTaken" render={({ field }) => (
+                <FormField control={form.control} name="recoveredAmount" render={({ field }) => (<FormItem className="md:col-span-1"><FormLabel>Recovered Amount in HLC</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                
+                <div className="md:col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField control={form.control} name="fir" render={({ field }) => (
+                        <FormItem className="space-y-3"><FormLabel>FIR</FormLabel><FormControl>
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
+                                <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem>
+                                <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem>
+                            </RadioGroup></FormControl><FormMessage /></FormItem>
+                    )} />
+                    {form.watch('fir') === 'yes' && (
+                        <>
+                            <FormField control={form.control} name="firNo" render={({ field }) => (<FormItem><FormLabel>NO OF FIR / FIR No.</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="firDetails" render={({ field }) => (<FormItem><FormLabel>FIR Details</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="firCopy" render={({ field }) => (
+                                <FormItem><FormLabel>Upload FIR Copy</FormLabel><FormControl>
+                                <Input type="file" onChange={(e) => {
+                                    field.onChange(e.target.files);
+                                    handleFileUpload(e.target.files?.[0] || null, setFirFile, 'FIR Copy');
+                                }} />
+                                </FormControl><FormMessage /></FormItem>
+                            )} />
+                        </>
+                    )}
+                </div>
+
+                <div className="md:col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <FormField control={form.control} name="charges" render={({ field }) => (
+                        <FormItem className="space-y-3"><FormLabel>Charges</FormLabel><FormControl>
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
+                                <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem>
+                                <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem>
+                            </RadioGroup></FormControl><FormMessage /></FormItem>
+                     )} />
+                     {form.watch('charges') === 'yes' && (
+                         <>
+                            <FormField control={form.control} name="chargeDetails" render={({ field }) => (<FormItem><FormLabel>NO OF CHARGES / What kind of charges?</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="chargesDescription" render={({ field }) => (<FormItem><FormLabel>Charges Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="chargesCopy" render={({ field }) => (
+                                <FormItem><FormLabel>Upload Charges Copy</FormLabel><FormControl>
+                                <Input type="file" onChange={(e) => {
+                                    field.onChange(e.target.files);
+                                    handleFileUpload(e.target.files?.[0] || null, setChargesFile, 'Charges Copy');
+                                }} />
+                                </FormControl><FormMessage /></FormItem>
+                            )} />
+                         </>
+                     )}
+                </div>
+
+                <FormField control={form.control} name="actionTaken" render={({ field }) => (
                     <FormItem className="md:col-span-full"><FormLabel>Action Taken Details</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="hlcMinutesFile" render={({ field }) => (
                     <FormItem className="md:col-span-full"><FormLabel>HLC Minutes Upload (Max 50MB)</FormLabel><FormControl>
                         <Input type="file" onChange={(e) => {
                             field.onChange(e.target.files);
-                            handleFileChange(e);
+                            handleFileUpload(e.target.files?.[0] || null, setHlcFile, 'HLC Minutes');
                         }} />
                     </FormControl><FormMessage /></FormItem>
                  )} />

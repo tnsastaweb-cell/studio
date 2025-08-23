@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { MOCK_SCHEMES } from './schemes';
+import { format } from 'date-fns';
 
 const DISTRICT_CODE_MAP: { [key: string]: string } = {
   "Ariyalur": "16", "Chengalpattu": "33", "Chennai": "00", "Coimbatore": "09", "Cuddalore": "17",
@@ -26,6 +27,12 @@ interface MgnregsDetails {
     grAmount?: number;
 }
 
+interface FileAttachment {
+    name: string;
+    originalName: string;
+    dataUrl: string;
+}
+
 export interface HlcItem {
     id: number;
     regNo: string;
@@ -42,14 +49,14 @@ export interface HlcItem {
     recoveredAmount?: number;
     fir: 'yes' | 'no';
     firNo?: string;
+    firDetails?: string;
+    firCopy?: FileAttachment;
     charges: 'yes' | 'no';
     chargeDetails?: string;
+    chargesDescription?: string;
+    chargesCopy?: FileAttachment;
     actionTaken?: string;
-    hlcMinutes?: {
-        name: string;
-        originalName: string;
-        dataUrl: string;
-    };
+    hlcMinutes?: FileAttachment;
     mgnregsDetails?: MgnregsDetails;
 }
 
@@ -73,7 +80,7 @@ export const useHlc = () => {
     const loadHlcItems = useCallback(() => {
         setLoading(true);
         const data = getInitialHlcItems();
-        setHlcItems(data);
+        setHlcItems(data.sort((a,b) => new Date(b.hlcDate).getTime() - new Date(a.hlcDate).getTime()));
         setLoading(false);
     }, []);
 
@@ -89,11 +96,12 @@ export const useHlc = () => {
     }, [loadHlcItems]);
 
     const syncHlcItems = (updatedItems: HlcItem[]) => {
-        setHlcItems(updatedItems);
+        const sorted = updatedItems.sort((a,b) => new Date(b.hlcDate).getTime() - new Date(a.hlcDate).getTime());
+        setHlcItems(sorted);
         if (typeof window !== 'undefined') {
             try {
-                localStorage.setItem(HLC_STORAGE_KEY, JSON.stringify(updatedItems));
-                window.dispatchEvent(new StorageEvent('storage', { key: HLC_STORAGE_KEY, newValue: JSON.stringify(updatedItems) }));
+                localStorage.setItem(HLC_STORAGE_KEY, JSON.stringify(sorted));
+                window.dispatchEvent(new StorageEvent('storage', { key: HLC_STORAGE_KEY, newValue: JSON.stringify(sorted) }));
             } catch (error) {
                 console.error("Failed to save HLC entries to localStorage:", error);
             }

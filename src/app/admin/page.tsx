@@ -14,9 +14,11 @@ import {
   Edit,
   Eye,
   EyeOff,
+  FileText,
   FileUp,
   Paperclip,
   PlusCircle,
+  Search,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -189,6 +191,11 @@ export default function AdminPage() {
       district: 'all',
       locationType: 'all',
   });
+  
+  const [hlcFilters, setHlcFilters] = useState({
+      search: '',
+      district: 'all',
+  })
 
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const { addItem: addGalleryItem } = useGallery();
@@ -239,6 +246,19 @@ export default function AdminPage() {
             return districtMatch && locationMatch && searchMatch;
         });
     }, [vrps, vrpFilters]);
+    
+    const filteredHlcItems = useMemo(() => {
+        return hlcItems.filter(item => {
+            const districtMatch = hlcFilters.district === 'all' || item.district === hlcFilters.district;
+            const searchLower = hlcFilters.search.toLowerCase();
+            const searchMatch = !searchLower ? true : (
+                item.regNo.toLowerCase().includes(searchLower) ||
+                item.drpName.toLowerCase().includes(searchLower) ||
+                item.proceedingNo.toLowerCase().includes(searchLower)
+            );
+            return districtMatch && searchMatch;
+        })
+    }, [hlcItems, hlcFilters]);
 
 
   const handlePanchayatFilterChange = (field: keyof typeof panchayatFilters, value: string) => {
@@ -451,6 +471,7 @@ export default function AdminPage() {
         const reader = new FileReader();
         reader.onloadend = () => {
             const dataUrl = reader.result as string;
+            const panchayatInfo = MOCK_PANCHAYATS.find(p => p.lgdCode === values.panchayat);
             const newItem: Omit<GalleryItem, 'id' | 'uploadedAt'> = {
                 ...values,
                 originalFilename: galleryFile.name,
@@ -459,7 +480,6 @@ export default function AdminPage() {
             addGalleryItem(newItem);
             toast({ title: "Upload Successful", description: `${galleryFile.name} has been uploaded.` });
             
-            // Clear form after a delay
             setTimeout(() => {
                 galleryForm.reset();
                 if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
@@ -1490,67 +1510,102 @@ export default function AdminPage() {
             </Tabs>
         </TabsContent>
         <TabsContent value="hlc-details">
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle>HLC Details</CardTitle>
                     <CardDescription>Review and manage all submitted HLC entries.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="border rounded-lg">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Reg. No</TableHead>
-                                    <TableHead>Scheme</TableHead>
-                                    <TableHead>HLC Date</TableHead>
-                                    <TableHead>District</TableHead>
-                                    <TableHead>Placed</TableHead>
-                                    <TableHead>Closed</TableHead>
-                                    <TableHead>Pending</TableHead>
-                                    <TableHead>Minutes</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {hlcItems.map(item => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-mono text-xs">{item.regNo}</TableCell>
-                                        <TableCell>{item.scheme}</TableCell>
-                                        <TableCell>{format(new Date(item.hlcDate), 'dd/MM/yyyy')}</TableCell>
-                                        <TableCell>{item.district}</TableCell>
-                                        <TableCell>{item.placedParas}</TableCell>
-                                        <TableCell>{item.closedParas}</TableCell>
-                                        <TableCell>{item.pendingParas}</TableCell>
-                                        <TableCell>
-                                            {item.hlcMinutes && (
-                                                <a href={item.hlcMinutes.dataUrl} download={item.hlcMinutes.name} className="text-primary hover:underline">
-                                                    <FileText className="h-5 w-5" />
-                                                </a>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button variant="outline" size="sm">Edit</Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="sm">Delete</Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This will permanently delete this HLC entry.</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => deleteHlc(item.id)}>Continue</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    <Tabs defaultValue={MOCK_SCHEMES[0].id}>
+                        <TabsList>
+                             {MOCK_SCHEMES.map(scheme => (
+                                <TabsTrigger key={scheme.id} value={scheme.id}>{scheme.name}</TabsTrigger>
+                            ))}
+                        </TabsList>
+                        {MOCK_SCHEMES.map(scheme => (
+                             <TabsContent key={scheme.id} value={scheme.id} className="pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div className="relative md:col-span-2">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Search by Reg. No, DRP Name, Proceeding No..." 
+                                            className="pl-10" 
+                                            value={hlcFilters.search}
+                                            onChange={(e) => setHlcFilters(f => ({ ...f, search: e.target.value }))}
+                                        />
+                                    </div>
+                                     <Select value={hlcFilters.district} onValueChange={v => setHlcFilters(f => ({ ...f, district: v }))}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Districts</SelectItem>
+                                            {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="border rounded-lg">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Reg. No</TableHead>
+                                                <TableHead>HLC Date</TableHead>
+                                                <TableHead>District</TableHead>
+                                                <TableHead>DRP Name</TableHead>
+                                                <TableHead>Placed</TableHead>
+                                                <TableHead>Closed</TableHead>
+                                                <TableHead>Pending</TableHead>
+                                                <TableHead>Recovered</TableHead>
+                                                <TableHead className="text-center">FIR</TableHead>
+                                                <TableHead className="text-center">Charges</TableHead>
+                                                <TableHead className="text-center">Minutes</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredHlcItems.filter(item => item.scheme === scheme.name).map(item => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-mono text-xs">{item.regNo}</TableCell>
+                                                    <TableCell>{format(new Date(item.hlcDate), 'dd/MM/yyyy')}</TableCell>
+                                                    <TableCell>{item.district}</TableCell>
+                                                    <TableCell>{item.drpName}</TableCell>
+                                                    <TableCell>{item.placedParas}</TableCell>
+                                                    <TableCell>{item.closedParas}</TableCell>
+                                                    <TableCell>{item.pendingParas}</TableCell>
+                                                    <TableCell>{item.recoveredAmount ? `₹${item.recoveredAmount.toLocaleString()}` : '-'}</TableCell>
+                                                    <TableCell className="text-center">{item.firNo || 'No'}</TableCell>
+                                                    <TableCell className="text-center">{item.chargeDetails || 'No'}</TableCell>
+                                                    <TableCell className="text-center">
+                                                        {item.hlcMinutes && (
+                                                            <a href={item.hlcMinutes.dataUrl} download={item.hlcMinutes.name} className="text-primary hover:underline">
+                                                                <FileText className="h-5 w-5 mx-auto" />
+                                                            </a>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right space-x-2">
+                                                        <Button variant="outline" size="sm">Edit</Button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="sm">Delete</Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>This will permanently delete this HLC entry.</AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => deleteHlc(item.id)}>Continue</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                             </TabsContent>
+                        ))}
+                    </Tabs>
                 </CardContent>
             </Card>
         </TabsContent>
