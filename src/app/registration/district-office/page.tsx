@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { PlusCircle, Trash2, MapPin, Loader2 } from "lucide-react";
+import { PlusCircle, Trash2, MapPin, Loader2, Mail, Phone, ExternalLink } from "lucide-react";
 
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +74,41 @@ const officeFormSchema = z.object({
 });
 
 type OfficeFormValues = z.infer<typeof officeFormSchema>;
+
+const PublicOfficeCard = ({ office }: { office: DistrictOffice }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle>{office.district}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+             <div className="font-normal text-foreground/90">
+                <p className="font-semibold text-primary">Office Address:</p>
+                <p>{office.buildingName},</p>
+                <p>{office.address},</p>
+                <p>{office.pincode}</p>
+             </div>
+             <div className="font-normal text-foreground/90">
+                <p className="font-semibold text-primary">Contact:</p>
+                <p>{office.contactPerson}</p>
+                <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>{office.email}</span>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span>{office.contactNumbers.join(', ')}</span>
+                </div>
+             </div>
+             {office.mapsLink && (
+                 <Button asChild size="sm">
+                     <a href={office.mapsLink} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" /> View on Map
+                     </a>
+                 </Button>
+             )}
+        </CardContent>
+    </Card>
+)
 
 export default function DistrictOfficePage() {
     const { user, loading: authLoading } = useAuth();
@@ -186,17 +221,19 @@ export default function DistrictOfficePage() {
         )
     }
 
-    if (!user) {
+    if (!canEdit) {
          return (
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <MainNavigation />
-                 <main className="flex-1 container mx-auto px-4 py-8 text-center">
-                    <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
-                    <p className="mt-4">You must be signed in to view this page.</p>
-                    <Button asChild className="mt-6">
-                        <Link href="/signin">Sign In</Link>
-                    </Button>
+                 <main className="flex-1 container mx-auto px-4 py-8">
+                     <div className="space-y-4">
+                        <h1 className="text-3xl font-bold text-primary">Our Locations</h1>
+                        <p className="text-muted-foreground">Find the contact and location details for our district offices below.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                           {offices.map(office => <PublicOfficeCard key={office.id} office={office} />)}
+                        </div>
+                     </div>
                 </main>
                 <Footer />
                 <BottomNavigation />
@@ -219,7 +256,7 @@ export default function DistrictOfficePage() {
         }}>
             <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{editingOffice ? "Edit District Office" : "Add District Office"}</DialogTitle>
+                    <DialogTitle>{editingOffice ? "Edit Office Details" : "Register Office"}</DialogTitle>
                     <DialogDescription>Fill in the details for the district office.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -227,7 +264,7 @@ export default function DistrictOfficePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <FormField control={form.control} name="district" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>District</FormLabel>
+                                    <FormLabel>State/District</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="Select a district" /></SelectTrigger>
@@ -336,7 +373,7 @@ export default function DistrictOfficePage() {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>District Office Registration</CardTitle>
+                    <CardTitle>Office Registration</CardTitle>
                     <CardDescription>
                         Manage district office contact and location details. Total offices: {offices.length}
                     </CardDescription>
@@ -344,7 +381,7 @@ export default function DistrictOfficePage() {
                 {canEdit && (
                     <Button onClick={handleAddNew}>
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Details
+                        Register Office
                     </Button>
                 )}
             </CardHeader>

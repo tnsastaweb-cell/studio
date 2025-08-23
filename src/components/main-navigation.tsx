@@ -87,7 +87,7 @@ const signedInMenuItems = [
       title: "REGISTRATION", 
       href: "/registration",
       children: [
-        { title: "DISTRICT OFFICE REGISTRATION", href: "/registration/district-office" },
+        { title: "OFFICE REGISTRATION", href: "/registration/district-office" },
         { title: "STAFF REGISTRATION", href: "/registration/staff" },
         { title: "VRP REGISTRATION", href: "/registration/vrp" },
       ]
@@ -98,12 +98,12 @@ const signedInMenuItems = [
       children: [
         { title: "MGNREGS", href: "/data-entry/mgnregs" },
         { title: "PMAY-G", href: "/data-entry/pamy-g" },
-        { title: "NSAP", href: "/data-entry/nsap" },
-        { title: "NMP", href: "/data-entry/nmp" },
-        { title: "FFCG", href: "/data-entry/ffcg" },
-        { title: "DSJE", href: "/data-entry/dsje" },
+        { title: "NSAP", href: "/data-entry/nsap", disabled: true },
+        { title: "NMP", href: "/data-entry/nmp", disabled: true },
+        { title: "15th CFC Grant", href: "/data-entry/ffcg", disabled: true },
+        { title: "DSJE", href: "/data-entry/dsje", disabled: true },
         { title: "HLC", href: "/data-entry/hlc" },
-        { title: "STATE/DISTRICT ASSEMBLY", href: "/data-entry/assembly" },
+        { title: "State/District Assembly", href: "/data-entry/assembly", disabled: true },
       ]
     },
     { 
