@@ -74,7 +74,7 @@ const guestMenuItems = [
     title: "CONNECT",
     href: "/connect",
     children: [
-        { title: "Location", href: "/registration/district-office" },
+        { title: "Location", href: "/connect/location" },
         { title: "Careers", href: "/connect/careers" },
         { title: "Write to Us", href: "/connect/write-to-us" },
         { title: "Grievances", href: "/grievances" },
