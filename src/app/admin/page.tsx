@@ -217,7 +217,7 @@ export default function AdminPage() {
 
     const sortedDistricts = useMemo(() => {
         const chennai = DISTRICTS.find(d => d === "Chennai");
-        const others = DISTRICTS.filter(d => d !== "Chennai").sort();
+        const others = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
         return chennai ? [chennai, ...others] : others;
     }, []);
     
@@ -1895,4 +1895,3 @@ export default function AdminPage() {
     </div>
   );
 }
-

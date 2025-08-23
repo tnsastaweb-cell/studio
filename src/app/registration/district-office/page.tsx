@@ -191,7 +191,7 @@ export default function DistrictOfficePage() {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <MainNavigation />
-                <main className="flex-1 container mx-auto px-4 py-8 text-center">
+                 <main className="flex-1 container mx-auto px-4 py-8 text-center">
                     <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
                     <p className="mt-4">You must be signed in to view this page.</p>
                     <Button asChild className="mt-6">
