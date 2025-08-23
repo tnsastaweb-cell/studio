@@ -76,7 +76,6 @@ const noEmployeeCodeSchema = baseSchema.extend({
   path: ["urbanBodyName"],
 });
 
-
 const formSchema = z.discriminatedUnion("hasEmployeeCode", [
     yesEmployeeCodeSchema,
     noEmployeeCodeSchema,
