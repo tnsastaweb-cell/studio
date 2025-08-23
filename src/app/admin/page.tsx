@@ -29,6 +29,7 @@ import { useCalendars } from '@/services/calendars';
 import { DISTRICTS } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
+import { useVRPs, Vrp } from '@/services/vrp';
 import { useGallery, galleryActivityTypes, GalleryMediaType, GalleryItem } from '@/services/gallery';
 import { useLibrary, libraryCategories, LibraryItem, LibraryCategory } from '@/services/library';
 import { useGrievances, Grievance, GrievanceStatus, GRIEVANCE_STATUSES } from '@/services/grievances';
@@ -155,6 +156,7 @@ const years = ["2025-2026", "2024-2025", "2023-2024"];
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
+  const { vrps, deleteVrp } = useVRPs();
   const { feedbacks, deleteFeedback } = useFeedback();
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
 
@@ -178,6 +180,12 @@ export default function AdminPage() {
     block: '',
     panchayat: '',
     lgdCode: '',
+  });
+  
+  const [vrpFilters, setVrpFilters] = useState({
+      search: '',
+      district: 'all',
+      locationType: 'all',
   });
 
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
@@ -212,6 +220,23 @@ export default function AdminPage() {
         const others = DISTRICTS.filter(d => d !== "Chennai").sort();
         return chennai ? [chennai, ...others] : others;
     }, []);
+    
+    const filteredVrps = useMemo(() => {
+        return vrps.filter(vrp => {
+            const searchLower = vrpFilters.search.toLowerCase();
+            const districtMatch = vrpFilters.district === 'all' || vrp.district === vrpFilters.district;
+            const locationMatch = vrpFilters.locationType === 'all' || (vrp.hasEmployeeCode === 'no' && vrp.locationType === vrpFilters.locationType);
+
+            const searchMatch = !vrpFilters.search ? true : (
+                vrp.name.toLowerCase().includes(searchLower) ||
+                vrp.employeeCode.toLowerCase().includes(searchLower) ||
+                vrp.contactNumber1.includes(searchLower) ||
+                vrp.pfmsId.toLowerCase().includes(searchLower)
+            );
+            
+            return districtMatch && locationMatch && searchMatch;
+        });
+    }, [vrps, vrpFilters]);
 
 
   const handlePanchayatFilterChange = (field: keyof typeof panchayatFilters, value: string) => {
@@ -849,13 +874,14 @@ export default function AdminPage() {
          </Dialog>
 
         <Tabs defaultValue="signup-details" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="roles">Roles</TabsTrigger>
             <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
             <TabsTrigger value="schemes">Schemes</TabsTrigger>
             <TabsTrigger value="local-bodies">Rural &amp; Urban</TabsTrigger>
             <TabsTrigger value="grievances">Grievances</TabsTrigger>
             <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="settings">Site Settings</TabsTrigger>
           </TabsList>
           <TabsContent value="roles">
@@ -1066,7 +1092,7 @@ export default function AdminPage() {
           <TabsContent value="local-bodies">
             <Tabs defaultValue="district-panchayats" className="w-full">
               <TabsList>
-                <TabsTrigger value="district-panchayats">District</TabsTrigger>
+                <TabsTrigger value="district">District</TabsTrigger>
                 <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
                 <TabsTrigger value="district-panchayats" disabled>
                   District Panchayat
@@ -1081,7 +1107,7 @@ export default function AdminPage() {
                   Town Panchayat
                 </TabsTrigger>
               </TabsList>
-               <TabsContent value="district-panchayats">
+               <TabsContent value="district">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>District List</CardTitle>
@@ -1358,6 +1384,108 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="details">
+            <Tabs defaultValue="vrp-details">
+                <TabsList>
+                    <TabsTrigger value="staff-details">Staff Details</TabsTrigger>
+                    <TabsTrigger value="vrp-details">VRP</TabsTrigger>
+                </TabsList>
+                <TabsContent value="staff-details">
+                    <Card><CardContent className="p-4">Staff details will be shown here.</CardContent></Card>
+                </TabsContent>
+                <TabsContent value="vrp-details">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>VRP Details</CardTitle>
+                            <CardDescription>Manage and view registered Village Resource Persons.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <Input placeholder="Search by Name, Code, PFMS, Contact..." value={vrpFilters.search} onChange={e => setVrpFilters(f => ({ ...f, search: e.target.value }))} />
+                                <Select value={vrpFilters.district} onValueChange={v => setVrpFilters(f => ({ ...f, district: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                 <Select value={vrpFilters.locationType} onValueChange={v => setVrpFilters(f => ({ ...f, locationType: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Locations</SelectItem>
+                                        <SelectItem value="rural">Rural</SelectItem>
+                                        <SelectItem value="urban">Urban</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="border rounded-lg">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>S.No</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Employee Code</TableHead>
+                                            <TableHead>District</TableHead>
+                                            <TableHead>Location</TableHead>
+                                            <TableHead>Contact</TableHead>
+                                            <TableHead>PFMS ID</TableHead>
+                                            <TableHead>Qualification</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredVrps.map((vrp, index) => (
+                                            <TableRow key={vrp.id}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell className="font-medium">{vrp.name}</TableCell>
+                                                <TableCell>{vrp.employeeCode}</TableCell>
+                                                <TableCell>{vrp.district}</TableCell>
+                                                <TableCell>
+                                                    {vrp.hasEmployeeCode === 'no' ? (
+                                                        <div className="text-xs">
+                                                            <p className="font-bold">{toTitleCase(vrp.locationType)}</p>
+                                                             <p className="text-muted-foreground">
+                                                                {vrp.locationType === 'rural' ? `${vrp.panchayatName}, ${vrp.block}` : `${vrp.urbanBodyName}`}
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-xs">
+                                                             <p className="font-bold">Rural</p>
+                                                             <p className="text-muted-foreground">{`${vrp.panchayatName}, ${vrp.block}`}</p>
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>{vrp.contactNumber1}</TableCell>
+                                                <TableCell>{vrp.pfmsId}</TableCell>
+                                                <TableCell>{vrp.qualification}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="sm" onClick={() => { /* handle edit */ }}>Edit</Button>
+                                                     <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="sm">Delete</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>This will permanently delete the VRP record.</AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => deleteVrp(vrp.id)}>Continue</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
                <TabsList className="grid w-full grid-cols-4">
@@ -1767,3 +1895,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
