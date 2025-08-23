@@ -33,6 +33,7 @@ import { useVRPs, Vrp } from '@/services/vrp';
 import { useGallery, galleryActivityTypes, GalleryMediaType, GalleryItem } from '@/services/gallery';
 import { useLibrary, libraryCategories, LibraryItem, LibraryCategory } from '@/services/library';
 import { useGrievances, Grievance, GrievanceStatus, GRIEVANCE_STATUSES } from '@/services/grievances';
+import { useHlc, HlcItem } from '@/services/hlc';
 
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -159,6 +160,7 @@ export default function AdminPage() {
   const { vrps, deleteVrp } = useVRPs();
   const { feedbacks, deleteFeedback } = useFeedback();
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
+  const { hlcItems, deleteHlc } = useHlc();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
@@ -627,7 +629,7 @@ export default function AdminPage() {
       <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-primary">Admin Panel - Master Data</h1>
-            <Button variant="outline" asChild>
+            <Button asChild>
                 <Link href="/"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
             </Button>
         </div>
@@ -874,7 +876,7 @@ export default function AdminPage() {
          </Dialog>
 
         <Tabs defaultValue="signup-details" className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="roles">Roles</TabsTrigger>
             <TabsTrigger value="signup-details">Sign Up Details</TabsTrigger>
             <TabsTrigger value="schemes">Schemes</TabsTrigger>
@@ -882,6 +884,7 @@ export default function AdminPage() {
             <TabsTrigger value="grievances">Grievances</TabsTrigger>
             <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="hlc-details">HLC Details</TabsTrigger>
             <TabsTrigger value="settings">Site Settings</TabsTrigger>
           </TabsList>
           <TabsContent value="roles">
@@ -1485,6 +1488,71 @@ export default function AdminPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+        </TabsContent>
+        <TabsContent value="hlc-details">
+            <Card>
+                <CardHeader>
+                    <CardTitle>HLC Details</CardTitle>
+                    <CardDescription>Review and manage all submitted HLC entries.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Reg. No</TableHead>
+                                    <TableHead>Scheme</TableHead>
+                                    <TableHead>HLC Date</TableHead>
+                                    <TableHead>District</TableHead>
+                                    <TableHead>Placed</TableHead>
+                                    <TableHead>Closed</TableHead>
+                                    <TableHead>Pending</TableHead>
+                                    <TableHead>Minutes</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {hlcItems.map(item => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-mono text-xs">{item.regNo}</TableCell>
+                                        <TableCell>{item.scheme}</TableCell>
+                                        <TableCell>{format(new Date(item.hlcDate), 'dd/MM/yyyy')}</TableCell>
+                                        <TableCell>{item.district}</TableCell>
+                                        <TableCell>{item.placedParas}</TableCell>
+                                        <TableCell>{item.closedParas}</TableCell>
+                                        <TableCell>{item.pendingParas}</TableCell>
+                                        <TableCell>
+                                            {item.hlcMinutes && (
+                                                <a href={item.hlcMinutes.dataUrl} download={item.hlcMinutes.name} className="text-primary hover:underline">
+                                                    <FileText className="h-5 w-5" />
+                                                </a>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right space-x-2">
+                                            <Button variant="outline" size="sm">Edit</Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="sm">Delete</Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>This will permanently delete this HLC entry.</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => deleteHlc(item.id)}>Continue</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
         </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
