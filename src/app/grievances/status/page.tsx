@@ -25,7 +25,7 @@ const searchSchema = z.object({
 
 type SearchFormValues = z.infer<typeof searchSchema>;
 
-const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
+const GrievanceDetails = ({ grievance, onFeedbackSubmit }: { grievance: Grievance, onFeedbackSubmit: (id: number, feedback: 'Satisfied' | 'Partially Satisfied' | 'Not Satisfied') => void }) => {
     return (
         <Card className="mt-8">
             <CardHeader>
@@ -92,14 +92,21 @@ const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
                                 <p>{new Date(grievance.reply.repliedAt).toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="mt-4 text-center p-4 border rounded-md">
-                           <p className="font-semibold mb-2">Are you satisfied with the reply?</p>
-                           <div className="flex justify-center gap-4">
-                             <Button variant="outline" size="sm" className="gap-2"><Smile className="h-4 w-4 text-green-500" /> Yes</Button>
-                             <Button variant="outline" size="sm" className="gap-2"><Meh className="h-4 w-4 text-yellow-500" /> Partially</Button>
-                             <Button variant="outline" size="sm" className="gap-2"><Frown className="h-4 w-4 text-red-500" /> No</Button>
-                           </div>
-                        </div>
+                        {!grievance.petitionerFeedback ? (
+                            <div className="mt-4 text-center p-4 border rounded-md">
+                               <p className="font-semibold mb-2">Are you satisfied with the reply?</p>
+                               <div className="flex justify-center gap-4">
+                                 <Button variant="outline" size="sm" className="gap-2" onClick={() => onFeedbackSubmit(grievance.id, 'Satisfied')}><Smile className="h-4 w-4 text-green-500" /> Yes</Button>
+                                 <Button variant="outline" size="sm" className="gap-2" onClick={() => onFeedbackSubmit(grievance.id, 'Partially Satisfied')}><Meh className="h-4 w-4 text-yellow-500" /> Partially</Button>
+                                 <Button variant="outline" size="sm" className="gap-2" onClick={() => onFeedbackSubmit(grievance.id, 'Not Satisfied')}><Frown className="h-4 w-4 text-red-500" /> No</Button>
+                               </div>
+                            </div>
+                        ) : (
+                             <div className="mt-4 text-center p-4 border-2 border-dashed border-primary/50 rounded-md bg-muted/30">
+                                <p className="font-semibold text-primary">Thank you for your feedback!</p>
+                                <p className="text-sm text-muted-foreground">You rated this reply as: <strong>{grievance.petitionerFeedback}</strong></p>
+                            </div>
+                        )}
                     </div>
                 )}
             </CardContent>
@@ -109,7 +116,7 @@ const GrievanceDetails = ({ grievance }: { grievance: Grievance }) => {
 
 
 export default function CheckGrievanceStatusPage() {
-    const { grievances } = useGrievances();
+    const { grievances, addPetitionerFeedback } = useGrievances();
     const [foundGrievance, setFoundGrievance] = useState<Grievance | null>(null);
     const [searchPerformed, setSearchPerformed] = useState(false);
     const { toast } = useToast();
@@ -136,6 +143,19 @@ export default function CheckGrievanceStatusPage() {
         }
     };
     
+    const handleFeedbackSubmit = (id: number, feedback: 'Satisfied' | 'Partially Satisfied' | 'Not Satisfied') => {
+        addPetitionerFeedback(id, feedback);
+        toast({
+            title: "Feedback Submitted",
+            description: "Thank you for your valuable feedback."
+        });
+        // Refresh the displayed grievance to show the change
+        const updatedGrievance = grievances.find(g => g.id === id);
+        if (updatedGrievance) {
+            setFoundGrievance(updatedGrievance);
+        }
+    };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -183,7 +203,7 @@ export default function CheckGrievanceStatusPage() {
                 </Form>
 
                 {searchPerformed && foundGrievance && (
-                    <GrievanceDetails grievance={foundGrievance} />
+                    <GrievanceDetails grievance={foundGrievance} onFeedbackSubmit={handleFeedbackSubmit} />
                 )}
                  {searchPerformed && !foundGrievance && (
                     <div className="mt-8 text-center">

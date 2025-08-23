@@ -148,10 +148,18 @@ export const useGrievances = () => {
         });
     }, []);
 
+    const addPetitionerFeedback = useCallback((grievanceId: number, feedback: 'Satisfied' | 'Partially Satisfied' | 'Not Satisfied') => {
+        setGrievances(prev => {
+            const updatedGrievances = prev.map(g => g.id === grievanceId ? { ...g, petitionerFeedback: feedback } : g);
+            syncGrievances(updatedGrievances);
+            return updatedGrievances;
+        });
+    }, []);
+
     const deleteGrievance = useCallback((grievanceId: number) => {
         const updatedGrievances = getInitialGrievances().filter(g => g.id !== grievanceId);
         syncGrievances(updatedGrievances);
     }, []);
     
-    return { grievances, loading, addGrievance, addReply, updateGrievanceStatus, deleteGrievance };
+    return { grievances, loading, addGrievance, addReply, updateGrievanceStatus, addPetitionerFeedback, deleteGrievance };
 };
