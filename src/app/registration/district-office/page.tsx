@@ -230,46 +230,7 @@ export default function DistrictOfficePage() {
             </div>
         )
     }
-
-    if (!canEdit) {
-         return (
-            <div className="flex flex-col min-h-screen">
-                <Header />
-                <MainNavigation />
-                 <main className="flex-1 container mx-auto px-4 py-8">
-                     <div className="space-y-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                             <div>
-                                <h1 className="text-3xl font-bold text-primary">Our Locations</h1>
-                                <p className="text-muted-foreground">Find the contact and location details for our district offices below.</p>
-                            </div>
-                            <div className="w-full md:w-64">
-                                <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Filter by District" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Districts</SelectItem>
-                                        {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                           {filteredOffices.length > 0 ? (
-                                filteredOffices.map(office => <PublicOfficeCard key={office.id} office={office} />)
-                            ) : (
-                                <p className="col-span-full text-center text-muted-foreground">No offices found for the selected district.</p>
-                            )}
-                        </div>
-                     </div>
-                </main>
-                <Footer />
-                <BottomNavigation />
-            </div>
-        )
-    }
-
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -399,43 +360,55 @@ export default function DistrictOfficePage() {
         </Dialog>
 
 
-        <Card>
+         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Office Registration</CardTitle>
+                    <CardTitle>{canEdit ? 'Office Registration' : 'Our Locations'}</CardTitle>
                     <CardDescription>
-                        Manage district office contact and location details. Total offices: {offices.length}
+                        {canEdit ? `Manage district office contact and location details. Total offices: ${offices.length}` : 'Find the contact and location details for our district offices below.'}
                     </CardDescription>
                 </div>
-                {canEdit && (
+                 {canEdit ? (
                     <Button onClick={handleAddNew}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Register Office
                     </Button>
-                )}
+                 ) : (
+                    <div className="w-full md:w-64">
+                        <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by District" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Districts</SelectItem>
+                                {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                 )}
             </CardHeader>
             <CardContent>
-                <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>State/District</TableHead>
-                                <TableHead>Office Address</TableHead>
-                                <TableHead>Contact Person</TableHead>
-                                <TableHead>Contact Numbers</TableHead>
-                                <TableHead>Email</TableHead>
-                                {canEdit && <TableHead className="text-right">Actions</TableHead>}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {offices.map((office) => (
-                                <TableRow key={office.id}>
-                                    <TableCell className="font-medium">{office.district}</TableCell>
-                                    <TableCell className="max-w-xs">{office.buildingName}, {office.address}, {office.pincode}</TableCell>
-                                    <TableCell>{office.contactPerson}</TableCell>
-                                    <TableCell>{office.contactNumbers.join(', ')}</TableCell>
-                                    <TableCell>{office.email}</TableCell>
-                                    {canEdit && (
+                {canEdit ? (
+                     <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>State/District</TableHead>
+                                    <TableHead>Office Address</TableHead>
+                                    <TableHead>Contact Person</TableHead>
+                                    <TableHead>Contact Numbers</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {offices.map((office) => (
+                                    <TableRow key={office.id}>
+                                        <TableCell className="font-medium">{office.district}</TableCell>
+                                        <TableCell className="max-w-xs">{office.buildingName}, {office.address}, {office.pincode}</TableCell>
+                                        <TableCell>{office.contactPerson}</TableCell>
+                                        <TableCell>{office.contactNumbers.join(', ')}</TableCell>
+                                        <TableCell>{office.email}</TableCell>
                                         <TableCell className="text-right space-x-2">
                                             <Button variant="outline" size="sm" onClick={() => handleEdit(office)}>Edit</Button>
                                             <AlertDialog>
@@ -458,12 +431,20 @@ export default function DistrictOfficePage() {
                                                 </AlertDialogContent>
                                             </AlertDialog>
                                         </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                        {filteredOffices.length > 0 ? (
+                            filteredOffices.map(office => <PublicOfficeCard key={office.id} office={office} />)
+                        ) : (
+                            <p className="col-span-full text-center text-muted-foreground">No offices found for the selected district.</p>
+                        )}
+                    </div>
+                )}
             </CardContent>
         </Card>
       </main>
@@ -471,5 +452,4 @@ export default function DistrictOfficePage() {
       <BottomNavigation />
     </div>
   );
-
-    
+}
