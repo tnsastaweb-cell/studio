@@ -207,6 +207,13 @@ export default function AdminPage() {
     return filteredPanchayats.slice(startIndex, endIndex);
   }, [panchayatCurrentPage, panchayatsPerPage, filteredPanchayats]);
 
+    const sortedDistricts = useMemo(() => {
+        const chennai = DISTRICTS.find(d => d === "Chennai");
+        const others = DISTRICTS.filter(d => d !== "Chennai").sort();
+        return chennai ? [chennai, ...others] : others;
+    }, []);
+
+
   const handlePanchayatFilterChange = (field: keyof typeof panchayatFilters, value: string) => {
     setPanchayatFilters((prev) => ({ ...prev, [field]: value }));
     setPanchayatCurrentPage(1);
@@ -1057,8 +1064,9 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
           <TabsContent value="local-bodies">
-            <Tabs defaultValue="panchayats" className="w-full">
+            <Tabs defaultValue="district-panchayats" className="w-full">
               <TabsList>
+                <TabsTrigger value="district-panchayats">District</TabsTrigger>
                 <TabsTrigger value="panchayats">Panchayats</TabsTrigger>
                 <TabsTrigger value="district-panchayats" disabled>
                   District Panchayat
@@ -1073,6 +1081,36 @@ export default function AdminPage() {
                   Town Panchayat
                 </TabsTrigger>
               </TabsList>
+               <TabsContent value="district-panchayats">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>District List</CardTitle>
+                                        <CardDescription>
+                                            List of all Districts in Tamil Nadu. Total: {sortedDistricts.length}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="border rounded-lg max-h-96 overflow-y-auto">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead className="w-[80px]">S.No</TableHead>
+                                                        <TableHead>District Name</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {sortedDistricts.map((district, index) => (
+                                                        <TableRow key={district}>
+                                                            <TableCell>{district === "Chennai" ? "00" : String(index).padStart(2, '0')}</TableCell>
+                                                            <TableCell>{toTitleCase(district)}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
               <TabsContent value="panchayats">
                 <Card>
                   <CardHeader>
