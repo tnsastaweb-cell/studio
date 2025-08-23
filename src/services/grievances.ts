@@ -120,40 +120,31 @@ export const useGrievances = () => {
     }, []);
 
     const addReply = useCallback((grievanceId: number, replyContent: string, repliedBy: string, replyAttachment?: Grievance['reply']['attachment']) => {
-        setGrievances(prev => {
-            const updatedGrievances = prev.map(g => {
-                if (g.id === grievanceId) {
-                    return {
-                        ...g,
-                        reply: {
-                            content: replyContent,
-                            attachment: replyAttachment,
-                            repliedBy: repliedBy,
-                            repliedAt: new Date().toISOString(),
-                        }
+        const updatedGrievances = getInitialGrievances().map(g => {
+            if (g.id === grievanceId) {
+                return {
+                    ...g,
+                    reply: {
+                        content: replyContent,
+                        attachment: replyAttachment,
+                        repliedBy: repliedBy,
+                        repliedAt: new Date().toISOString(),
                     }
                 }
-                return g;
-            });
-            syncGrievances(updatedGrievances);
-            return updatedGrievances;
+            }
+            return g;
         });
+        syncGrievances(updatedGrievances);
     }, []);
 
     const updateGrievanceStatus = useCallback((grievanceId: number, status: GrievanceStatus) => {
-        setGrievances(prev => {
-            const updatedGrievances = prev.map(g => g.id === grievanceId ? { ...g, status } : g);
-            syncGrievances(updatedGrievances);
-            return updatedGrievances;
-        });
+       const updatedGrievances = getInitialGrievances().map(g => g.id === grievanceId ? { ...g, status } : g);
+       syncGrievances(updatedGrievances);
     }, []);
 
     const addPetitionerFeedback = useCallback((grievanceId: number, feedback: 'Satisfied' | 'Partially Satisfied' | 'Not Satisfied') => {
-        setGrievances(prev => {
-            const updatedGrievances = prev.map(g => g.id === grievanceId ? { ...g, petitionerFeedback: feedback } : g);
-            syncGrievances(updatedGrievances);
-            return updatedGrievances;
-        });
+        const updatedGrievances = getInitialGrievances().map(g => g.id === grievanceId ? { ...g, petitionerFeedback: feedback } : g);
+        syncGrievances(updatedGrievances);
     }, []);
 
     const deleteGrievance = useCallback((grievanceId: number) => {
