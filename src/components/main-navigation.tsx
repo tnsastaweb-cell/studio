@@ -58,12 +58,12 @@ const guestMenuItems = [
   },
   {
     title: "SA REPORTS",
-    href: "/sa-reports",
+    href: "#",
     children: [
-        { title: "MIS Report", href: "/sa-reports/mis-report" },
-        { title: "Consolidated Reports", href: "/sa-reports/consolidated" },
-        { title: "Reports in MGNREGS website", href: "/sa-reports/mgnregs-reports" },
-        { title: "Reports in MSJE website", href: "/sa-reports/msje-reports" },
+        { title: "MIS Report", href: "#", disabled: true },
+        { title: "Consolidated Reports", href: "#", disabled: true },
+        { title: "Reports in MGNREGS website", href: "#", disabled: true },
+        { title: "Reports in MSJE website", href: "#", disabled: true },
     ]
   },
   {
@@ -72,7 +72,7 @@ const guestMenuItems = [
   },
   {
     title: "CONNECT",
-    href: "/connect",
+    href: "/connect/location",
     children: [
         { title: "Location", href: "/connect/location" },
         { title: "Careers", href: "/connect/careers" },
@@ -85,7 +85,7 @@ const guestMenuItems = [
 const signedInMenuItems = [
     { 
       title: "REGISTRATION", 
-      href: "/registration",
+      href: "#",
       children: [
         { title: "OFFICE REGISTRATION", href: "/registration/district-office" },
         { title: "STAFF REGISTRATION", href: "/registration/staff" },
@@ -108,19 +108,19 @@ const signedInMenuItems = [
     },
     { 
       title: "DAILY ACTIVITES", 
-      href: "/daily-activities",
+      href: "#",
       children: [
-        { title: "DAILY ATTENDENCE", href: "/daily-activities/attendance" },
-        { title: "TOUR DAIRY", href: "/daily-activities/tour-diary" },
-        { title: "MOVEMENT REGISTER", href: "/daily-activities/movement-register" },
+        { title: "DAILY ATTENDENCE", href: "#", disabled: true },
+        { title: "TOUR DAIRY", href: "#", disabled: true },
+        { title: "MOVEMENT REGISTER", href: "#", disabled: true },
       ]
     },
     { 
       title: "REPORTS", 
-      href: "/reports",
+      href: "#",
       children: [
-        { title: "WEEKLY REPORTS", href: "/reports/weekly" },
-        { title: "OTHERS", href: "/reports/others" },
+        { title: "WEEKLY REPORTS", href: "#", disabled: true },
+        { title: "OTHERS", href: "#", disabled: true },
       ]
     },
 ];
@@ -164,7 +164,7 @@ export function MainNavigation() {
   const { isSignedIn } = useAuth();
   
   return (
-    <nav className="bg-secondary w-full flex flex-col items-center shadow-md sticky top-[80px] z-40">
+    <nav className="bg-card w-full flex flex-col items-center shadow-md sticky top-[80px] z-40">
       <div className="py-2 w-full border-b">
         <MenuBar items={guestMenuItems} />
       </div>
