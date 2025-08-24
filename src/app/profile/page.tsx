@@ -17,39 +17,35 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const themes = [
-    { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'], isDark: false },
-    { name: 'Oceanic', id: 'oceanic', colors: ['#2C3E50', '#34495E', '#95A5A6', '#BDC3C7'], isDark: true },
-    { name: 'Earthy Green', id: 'earthy-green', colors: ['#F0F3E5', '#6B8E23', '#A9C27C', '#C9D9A7'], isDark: false },
-    { name: 'Coastal', id: 'coastal', colors: ['#EBE3D5', '#52796F', '#84A98C', '#CAD2C5'], isDark: false },
-    { name: 'Clay', id: 'clay', colors: ['#F5EBE0', '#A98467', '#D4A373', '#EAD2AC'], isDark: false },
-    { name: 'Lavender Sky', id: 'lavender-sky', colors: ['#E6E6FA', '#6A5ACD', '#9370DB', '#B19CD9'], isDark: false },
-    { name: 'Deep Indigo', id: 'deep-indigo', colors: ['#3A3A5A', '#4F4F7A', '#7878AB', '#A0A0CD'], isDark: true },
-    { name: 'Blush Pink', id: 'blush-pink', colors: ['#FFF0F5', '#FFB6C1', '#FFC0CB', '#FFE4E1'], isDark: false },
-    { name: 'Pastel Lilac', id: 'pastel-lilac', colors: ['#F3E8FF', '#D6B4FC', '#C8A2C8', '#A474A9'], isDark: false },
-    { name: 'Aqua', id: 'aqua', colors: ['#E0FFFF', '#00CED1', '#40E0D0', '#7FFFD4'], isDark: false },
-    { name: 'Royal Blue', id: 'royal-blue', colors: ['#F0F8FF', '#4169E1', '#6495ED', '#B0C4DE'], isDark: false },
-    { name: 'Teal & Black', id: 'teal-black', colors: ['#1A2A3A', '#2D3E50', '#00A99D', '#A1D9D9'], isDark: true },
+    { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'] },
+    { name: 'Ocean Breeze', id: 'ocean-breeze', colors: ['#E7F6F2', '#2C3333', '#A5C9CA', '#395B64'] },
+    { name: 'Earthy Sage', id: 'earthy-sage', colors: ['#F0EBE3', '#576F72', '#7D9D9C', '#E4DCCF'] },
+    { name: 'Warm Clay', id: 'warm-clay', colors: ['#F3EEEA', '#776B5D', '#EBE3D5', '#B0A695'] },
+    { name: 'Desert Sunset', id: 'desert-sunset', colors: ['#F8EDE3', '#7D6E83', '#DFD3C3', '#D0B8A8'] },
+    { name: 'Olive Grove', id: 'olive-grove', colors: ['#EDF1D6', '#40513B', '#9DC08B', '#609966'] },
+    { name: 'Cool Slate', id: 'cool-slate', colors: ['#DDE6ED', '#27374D', '#9DB2BF', '#526D82'] },
+    { name: 'Rosewater', id: 'rosewater', colors: ['#F9F5F6', '#F2BED1', '#F8E8EE', '#FDCEDF'] },
+    { name: 'Lavender Sky', id: 'lavender-sky', colors: ['#F4EEFF', '#424874', '#DCD6F7', '#A6B1E1'] },
+    { name: 'Modern Teal', id: 'modern-teal', colors: ['#EEEEEE', '#222831', '#393E46', '#00ADB5'] },
 ];
 
 const themeHslMap: { [key: string]: { [key: string]: string } } = {
     default: { "--background": "48 33% 96%", "--foreground": "215 15% 34%", "--card": "0 0% 91%", "--primary": "215 15% 34%", "--accent": "222 11% 77%" },
-    oceanic: { "--background": "210 20% 23%", "--foreground": "210 10% 80%", "--card": "210 25% 27%", "--primary": "204 15% 75%", "--accent": "210 10% 40%" },
-    'earthy-green': { "--background": "80 30% 95%", "--foreground": "80 45% 25%", "--card": "80 30% 88%", "--primary": "80 40% 48%", "--accent": "80 30% 75%" },
-    coastal: { "--background": "40 25% 94%", "--foreground": "165 25% 30%", "--card": "165 20% 85%", "--primary": "165 25% 40%", "--accent": "165 20% 65%" },
-    clay: { "--background": "33 43% 94%", "--foreground": "29 34% 40%", "--card": "30 45% 85%", "--primary": "29 34% 53%", "--accent": "30 45% 75%" },
-    'lavender-sky': { "--background": "240 67% 97%", "--foreground": "248 39% 50%", "--card": "248 50% 92%", "--primary": "248 39% 50%", "--accent": "248 50% 85%" },
-    'deep-indigo': { "--background": "240 25% 28%", "--foreground": "240 30% 85%", "--card": "240 20% 35%", "--primary": "240 30% 75%", "--accent": "240 20% 50%" },
-    'blush-pink': { "--background": "350 100% 98%", "--foreground": "348 83% 60%", "--card": "350 100% 95%", "--primary": "348 83% 60%", "--accent": "350 100% 90%" },
-    'pastel-lilac': { "--background": "276 100% 97%", "--foreground": "276 60% 55%", "--card": "276 70% 92%", "--primary": "276 60% 55%", "--accent": "276 70% 85%" },
-    aqua: { "--background": "180 100% 97%", "--foreground": "181 100% 35%", "--card": "180 80% 90%", "--primary": "177 100% 44%", "--accent": "180 80% 80%" },
-    'royal-blue': { "--background": "210 100% 98%", "--foreground": "226 71% 51%", "--card": "210 80% 92%", "--primary": "226 71% 51%", "--accent": "210 80% 85%" },
-    'teal-black': { "--background": "210 30% 16%", "--foreground": "208 40% 90%", "--card": "210 30% 23%", "--primary": "177 100% 34%", "--accent": "210 30% 40%" },
+    'ocean-breeze': { "--background": "165 42% 94%", "--foreground": "180 6% 19%", "--card": "182 27% 72%", "--primary": "196 29% 31%", "--accent": "182 27% 72%" },
+    'earthy-sage': { "--background": "40 31% 91%", "--foreground": "189 13% 40%", "--card": "181 14% 69%", "--primary": "189 13% 40%", "--accent": "40 31% 88%" },
+    'warm-clay': { "--background": "36 29% 94%", "--foreground": "32 10% 41%", "--card": "40 31% 91%", "--primary": "32 10% 41%", "--accent": "34 16% 64%" },
+    'desert-sunset': { "--background": "30 64% 94%", "--foreground": "283 10% 44%", "--card": "35 29% 85%", "--primary": "283 10% 44%", "--accent": "30 33% 71%" },
+    'olive-grove': { "--background": "76 43% 90%", "--foreground": "83 17% 28%", "--card": "91 32% 65%", "--primary": "83 17% 28%", "--accent": "96 25% 48%" },
+    'cool-slate': { "--background": "210 29% 90%", "--foreground": "215 33% 23%", "--card": "208 19% 72%", "--primary": "215 33% 23%", "--accent": "209 24% 41%" },
+    'rosewater': { "--background": "330 25% 96%", "--foreground": "340 59% 75%", "--card": "333 60% 95%", "--primary": "340 59% 75%", "--accent": "340 88% 87%" },
+    'lavender-sky': { "--background": "252 100% 96%", "--foreground": "236 29% 36%", "--card": "246 65% 91%", "--primary": "236 29% 36%", "--accent": "226 50% 77%" },
+    'modern-teal': { "--background": "0 0% 93%", "--foreground": "209 16% 16%", "--card": "214 9% 25%", "--primary": "209 16% 16%", "--accent": "183 100% 36%" },
 };
+
 
 const applyTheme = (themeId: string) => {
     const root = document.documentElement;
     const theme = themeHslMap[themeId] || themeHslMap['default'];
-
     Object.entries(theme).forEach(([key, value]) => {
         root.style.setProperty(key, value);
     });
@@ -176,7 +172,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                     <h3 className="text-2xl font-semibold flex items-center gap-2"><Palette/> Color Theme</h3>
                     <p className="text-muted-foreground">Choose a color palette that suits your style. The change will be applied across the site.</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {themes.map(theme => (
                             <button 
                                 key={theme.id}
