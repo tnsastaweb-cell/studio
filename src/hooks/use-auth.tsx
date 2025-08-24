@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(true);
         loadUserFromStorage();
     }
-  }, [usersLoading]); // Remove `users` dependency to avoid re-running unnecessarily
+  }, [usersLoading, users]); // Add 'users' to dependencies
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {

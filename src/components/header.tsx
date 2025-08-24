@@ -16,6 +16,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useLogo } from '@/hooks/use-logo';
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 export function Header() {
   const { user, signOut, isSignedIn, loading } = useAuth();
@@ -64,9 +66,14 @@ export function Header() {
         {isSignedIn ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 text-left h-auto">
-                <UserCircle className="h-8 w-8" />
-                <div className="flex flex-col">
+              <Button variant="ghost" className="flex items-center gap-2 text-left h-auto p-1 rounded-full">
+                 <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.profilePicture || undefined} alt={user?.name} />
+                    <AvatarFallback>
+                        <UserCircle className="h-8 w-8" />
+                    </AvatarFallback>
+                </Avatar>
+                <div className="hidden md:flex flex-col items-start">
                   <span className="font-bold">{user?.name}</span>
                   <span className="text-xs text-muted-foreground">{user?.designation}</span>
                 </div>

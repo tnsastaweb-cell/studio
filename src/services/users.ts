@@ -45,6 +45,8 @@ export interface User {
   email?: string;
   password: string; // In a real app, this should be a securely stored hash.
   status: 'active' | 'inactive';
+  profilePicture?: string | null;
+  theme?: string;
 }
 
 // A constant array of all available roles.
@@ -113,6 +115,7 @@ export const useUsers = () => {
      setUsers(updatedUsers);
      try {
          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUsers));
+         window.dispatchEvent(new StorageEvent('storage', { key: USER_STORAGE_KEY, newValue: JSON.stringify(updatedUsers) }));
      } catch (error) {
          console.error("Failed to save users to localStorage:", error);
      }
