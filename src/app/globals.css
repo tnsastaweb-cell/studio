@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 60 14% 96%; /* #F4F4F2 */
+    --background: 48 33% 96%; /* #F4F4F2 */
     --foreground: 215 15% 34%; /* #495464 */
     --card: 0 0% 91%; /* #E8E8E8 */
     --card-foreground: 215 15% 34%; /* #495464 */
@@ -14,7 +14,7 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 91%; /* #E8E8E8 */
     --secondary-foreground: 215 15% 34%; /* #495464 */
-    --muted: 222 11% 82%; /* Lighter version of #BBBFCA */
+    --muted: 222 11% 82%; /* #CFD2D9 - Lighter version of #BBBFCA */
     --muted-foreground: 215 15% 45%;
     --accent: 222 11% 77%; /* #BBBFCA */
     --accent-foreground: 215 15% 34%; /* #495464 */
@@ -28,19 +28,19 @@
 
   .dark {
     --background: 215 15% 15%;
-    --foreground: 60 14% 96%;
+    --foreground: 48 33% 96%;
     --card: 215 15% 20%;
-    --card-foreground: 60 14% 96%;
+    --card-foreground: 48 33% 96%;
     --popover: 215 15% 15%;
-    --popover-foreground: 60 14% 96%;
-    --primary: 60 14% 96%;
+    --popover-foreground: 48 33% 96%;
+    --primary: 48 33% 96%;
     --primary-foreground: 215 15% 20%;
     --secondary: 215 15% 25%;
-    --secondary-foreground: 60 14% 96%;
+    --secondary-foreground: 48 33% 96%;
     --muted: 215 15% 30%;
-    --muted-foreground: 60 14% 80%;
+    --muted-foreground: 48 33% 80%;
     --accent: 222 11% 50%;
-    --accent-foreground: 60 14% 96%;
+    --accent-foreground: 48 33% 96%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 215 15% 30%;
@@ -55,7 +55,7 @@
   }
   body {
     @apply bg-background text-foreground font-bold;
-    @apply bg-gradient-to-b from-white via-background to-background;
+    background-image: linear-gradient(to bottom, #FFFFFF, hsl(var(--background)));
   }
 }
 
