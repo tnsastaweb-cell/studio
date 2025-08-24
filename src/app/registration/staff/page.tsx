@@ -220,7 +220,66 @@ export default function StaffRegistrationPage() {
 
     const form = useForm<StaffFormValues>({
         resolver: zodResolver(staffFormSchema),
-        defaultValues: { academics: [], workExperiences: [], skills: [], disclaimer: false },
+        defaultValues: {
+            photo: null,
+            recruitmentType: undefined,
+            employeeCode: "",
+            name: "",
+            email: "",
+            contactNumber1: "",
+            locationType: undefined,
+            ruralDistrict: "",
+            ruralBlock: "",
+            ruralPanchayat: "",
+            urbanDistrict: "",
+            urbanBodyType: undefined,
+            urbanBodyName: "",
+            fullAddress: "",
+            pincode: "",
+            fatherName: "",
+            motherName: "",
+            spouseName: "",
+            religion: undefined,
+            caste: "",
+            dob: undefined,
+            gender: undefined,
+            femaleType: undefined,
+            differentlyAbled: undefined,
+            disabilityCertificate: null,
+            healthIssues: undefined,
+            issueDetails: "",
+            medicalCertificate: null,
+            contactNumber2: "",
+            personalEmail: "",
+            eportalEmail: "",
+            bankName: "",
+            branchName: "",
+            accountNumber: "",
+            ifscCode: "",
+            aadhaar: "",
+            aadhaarUpload: null,
+            pan: "",
+            panUpload: null,
+            uan: "",
+            pfmsId: "",
+            academics: [], 
+            workExperiences: [], 
+            skills: [],
+            joiningDate: undefined,
+            brpWorkedStations: [],
+            drpWorkedStations: [],
+            isDrpIC: 'no',
+            drpICWorkedStations: [],
+            trainingTaken: 'no',
+            trainingsTakenDetails: [],
+            trainingGiven: 'no',
+            trainingsGivenDetails: [],
+            pilotAudit: 'no',
+            pilotAuditDetails: [],
+            stateOfficeActivities: 'no',
+            stateOfficeActivityDetails: [],
+            disclaimer: false
+        },
     });
     
     const watchedEmployeeCode = useWatch({ control: form.control, name: 'employeeCode' });
@@ -232,7 +291,11 @@ export default function StaffRegistrationPage() {
     const watchedGender = useWatch({ control: form.control, name: 'gender' });
     const watchedDifferentlyAbled = useWatch({ control: form.control, name: 'differentlyAbled' });
     const watchedHealthIssues = useWatch({ control: form.control, name: 'healthIssues' });
-    const watchedIsDrpIc = useWatch({ control: form.control, name: 'isDrpIC' });
+    const watchedIsDrpIC = useWatch({ control: form.control, name: 'isDrpIC' });
+    const watchedTrainingTaken = useWatch({ control: form.control, name: 'trainingTaken' });
+    const watchedTrainingGiven = useWatch({ control: form.control, name: 'trainingGiven' });
+    const watchedPilotAudit = useWatch({ control: form.control, name: 'pilotAudit' });
+    const watchedStateOfficeActivities = useWatch({ control: form.control, name: 'stateOfficeActivities' });
 
     const eligibleUsers = useMemo(() => {
         if (!selectedRole) return [];
@@ -244,7 +307,6 @@ export default function StaffRegistrationPage() {
             const selectedUser = users.find(u => u.employeeCode === watchedEmployeeCode);
             if (selectedUser) {
                 form.setValue('name', selectedUser.name);
-                form.setValue('email', selectedUser.email || '');
                 form.setValue('contactNumber1', selectedUser.mobileNumber);
             }
         }
@@ -386,10 +448,11 @@ export default function StaffRegistrationPage() {
                                                             </FormItem>
                                                         )} />
                                                          <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem> )} />
-                                                         <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email ID</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem> )} />
+                                                         <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email ID</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                          <FormField control={form.control} name="contactNumber1" render={({ field }) => ( <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem> )} />
                                                     </div>
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                             </Card>
                                         </TabsContent>
 
@@ -406,9 +469,9 @@ export default function StaffRegistrationPage() {
                                                     )} />
                                                     {watchedLocationType === 'rural' && (
                                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                                             <FormField control={form.control} name="ruralDistrict" render={({ field }) => ( <FormItem><FormLabel>District*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralBlock', ''); form.setValue('ruralPanchayat', ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
-                                                             <FormField control={form.control} name="ruralBlock" render={({ field }) => ( <FormItem><FormLabel>Block*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralPanchayat', ''); }} value={field.value} disabled={!watchedRuralDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{ruralBlocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
-                                                             <FormField control={form.control} name="ruralPanchayat" render={({ field }) => ( <FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedRuralBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{ruralPanchayats.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
+                                                             <FormField control={form.control} name="ruralDistrict" render={({ field }) => ( <FormItem><FormLabel>District*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralBlock', ''); form.setValue('ruralPanchayat', ''); }} value={field.value ?? ""}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
+                                                             <FormField control={form.control} name="ruralBlock" render={({ field }) => ( <FormItem><FormLabel>Block*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralPanchayat', ''); }} value={field.value ?? ""} disabled={!watchedRuralDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{ruralBlocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
+                                                             <FormField control={form.control} name="ruralPanchayat" render={({ field }) => ( <FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedRuralBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{ruralPanchayats.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
                                                              <FormItem><FormLabel>LGD Code</FormLabel><FormControl><Input value={lgdCode} readOnly className="bg-muted" /></FormControl></FormItem>
                                                         </div>
                                                     )}
@@ -454,15 +517,15 @@ export default function StaffRegistrationPage() {
                                                         <CardHeader><CardTitle className="text-base">Health Related</CardTitle></CardHeader>
                                                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                                             <FormField control={form.control} name="differentlyAbled" render={({ field }) => ( <FormItem><FormLabel>Differently Abled?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem> )} />
-                                                            {watchedDifferentlyAbled === 'yes' && <FormField control={form.control} name="disabilityCertificate" render={({ field }) => (<FormItem><FormLabel>Upload Certificate* (Max 5MB)</FormLabel><FormControl><Input type="file" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                                                            {watchedDifferentlyAbled === 'yes' && <FormField control={form.control} name="disabilityCertificate" render={({ field }) => (<FormItem><FormLabel>Upload Certificate* (Max 5MB)</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />}
                                                             <FormField control={form.control} name="healthIssues" render={({ field }) => ( <FormItem><FormLabel>Health Issues*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Health Status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="normal">Normal</SelectItem><SelectItem value="minor">Minor</SelectItem><SelectItem value="major">Major</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
-                                                            {['minor', 'major'].includes(watchedHealthIssues) && <FormField control={form.control} name="issueDetails" render={({ field }) => (<FormItem><FormLabel>Type of Issues*</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />}
-                                                            {watchedHealthIssues === 'major' && <FormField control={form.control} name="medicalCertificate" render={({ field }) => (<FormItem><FormLabel>Medical Certificate* (Max 20MB)</FormLabel><FormControl><Input type="file" {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                                                            {['minor', 'major'].includes(watchedHealthIssues || '') && <FormField control={form.control} name="issueDetails" render={({ field }) => (<FormItem><FormLabel>Type of Issues*</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />}
+                                                            {watchedHealthIssues === 'major' && <FormField control={form.control} name="medicalCertificate" render={({ field }) => (<FormItem><FormLabel>Medical Certificate* (Max 20MB)</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />}
                                                         </CardContent>
                                                     </Card>
                                                 </CardContent>
                                                 <div className="p-6 pt-0"><Button>Save</Button></div>
-                                            </Card>
+                                             </Card>
                                         </TabsContent>
                                         
                                          <TabsContent value="personal-info" className="pt-6">
@@ -477,9 +540,9 @@ export default function StaffRegistrationPage() {
                                                      <FormField control={form.control} name="accountNumber" render={({ field }) => ( <FormItem><FormLabel>Account Number*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="ifscCode" render={({ field }) => ( <FormItem><FormLabel>IFSC Code*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="aadhaar" render={({ field }) => ( <FormItem><FormLabel>Aadhaar*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                                     <FormField control={form.control} name="aadhaarUpload" render={({ field }) => ( <FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                                     <FormField control={form.control} name="aadhaarUpload" render={({ field }) => ( <FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files)}/></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="pan" render={({ field }) => ( <FormItem><FormLabel>PAN*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                                     <FormField control={form.control} name="panUpload" render={({ field }) => ( <FormItem><FormLabel>PAN Upload*</FormLabel><FormControl><Input type="file" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                                     <FormField control={form.control} name="panUpload" render={({ field }) => ( <FormItem><FormLabel>PAN Upload*</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files)}/></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="uan" render={({ field }) => ( <FormItem><FormLabel>UAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="pfmsId" render={({ field }) => ( <FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                 </CardContent>
@@ -492,7 +555,7 @@ export default function StaffRegistrationPage() {
                                                 <Card>
                                                    <CardHeader><CardTitle>Academic Details*</CardTitle></CardHeader>
                                                     <CardContent>
-                                                        <DynamicTable name="academics" control={form.control} appendValues={{ course: '', institution: '', board: '', fromYear: '', toYear: '', aggregate: 0 }}
+                                                        <DynamicTable name="academics" control={form.control} appendValues={{ course: '', institution: '', board: '', fromYear: '', toYear: '', aggregate: 0, certificate: null }}
                                                             columns={[
                                                                 { header: 'Course', render: (i) => <FormField control={form.control} name={`academics.${i}.course`} render={({field}) => <Input {...field} />} /> },
                                                                 { header: 'Institution', render: (i) => <FormField control={form.control} name={`academics.${i}.institution`} render={({field}) => <Input {...field} />} /> },
@@ -506,9 +569,9 @@ export default function StaffRegistrationPage() {
                                                     </CardContent>
                                                 </Card>
                                                 <Card>
-                                                   <CardHeader><CardTitle>Work Experience*</CardTitle></CardHeader>
+                                                   <CardHeader><CardTitle>Work Experience</CardTitle></CardHeader>
                                                     <CardContent>
-                                                        <DynamicTable name="workExperiences" control={form.control} appendValues={{ name: '', natureOfJob: '', from: new Date(), to: new Date() }}
+                                                        <DynamicTable name="workExperiences" control={form.control} appendValues={{ name: '', natureOfJob: '', from: undefined, to: undefined, certificate: null }}
                                                             columns={[
                                                                 { header: 'Name', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.name`} render={({field}) => <Input {...field} />} /> },
                                                                 { header: 'Nature of Job', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.natureOfJob`} render={({field}) => <Input {...field} />} /> },
@@ -543,7 +606,7 @@ export default function StaffRegistrationPage() {
                                                          <Card>
                                                              <CardHeader><CardTitle>BRP - Worked/Present Station Details*</CardTitle></CardHeader>
                                                              <CardContent>
-                                                                 <DynamicTable name="brpWorkedStations" control={form.control} appendValues={{ district: '', block: '', fromDate: new Date(), toDate: new Date() }}
+                                                                 <DynamicTable name="brpWorkedStations" control={form.control} appendValues={{ district: '', block: '', fromDate: undefined, toDate: undefined }}
                                                                     columns={[
                                                                         { header: 'District', render: i => <FormField control={form.control} name={`brpWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
                                                                         { header: 'Block', render: i => <FormField control={form.control} name={`brpWorkedStations.${i}.block`} render={({field}) => <Input {...field}/>} /> },
@@ -559,7 +622,7 @@ export default function StaffRegistrationPage() {
                                                           <Card>
                                                              <CardHeader><CardTitle>DRP - Worked/Present Station Details*</CardTitle></CardHeader>
                                                              <CardContent>
-                                                                  <DynamicTable name="drpWorkedStations" control={form.control} appendValues={{ district: '', fromDate: new Date(), toDate: new Date() }}
+                                                                  <DynamicTable name="drpWorkedStations" control={form.control} appendValues={{ district: '', fromDate: undefined, toDate: undefined }}
                                                                     columns={[
                                                                         { header: 'District', render: i => <FormField control={form.control} name={`drpWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
                                                                         { header: 'From', render: (i) => <FormField control={form.control} name={`drpWorkedStations.${i}.fromDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
@@ -578,7 +641,7 @@ export default function StaffRegistrationPage() {
                                                           <Card>
                                                              <CardHeader><CardTitle>DRP I/C - Worked/Present Station Details*</CardTitle></CardHeader>
                                                              <CardContent>
-                                                                  <DynamicTable name="drpICWorkedStations" control={form.control} appendValues={{ district: '', fromDate: new Date(), toDate: new Date() }}
+                                                                  <DynamicTable name="drpICWorkedStations" control={form.control} appendValues={{ district: '', fromDate: undefined, toDate: undefined }}
                                                                     columns={[
                                                                         { header: 'District', render: i => <FormField control={form.control} name={`drpICWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
                                                                         { header: 'From', render: (i) => <FormField control={form.control} name={`drpICWorkedStations.${i}.fromDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
@@ -649,7 +712,7 @@ export default function StaffRegistrationPage() {
                                 <div className="flex justify-end gap-4 pt-8">
                                   <Dialog open={!!previewData} onOpenChange={(isOpen) => !isOpen && setPreviewData(null)}>
                                     <DialogTrigger asChild>
-                                        <Button type="button" variant="outline" disabled={!selectedRole}>Preview All Details</Button>
+                                        <Button type="button" variant="outline" disabled={!selectedRole} onClick={() => setPreviewData(form.getValues())}>Preview All Details</Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                         <DialogHeader>
@@ -677,4 +740,3 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
-
