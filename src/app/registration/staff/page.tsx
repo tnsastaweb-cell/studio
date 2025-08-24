@@ -34,6 +34,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const fileSchema = z.any()
   .refine(files => files?.length === 1, 'File is required.').optional().nullable()
@@ -178,9 +180,19 @@ type DynamicTableProps = {
 const DynamicTable: React.FC<DynamicTableProps> = ({ name, control, columns, appendValues }) => {
     const { fields, append, remove } = useFieldArray({ control, name });
     
+    const renderRow = (field: any, index: number) => (
+        <TableRow key={field.id}>
+            <TableCell>{index + 1}</TableCell>
+            {columns.map(col => <TableCell key={col.header}>{col.render(index)}</TableCell>)}
+            <TableCell className="text-right">
+                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+            </TableCell>
+        </TableRow>
+    );
+
     return (
         <div className="space-y-4">
-             <div className="border rounded-md">
+            <div className="border rounded-md">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -190,19 +202,11 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ name, control, columns, app
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {fields.map((field, index) => (
-                             <TableRow key={field.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                {columns.map(col => <TableCell key={col.header}>{col.render(index)}</TableCell>)}
-                                <TableCell className="text-right">
-                                     <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-                                </TableCell>
-                             </TableRow>
-                        ))}
+                        {fields.map(renderRow)}
                     </TableBody>
                 </Table>
-             </div>
-             <Button type="button" variant="outline" onClick={() => append(appendValues)}><PlusCircle className="mr-2" /> Add Row</Button>
+            </div>
+            <Button type="button" variant="outline" onClick={() => append(appendValues)}><PlusCircle className="mr-2" /> Add Row</Button>
         </div>
     );
 };
@@ -537,4 +541,3 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
-
