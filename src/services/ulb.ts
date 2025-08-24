@@ -31,3 +31,4 @@ export const MOCK_ULBS: UrbanLocalBody[] = [
     { id: 19, name: 'Thanjavur', type: 'corporation', district: 'Thanjavur' },
     { id: 20, name: 'Hosur', type: 'corporation', district: 'Krishnagiri' },
 ];
+

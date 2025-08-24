@@ -117,7 +117,7 @@ const staffFormSchema = z.object({
     caste: z.string().min(1, "Caste is required"),
     dob: z.date({ required_error: "Date of birth is required" }),
     gender: z.enum(['Male', 'Female', 'Other'], { required_error: "Gender is required" }),
-    femaleType: z.enum(['single_women', 'widow']).optional(),
+    femaleType: z.enum(['single_women', 'widow', 'none']).optional(),
     differentlyAbled: z.enum(['yes', 'no'], { required_error: "This field is required" }),
     disabilityCertificate: fileSchema.optional(),
     healthIssues: z.enum(['normal', 'minor', 'major'], { required_error: "Health status is required" }),
@@ -180,16 +180,6 @@ type DynamicTableProps = {
 const DynamicTable: React.FC<DynamicTableProps> = ({ name, control, columns, appendValues }) => {
     const { fields, append, remove } = useFieldArray({ control, name });
     
-    const renderRow = (field: any, index: number) => (
-        <TableRow key={field.id}>
-            <TableCell>{index + 1}</TableCell>
-            {columns.map(col => <TableCell key={col.header}>{col.render(index)}</TableCell>)}
-            <TableCell className="text-right">
-                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-            </TableCell>
-        </TableRow>
-    );
-
     return (
         <div className="space-y-4">
             <div className="border rounded-md">
@@ -202,7 +192,15 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ name, control, columns, app
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {fields.map(renderRow)}
+                        {fields.map((field, index) => (
+                           <TableRow key={field.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                {columns.map(col => <TableCell key={col.header}>{col.render(index)}</TableCell>)}
+                                <TableCell className="text-right">
+                                    <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
@@ -324,7 +322,7 @@ export default function StaffRegistrationPage() {
                                         <Select onValueChange={setSelectedRole} value={selectedRole}>
                                             <FormControl><SelectTrigger><SelectValue placeholder="Select a Role" /></SelectTrigger></FormControl>
                                             <SelectContent>
-                                                {ROLES.filter(r => r !== 'VRP').map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                                {['BRP', 'DRP'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </FormItem>
@@ -336,7 +334,7 @@ export default function StaffRegistrationPage() {
                                             <TabsTrigger value="location-details">Location Details</TabsTrigger>
                                             <TabsTrigger value="family-details">Family Details</TabsTrigger>
                                             <TabsTrigger value="personal-details">Personal Details</TabsTrigger>
-                                            <TabsTrigger value="personal-info">Personal Info (Financial)</TabsTrigger>
+                                            <TabsTrigger value="personal-info">Personal Info</TabsTrigger>
                                             <TabsTrigger value="education-experience">Education & Experience</TabsTrigger>
                                             {showConditionalTabs && <TabsTrigger value="working-details">Working Details</TabsTrigger>}
                                             {showConditionalTabs && <TabsTrigger value="training-audit">Training & Audit</TabsTrigger>}
@@ -408,8 +406,8 @@ export default function StaffRegistrationPage() {
                                                     )} />
                                                     {watchedLocationType === 'rural' && (
                                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                                             <FormField control={form.control} name="ruralDistrict" render={({ field }) => ( <FormItem><FormLabel>District*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
-                                                             <FormField control={form.control} name="ruralBlock" render={({ field }) => ( <FormItem><FormLabel>Block*</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedRuralDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{ruralBlocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
+                                                             <FormField control={form.control} name="ruralDistrict" render={({ field }) => ( <FormItem><FormLabel>District*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralBlock', ''); form.setValue('ruralPanchayat', ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
+                                                             <FormField control={form.control} name="ruralBlock" render={({ field }) => ( <FormItem><FormLabel>Block*</FormLabel><Select onValueChange={(val) => { field.onChange(val); form.setValue('ruralPanchayat', ''); }} value={field.value} disabled={!watchedRuralDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{ruralBlocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
                                                              <FormField control={form.control} name="ruralPanchayat" render={({ field }) => ( <FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedRuralBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{ruralPanchayats.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
                                                              <FormItem><FormLabel>LGD Code</FormLabel><FormControl><Input value={lgdCode} readOnly className="bg-muted" /></FormControl></FormItem>
                                                         </div>
@@ -424,6 +422,7 @@ export default function StaffRegistrationPage() {
                                                      <FormField control={form.control} name="fullAddress" render={({ field }) => ( <FormItem><FormLabel>Full Address (as per Aadhaar)*</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="pincode" render={({ field }) => ( <FormItem><FormLabel>Pincode*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                              </Card>
                                         </TabsContent>
 
@@ -435,6 +434,7 @@ export default function StaffRegistrationPage() {
                                                      <FormField control={form.control} name="motherName" render={({ field }) => ( <FormItem><FormLabel>Mother's Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="spouseName" render={({ field }) => ( <FormItem><FormLabel>Spouse Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                             </Card>
                                         </TabsContent>
 
@@ -448,7 +448,7 @@ export default function StaffRegistrationPage() {
                                                          <FormField control={form.control} name="dob" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                          <FormItem><FormLabel>Age</FormLabel><FormControl><Input value={calculateAge(form.watch('dob'))} readOnly className="bg-muted" /></FormControl></FormItem>
                                                          <FormField control={form.control} name="gender" render={({ field }) => ( <FormItem><FormLabel>Gender*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Male" /></FormControl><FormLabel>Male</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Female" /></FormControl><FormLabel>Female</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Other" /></FormControl><FormLabel>Other</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem> )} />
-                                                         {watchedGender === 'Female' && <FormField control={form.control} name="femaleType" render={({ field }) => ( <FormItem><FormLabel>Female Type*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="single_women">Single Women</SelectItem><SelectItem value="widow">Widow</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />}
+                                                         {watchedGender === 'Female' && <FormField control={form.control} name="femaleType" render={({ field }) => ( <FormItem><FormLabel>Female Type*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">None</SelectItem><SelectItem value="single_women">Single Women</SelectItem><SelectItem value="widow">Widow</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />}
                                                     </div>
                                                     <Card>
                                                         <CardHeader><CardTitle className="text-base">Health Related</CardTitle></CardHeader>
@@ -461,12 +461,13 @@ export default function StaffRegistrationPage() {
                                                         </CardContent>
                                                     </Card>
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                             </Card>
                                         </TabsContent>
                                         
                                          <TabsContent value="personal-info" className="pt-6">
                                              <Card>
-                                                <CardHeader><CardTitle>Personal Info (Financial & Contact)</CardTitle></CardHeader>
+                                                <CardHeader><CardTitle>Personal Info</CardTitle></CardHeader>
                                                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                      <FormField control={form.control} name="contactNumber2" render={({ field }) => ( <FormItem><FormLabel>Contact Number 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="personalEmail" render={({ field }) => ( <FormItem><FormLabel>Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -482,15 +483,148 @@ export default function StaffRegistrationPage() {
                                                      <FormField control={form.control} name="uan" render={({ field }) => ( <FormItem><FormLabel>UAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                      <FormField control={form.control} name="pfmsId" render={({ field }) => ( <FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                              </Card>
                                         </TabsContent>
 
-                                        <TabsContent value="education-experience" className="pt-6">
-                                            {/* Education, Work, Skills with Dynamic Tables */}
+                                         <TabsContent value="education-experience" className="pt-6">
+                                            <div className="space-y-6">
+                                                <Card>
+                                                   <CardHeader><CardTitle>Academic Details*</CardTitle></CardHeader>
+                                                    <CardContent>
+                                                        <DynamicTable name="academics" control={form.control} appendValues={{ course: '', institution: '', board: '', fromYear: '', toYear: '', aggregate: 0 }}
+                                                            columns={[
+                                                                { header: 'Course', render: (i) => <FormField control={form.control} name={`academics.${i}.course`} render={({field}) => <Input {...field} />} /> },
+                                                                { header: 'Institution', render: (i) => <FormField control={form.control} name={`academics.${i}.institution`} render={({field}) => <Input {...field} />} /> },
+                                                                { header: 'Board / University', render: (i) => <FormField control={form.control} name={`academics.${i}.board`} render={({field}) => <Input {...field} />} /> },
+                                                                { header: 'From Year', render: (i) => <FormField control={form.control} name={`academics.${i}.fromYear`} render={({field}) => <Input type="number" {...field} />} /> },
+                                                                { header: 'To Year', render: (i) => <FormField control={form.control} name={`academics.${i}.toYear`} render={({field}) => <Input type="number" {...field} />} /> },
+                                                                { header: 'Aggregate %', render: (i) => <FormField control={form.control} name={`academics.${i}.aggregate`} render={({field}) => <Input type="number" {...field} />} /> },
+                                                                { header: 'Upload Certificate', render: (i) => <FormField control={form.control} name={`academics.${i}.certificate`} render={({field}) => <Input type="file" onChange={(e) => field.onChange(e.target.files)} />} /> },
+                                                            ]}
+                                                        />
+                                                    </CardContent>
+                                                </Card>
+                                                <Card>
+                                                   <CardHeader><CardTitle>Work Experience*</CardTitle></CardHeader>
+                                                    <CardContent>
+                                                        <DynamicTable name="workExperiences" control={form.control} appendValues={{ name: '', natureOfJob: '', from: new Date(), to: new Date() }}
+                                                            columns={[
+                                                                { header: 'Name', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.name`} render={({field}) => <Input {...field} />} /> },
+                                                                { header: 'Nature of Job', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.natureOfJob`} render={({field}) => <Input {...field} />} /> },
+                                                                { header: 'From', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.from`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                { header: 'To', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.to`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                { header: 'Duration', render: (i) => <Input readOnly className="bg-muted" value={calculateDuration(form.watch(`workExperiences.${i}.from`), form.watch(`workExperiences.${i}.to`))} /> },
+                                                                { header: 'Upload Certificate', render: (i) => <FormField control={form.control} name={`workExperiences.${i}.certificate`} render={({field}) => <Input type="file" onChange={(e) => field.onChange(e.target.files)} />} /> },
+                                                            ]}
+                                                        />
+                                                    </CardContent>
+                                                </Card>
+                                                <Card>
+                                                   <CardHeader><CardTitle>Skills*</CardTitle></CardHeader>
+                                                    <CardContent>
+                                                         <DynamicTable name="skills" control={form.control} appendValues={{ skill: '' }}
+                                                            columns={[
+                                                                { header: 'Skill', render: (i) => <FormField control={form.control} name={`skills.${i}.skill`} render={({field}) => <Textarea {...field} />} />, className: "w-[80%]" },
+                                                            ]}
+                                                        />
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                             <div className="p-6 pt-0 text-right"><Button>Save</Button></div>
                                         </TabsContent>
                                         
-                                        {showConditionalTabs && <TabsContent value="working-details" className="pt-6"></TabsContent>}
-                                        {showConditionalTabs && <TabsContent value="training-audit" className="pt-6"></TabsContent>}
+                                        {showConditionalTabs && <TabsContent value="working-details" className="pt-6">
+                                            <Card>
+                                                <CardHeader><CardTitle>Working Details</CardTitle></CardHeader>
+                                                <CardContent className="space-y-6">
+                                                     <FormField control={form.control} name="joiningDate" render={({ field }) => (<FormItem className="flex flex-col max-w-sm"><FormLabel>Joining Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                                     {selectedRole === 'BRP' && (
+                                                         <Card>
+                                                             <CardHeader><CardTitle>BRP - Worked/Present Station Details*</CardTitle></CardHeader>
+                                                             <CardContent>
+                                                                 <DynamicTable name="brpWorkedStations" control={form.control} appendValues={{ district: '', block: '', fromDate: new Date(), toDate: new Date() }}
+                                                                    columns={[
+                                                                        { header: 'District', render: i => <FormField control={form.control} name={`brpWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
+                                                                        { header: 'Block', render: i => <FormField control={form.control} name={`brpWorkedStations.${i}.block`} render={({field}) => <Input {...field}/>} /> },
+                                                                        { header: 'From', render: (i) => <FormField control={form.control} name={`brpWorkedStations.${i}.fromDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'To', render: (i) => <FormField control={form.control} name={`brpWorkedStations.${i}.toDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'Duration', render: (i) => <Input readOnly className="bg-muted" value={calculateDuration(form.watch(`brpWorkedStations.${i}.fromDate`), form.watch(`brpWorkedStations.${i}.toDate`))} /> },
+                                                                    ]}
+                                                                />
+                                                             </CardContent>
+                                                         </Card>
+                                                     )}
+                                                     {selectedRole === 'DRP' && (
+                                                          <Card>
+                                                             <CardHeader><CardTitle>DRP - Worked/Present Station Details*</CardTitle></CardHeader>
+                                                             <CardContent>
+                                                                  <DynamicTable name="drpWorkedStations" control={form.control} appendValues={{ district: '', fromDate: new Date(), toDate: new Date() }}
+                                                                    columns={[
+                                                                        { header: 'District', render: i => <FormField control={form.control} name={`drpWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
+                                                                        { header: 'From', render: (i) => <FormField control={form.control} name={`drpWorkedStations.${i}.fromDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'To', render: (i) => <FormField control={form.control} name={`drpWorkedStations.${i}.toDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'Duration', render: (i) => <Input readOnly className="bg-muted" value={calculateDuration(form.watch(`drpWorkedStations.${i}.fromDate`), form.watch(`drpWorkedStations.${i}.toDate`))} /> },
+                                                                    ]}
+                                                                />
+                                                             </CardContent>
+                                                         </Card>
+                                                     )}
+                                                     <FormField control={form.control} name="isDrpIC" render={({field}) => (
+                                                        <FormItem className="flex items-center gap-4"><FormLabel>Have you worked as DRP I/C?</FormLabel>
+                                                        <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage/></FormItem>
+                                                     )} />
+                                                      {watchedIsDrpIc === 'yes' && (
+                                                          <Card>
+                                                             <CardHeader><CardTitle>DRP I/C - Worked/Present Station Details*</CardTitle></CardHeader>
+                                                             <CardContent>
+                                                                  <DynamicTable name="drpICWorkedStations" control={form.control} appendValues={{ district: '', fromDate: new Date(), toDate: new Date() }}
+                                                                    columns={[
+                                                                        { header: 'District', render: i => <FormField control={form.control} name={`drpICWorkedStations.${i}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{DISTRICTS.map(d=><SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>} /> },
+                                                                        { header: 'From', render: (i) => <FormField control={form.control} name={`drpICWorkedStations.${i}.fromDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'To', render: (i) => <FormField control={form.control} name={`drpICWorkedStations.${i}.toDate`} render={({field}) => <Input type="date" value={field.value ? format(new Date(field.value), 'yyyy-MM-dd') : ''} onChange={(e) => field.onChange(new Date(e.target.value))}/>} /> },
+                                                                        { header: 'Duration', render: (i) => <Input readOnly className="bg-muted" value={calculateDuration(form.watch(`drpICWorkedStations.${i}.toDate`), form.watch(`drpICWorkedStations.${i}.fromDate`))} /> },
+                                                                    ]}
+                                                                />
+                                                             </CardContent>
+                                                         </Card>
+                                                     )}
+                                                </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
+                                            </Card>
+                                        </TabsContent>}
+
+                                        {showConditionalTabs && <TabsContent value="training-audit" className="pt-6">
+                                            <Card>
+                                                <CardHeader><CardTitle>Training & Audit Particulars</CardTitle></CardHeader>
+                                                <CardContent>
+                                                    <div className="p-4 border rounded-md space-y-4">
+                                                       <h3 className="text-lg font-semibold text-primary">Training & Audit Particulars</h3>
+                                                       <Tabs defaultValue="training-taken">
+                                                           <TabsList>
+                                                               <TabsTrigger value="training-taken">Training Taken</TabsTrigger>
+                                                               <TabsTrigger value="training-given">Training Given</TabsTrigger>
+                                                               <TabsTrigger value="pilot-audit">Pilot Audit</TabsTrigger>
+                                                               <TabsTrigger value="state-office">State Office Activities</TabsTrigger>
+                                                           </TabsList>
+                                                            <TabsContent value="training-taken" className="pt-4">
+                                                                 <FormField control={form.control} name="trainingTaken" render={({field}) => (<FormItem className="flex items-center gap-4"><FormLabel>Training Taken?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage/></FormItem>)} />
+                                                            </TabsContent>
+                                                             <TabsContent value="training-given" className="pt-4">
+                                                                 <FormField control={form.control} name="trainingGiven" render={({field}) => (<FormItem className="flex items-center gap-4"><FormLabel>Training Given?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage/></FormItem>)} />
+                                                            </TabsContent>
+                                                             <TabsContent value="pilot-audit" className="pt-4">
+                                                                 <FormField control={form.control} name="pilotAudit" render={({field}) => (<FormItem className="flex items-center gap-4"><FormLabel>Pilot Audit?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage/></FormItem>)} />
+                                                            </TabsContent>
+                                                            <TabsContent value="state-office" className="pt-4">
+                                                                <FormField control={form.control} name="stateOfficeActivities" render={({field}) => (<FormItem className="flex items-center gap-4"><FormLabel>State Office Activities?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage/></FormItem>)} />
+                                                            </TabsContent>
+                                                       </Tabs>
+                                                    </div>
+                                                </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
+                                            </Card>
+                                        </TabsContent>}
 
                                         <TabsContent value="disclaimer" className="pt-6">
                                              <Card>
@@ -506,6 +640,7 @@ export default function StaffRegistrationPage() {
                                                         </FormItem>
                                                     )} />
                                                 </CardContent>
+                                                <div className="p-6 pt-0"><Button>Save</Button></div>
                                              </Card>
                                         </TabsContent>
                                     </Tabs>
@@ -514,7 +649,7 @@ export default function StaffRegistrationPage() {
                                 <div className="flex justify-end gap-4 pt-8">
                                   <Dialog open={!!previewData} onOpenChange={(isOpen) => !isOpen && setPreviewData(null)}>
                                     <DialogTrigger asChild>
-                                        <Button type="submit" variant="outline" disabled={!selectedRole}>Preview All Details</Button>
+                                        <Button type="button" variant="outline" disabled={!selectedRole}>Preview All Details</Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                         <DialogHeader>
@@ -530,6 +665,7 @@ export default function StaffRegistrationPage() {
                                         </DialogFooter>
                                     </DialogContent>
                                   </Dialog>
+                                   <Button type="submit" disabled={!selectedRole}>Final Submit</Button>
                                 </div>
                             </form>
                         </Form>
@@ -541,3 +677,4 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
+
