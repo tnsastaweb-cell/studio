@@ -18,88 +18,32 @@ import Link from 'next/link';
 
 const themes = [
     { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'], isDark: false },
-    { name: 'Oceanic Blue', id: 'oceanic', colors: ['#EFF8FF', '#1D4ED8', '#D1E0FF', '#A7C7E7'], isDark: false },
-    { name: 'Forest Green', id: 'forest', colors: ['#F0FFF4', '#15803D', '#D4F0E0', '#A3D9B8'], isDark: false },
-    { name: 'Lavender Bliss', id: 'lavender', colors: ['#F5F3FF', '#5D54A4', '#E0D3FF', '#C7B4FF'], isDark: false },
-    { name: 'Sunset Orange', id: 'sunset', colors: ['#FFF7ED', '#EA580C', '#FFE8D6', '#FDBA74'], isDark: false },
-    { name: 'Rose Petal', id: 'rose', colors: ['#FFF1F2', '#BE123C', '#FECDD3', '#FDA4AF'], isDark: false },
-    { name: 'Minty Fresh', id: 'mint', colors: ['#F0FDFA', '#0F766E', '#C2F5EE', '#8EDFD8'], isDark: false },
-    { name: 'Golden Sand', id: 'sand', colors: ['#FEFCE8', '#A16207', '#FEF9C3', '#FAF089'], isDark: false },
-    { name: 'Slate Blue', id: 'slate-blue', colors: ['#F8FAFC', '#475569', '#E2E8F0', '#CBD5E1'], isDark: false },
-    { name: 'Orchid Purple', id: 'orchid', colors: ['#FBF5FF', '#7E22CE', '#F3E8FF', '#E9D5FF'], isDark: false },
+    { name: 'Oceanic', id: 'oceanic', colors: ['#2C3E50', '#34495E', '#95A5A6', '#BDC3C7'], isDark: true },
+    { name: 'Earthy Green', id: 'earthy-green', colors: ['#F0F3E5', '#6B8E23', '#A9C27C', '#C9D9A7'], isDark: false },
+    { name: 'Coastal', id: 'coastal', colors: ['#EBE3D5', '#52796F', '#84A98C', '#CAD2C5'], isDark: false },
+    { name: 'Clay', id: 'clay', colors: ['#F5EBE0', '#A98467', '#D4A373', '#EAD2AC'], isDark: false },
+    { name: 'Lavender Sky', id: 'lavender-sky', colors: ['#E6E6FA', '#6A5ACD', '#9370DB', '#B19CD9'], isDark: false },
+    { name: 'Deep Indigo', id: 'deep-indigo', colors: ['#3A3A5A', '#4F4F7A', '#7878AB', '#A0A0CD'], isDark: true },
+    { name: 'Blush Pink', id: 'blush-pink', colors: ['#FFF0F5', '#FFB6C1', '#FFC0CB', '#FFE4E1'], isDark: false },
+    { name: 'Pastel Lilac', id: 'pastel-lilac', colors: ['#F3E8FF', '#D6B4FC', '#C8A2C8', '#A474A9'], isDark: false },
+    { name: 'Aqua', id: 'aqua', colors: ['#E0FFFF', '#00CED1', '#40E0D0', '#7FFFD4'], isDark: false },
+    { name: 'Royal Blue', id: 'royal-blue', colors: ['#F0F8FF', '#4169E1', '#6495ED', '#B0C4DE'], isDark: false },
+    { name: 'Teal & Black', id: 'teal-black', colors: ['#1A2A3A', '#2D3E50', '#00A99D', '#A1D9D9'], isDark: true },
 ];
 
 const themeHslMap: { [key: string]: { [key: string]: string } } = {
-    default: {
-        "--background": "48 33% 96%",
-        "--foreground": "215 15% 34%",
-        "--card": "0 0% 91%",
-        "--primary": "215 15% 34%",
-        "--accent": "222 11% 77%",
-    },
-    oceanic: {
-        "--background": "208 100% 96%",
-        "--foreground": "221 78% 46%",
-        "--card": "216 100% 95%",
-        "--primary": "221 78% 46%",
-        "--accent": "214 68% 85%",
-    },
-    forest: {
-        "--background": "140 100% 97%",
-        "--foreground": "146 70% 30%",
-        "--card": "148 57% 92%",
-        "--primary": "146 70% 30%",
-        "--accent": "143 45% 82%",
-    },
-     lavender: {
-        "--background": "246 100% 97%",
-        "--foreground": "246 32% 49%",
-        "--card": "252 100% 95%",
-        "--primary": "246 32% 49%",
-        "--accent": "256 100% 89%",
-    },
-    sunset: {
-        "--background": "34 100% 96%",
-        "--foreground": "26 94% 41%",
-        "--card": "31 100% 94%",
-        "--primary": "26 94% 41%",
-        "--accent": "36 96% 75%",
-    },
-     rose: {
-        "--background": "356 100% 97%",
-        "--foreground": "344 80% 41%",
-        "--card": "355 94% 92%",
-        "--primary": "344 80% 41%",
-        "--accent": "355 93% 82%",
-    },
-    mint: {
-        "--background": "169 100% 97%",
-        "--foreground": "175 79% 27%",
-        "--card": "170 82% 90%",
-        "--primary": "175 79% 27%",
-        "--accent": "172 71% 81%",
-    },
-    sand: {
-        "--background": "55 100% 96%",
-        "--foreground": "45 93% 32%",
-        "--card": "55 96% 89%",
-        "--primary": "45 93% 32%",
-        "--accent": "53 91% 76%",
-    },
-    'slate-blue': {
-        "--background": "215 20% 97%",
-        "--foreground": "222 17% 35%",
-        "--card": "222 47% 95%",
-        "--primary": "222 17% 35%",
-        "--accent": "220 26% 90%",
-    },
-    orchid: {
-        "--background": "283 100% 98%",
-        "--foreground": "278 70% 47%",
-        "--card": "276 100% 96%",
-        "--primary": "278 70% 47%",
-        "--accent": "273 65% 91%",
-    },
+    default: { "--background": "48 33% 96%", "--foreground": "215 15% 34%", "--card": "0 0% 91%", "--primary": "215 15% 34%", "--accent": "222 11% 77%" },
+    oceanic: { "--background": "210 20% 23%", "--foreground": "210 10% 80%", "--card": "210 25% 27%", "--primary": "204 15% 75%", "--accent": "210 10% 40%" },
+    'earthy-green': { "--background": "80 30% 95%", "--foreground": "80 45% 25%", "--card": "80 30% 88%", "--primary": "80 40% 48%", "--accent": "80 30% 75%" },
+    coastal: { "--background": "40 25% 94%", "--foreground": "165 25% 30%", "--card": "165 20% 85%", "--primary": "165 25% 40%", "--accent": "165 20% 65%" },
+    clay: { "--background": "33 43% 94%", "--foreground": "29 34% 40%", "--card": "30 45% 85%", "--primary": "29 34% 53%", "--accent": "30 45% 75%" },
+    'lavender-sky': { "--background": "240 67% 97%", "--foreground": "248 39% 50%", "--card": "248 50% 92%", "--primary": "248 39% 50%", "--accent": "248 50% 85%" },
+    'deep-indigo': { "--background": "240 25% 28%", "--foreground": "240 30% 85%", "--card": "240 20% 35%", "--primary": "240 30% 75%", "--accent": "240 20% 50%" },
+    'blush-pink': { "--background": "350 100% 98%", "--foreground": "348 83% 60%", "--card": "350 100% 95%", "--primary": "348 83% 60%", "--accent": "350 100% 90%" },
+    'pastel-lilac': { "--background": "276 100% 97%", "--foreground": "276 60% 55%", "--card": "276 70% 92%", "--primary": "276 60% 55%", "--accent": "276 70% 85%" },
+    aqua: { "--background": "180 100% 97%", "--foreground": "181 100% 35%", "--card": "180 80% 90%", "--primary": "177 100% 44%", "--accent": "180 80% 80%" },
+    'royal-blue': { "--background": "210 100% 98%", "--foreground": "226 71% 51%", "--card": "210 80% 92%", "--primary": "226 71% 51%", "--accent": "210 80% 85%" },
+    'teal-black': { "--background": "210 30% 16%", "--foreground": "208 40% 90%", "--card": "210 30% 23%", "--primary": "177 100% 34%", "--accent": "210 30% 40%" },
 };
 
 const applyTheme = (themeId: string) => {
@@ -110,8 +54,12 @@ const applyTheme = (themeId: string) => {
         root.style.setProperty(key, value);
     });
 
-    // Handle dark class separately if needed, but for now, all are light
-    root.classList.remove('dark');
+    const isDark = themes.find(t => t.id === themeId)?.isDark || false;
+    if (isDark) {
+        root.classList.add('dark');
+    } else {
+        root.classList.remove('dark');
+    }
 };
 
 export default function ProfilePage() {
@@ -172,8 +120,6 @@ export default function ProfilePage() {
                 title: 'Profile Saved!',
                 description: 'Your new theme and photo have been saved.',
             });
-             // No need to sign out to apply theme, but we might need to if other things depend on it.
-             // For now, let's keep the user signed in.
         }
     };
 
@@ -230,7 +176,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                     <h3 className="text-2xl font-semibold flex items-center gap-2"><Palette/> Color Theme</h3>
                     <p className="text-muted-foreground">Choose a color palette that suits your style. The change will be applied across the site.</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {themes.map(theme => (
                             <button 
                                 key={theme.id}
@@ -240,7 +186,7 @@ export default function ProfilePage() {
                                     selectedTheme === theme.id ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-transparent hover:border-primary/50'
                                 )}
                             >
-                                <div className="flex space-x-1 h-12">
+                                <div className="flex space-x-1 h-12 w-full">
                                     {theme.colors.map((color, index) => (
                                         <div key={index} className="w-1/4 h-full rounded" style={{ backgroundColor: color }} />
                                     ))}
@@ -261,5 +207,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-
