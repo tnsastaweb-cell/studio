@@ -21,7 +21,6 @@ const themes = [
     { name: 'Earthy Sage', id: 'earthy-sage', colors: ['#F0EBE3', '#576F72', '#7D9D9C', '#E4DCCF'] },
     { name: 'Warm Clay', id: 'warm-clay', colors: ['#F3EEEA', '#776B5D', '#EBE3D5', '#B0A695'] },
     { name: 'Desert Sunset', id: 'desert-sunset', colors: ['#F8EDE3', '#7D6E83', '#DFD3C3', '#D0B8A8'] },
-    { name: 'Cool Slate', id: 'cool-slate', colors: ['#DDE6ED', '#27374D', '#526D82', '#9DB2BF'] },
     { name: 'Lavender Sky', id: 'lavender-sky', colors: ['#F4EEFF', '#424874', '#DCD6F7', '#A6B1E1'] },
 ];
 
@@ -30,7 +29,6 @@ const themeHslMap: { [key: string]: { [key: string]: string } } = {
     'earthy-sage': { "--background": "40 31% 91%", "--foreground": "189 13% 40%", "--card": "181 14% 69%", "--primary": "189 13% 40%", "--accent": "40 31% 88%" },
     'warm-clay': { "--background": "36 29% 94%", "--foreground": "32 10% 41%", "--card": "40 31% 91%", "--primary": "32 10% 41%", "--accent": "34 16% 64%" },
     'desert-sunset': { "--background": "30 64% 94%", "--foreground": "283 10% 44%", "--card": "35 29% 85%", "--primary": "283 10% 44%", "--accent": "30 33% 71%" },
-    'cool-slate': { "--background": "210 29% 90%", "--foreground": "215 33% 23%", "--card": "209 24% 41%", "--primary": "215 33% 23%", "--accent": "208 19% 72%" },
     'lavender-sky': { "--background": "252 100% 96%", "--foreground": "236 29% 36%", "--card": "246 65% 91%", "--primary": "236 29% 36%", "--accent": "226 50% 77%" },
 };
 
