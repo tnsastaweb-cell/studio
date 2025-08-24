@@ -17,36 +17,101 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const themes = [
-    { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'] },
-    { name: 'Lavender Bliss', id: 'lavender', colors: ['#F5F3FF', '#5D54A4', '#E0D3FF', '#C7B4FF'] },
-    { name: 'Oceanic Blue', id: 'oceanic', colors: ['#EFF8FF', '#1D4ED8', '#D1E0FF', '#A7C7E7'] },
-    { name: 'Forest Green', id: 'forest', colors: ['#F0FFF4', '#15803D', '#D4F0E0', '#A3D9B8'] },
-    { name: 'Sunset Orange', id: 'sunset', colors: ['#FFF7ED', '#EA580C', '#FFE8D6', '#FDBA74'] },
-    { name: 'Dark Slate', id: 'dark-slate', colors: ['#1E293B', '#F1F5F9', '#334155', '#64748B'] },
-    { name: 'Rose Petal', id: 'rose', colors: ['#FFF1F2', '#BE123C', '#FECDD3', '#FDA4AF'] },
-    { name: 'Crimson Night', id: 'crimson-dark', colors: ['#260000', '#FFD1D1', '#5B0000', '#A30000'] },
-    { name: 'Sapphire Night', id: 'sapphire-dark', colors: ['#0A192F', '#A8B2D1', '#112240', '#303C55'] },
-    { name: 'High Contrast', id: 'high-contrast', colors: ['#000000', '#FFFFFF', '#333333', '#CCCCCC'] },
+    { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'], isDark: false },
+    { name: 'Oceanic Blue', id: 'oceanic', colors: ['#EFF8FF', '#1D4ED8', '#D1E0FF', '#A7C7E7'], isDark: false },
+    { name: 'Forest Green', id: 'forest', colors: ['#F0FFF4', '#15803D', '#D4F0E0', '#A3D9B8'], isDark: false },
+    { name: 'Lavender Bliss', id: 'lavender', colors: ['#F5F3FF', '#5D54A4', '#E0D3FF', '#C7B4FF'], isDark: false },
+    { name: 'Sunset Orange', id: 'sunset', colors: ['#FFF7ED', '#EA580C', '#FFE8D6', '#FDBA74'], isDark: false },
+    { name: 'Rose Petal', id: 'rose', colors: ['#FFF1F2', '#BE123C', '#FECDD3', '#FDA4AF'], isDark: false },
+    { name: 'Minty Fresh', id: 'mint', colors: ['#F0FDFA', '#0F766E', '#C2F5EE', '#8EDFD8'], isDark: false },
+    { name: 'Golden Sand', id: 'sand', colors: ['#FEFCE8', '#A16207', '#FEF9C3', '#FAF089'], isDark: false },
+    { name: 'Slate Blue', id: 'slate-blue', colors: ['#F8FAFC', '#475569', '#E2E8F0', '#CBD5E1'], isDark: false },
+    { name: 'Orchid Purple', id: 'orchid', colors: ['#FBF5FF', '#7E22CE', '#F3E8FF', '#E9D5FF'], isDark: false },
 ];
+
+const themeHslMap: { [key: string]: { [key: string]: string } } = {
+    default: {
+        "--background": "48 33% 96%",
+        "--foreground": "215 15% 34%",
+        "--card": "0 0% 91%",
+        "--primary": "215 15% 34%",
+        "--accent": "222 11% 77%",
+    },
+    oceanic: {
+        "--background": "208 100% 96%",
+        "--foreground": "221 78% 46%",
+        "--card": "216 100% 95%",
+        "--primary": "221 78% 46%",
+        "--accent": "214 68% 85%",
+    },
+    forest: {
+        "--background": "140 100% 97%",
+        "--foreground": "146 70% 30%",
+        "--card": "148 57% 92%",
+        "--primary": "146 70% 30%",
+        "--accent": "143 45% 82%",
+    },
+     lavender: {
+        "--background": "246 100% 97%",
+        "--foreground": "246 32% 49%",
+        "--card": "252 100% 95%",
+        "--primary": "246 32% 49%",
+        "--accent": "256 100% 89%",
+    },
+    sunset: {
+        "--background": "34 100% 96%",
+        "--foreground": "26 94% 41%",
+        "--card": "31 100% 94%",
+        "--primary": "26 94% 41%",
+        "--accent": "36 96% 75%",
+    },
+     rose: {
+        "--background": "356 100% 97%",
+        "--foreground": "344 80% 41%",
+        "--card": "355 94% 92%",
+        "--primary": "344 80% 41%",
+        "--accent": "355 93% 82%",
+    },
+    mint: {
+        "--background": "169 100% 97%",
+        "--foreground": "175 79% 27%",
+        "--card": "170 82% 90%",
+        "--primary": "175 79% 27%",
+        "--accent": "172 71% 81%",
+    },
+    sand: {
+        "--background": "55 100% 96%",
+        "--foreground": "45 93% 32%",
+        "--card": "55 96% 89%",
+        "--primary": "45 93% 32%",
+        "--accent": "53 91% 76%",
+    },
+    'slate-blue': {
+        "--background": "215 20% 97%",
+        "--foreground": "222 17% 35%",
+        "--card": "222 47% 95%",
+        "--primary": "222 17% 35%",
+        "--accent": "220 26% 90%",
+    },
+    orchid: {
+        "--background": "283 100% 98%",
+        "--foreground": "278 70% 47%",
+        "--card": "276 100% 96%",
+        "--primary": "278 70% 47%",
+        "--accent": "273 65% 91%",
+    },
+};
 
 const applyTheme = (themeId: string) => {
     const root = document.documentElement;
-    const selectedTheme = themes.find(t => t.id === themeId) || themes[0];
+    const theme = themeHslMap[themeId] || themeHslMap['default'];
 
-    if (themeId.includes('dark') || themeId.includes('contrast')) {
-        root.classList.add('dark');
-    } else {
-        root.classList.remove('dark');
-    }
-    
-    // A simplified mapping from palette to CSS variables
-    // In a real scenario, you would generate HSL values from these hex codes
-    // For now, we'll just set the primary ones
-    const [background, primary, card, accent] = selectedTheme.colors;
-    root.style.setProperty('--background-hex', background);
-    root.style.setProperty('--primary-hex', primary);
-    root.style.setProperty('--card-hex', card);
-    root.style.setProperty('--accent-hex', accent);
+    Object.entries(theme).forEach(([key, value]) => {
+        root.style.setProperty(key, value);
+    });
+
+    // Handle dark class separately if needed, but for now, all are light
+    root.classList.remove('dark');
 };
 
 export default function ProfilePage() {
@@ -61,10 +126,14 @@ export default function ProfilePage() {
     
     useEffect(() => {
         if (user) {
-            setSelectedTheme(user.theme || 'default');
+            const currentTheme = user.theme || 'default';
+            setSelectedTheme(currentTheme);
             setProfilePicture(user.profilePicture || null);
             setPreviewPicture(user.profilePicture || null);
-            applyTheme(user.theme || 'default');
+            applyTheme(currentTheme);
+        } else {
+            // Apply default theme if no user is logged in
+            applyTheme('default');
         }
     }, [user]);
 
@@ -99,15 +168,12 @@ export default function ProfilePage() {
                 theme: selectedTheme,
                 profilePicture: previewPicture,
             });
-            // We also need to update the user in the AuthContext to reflect changes immediately
-            // This is a workaround since our updateUser doesn't automatically refresh the Auth context
-            setTimeout(() => {
-                toast({
-                    title: 'Profile Saved!',
-                    description: 'Your changes have been saved. Signing out to apply changes.',
-                });
-                signOut();
-            }, 1000);
+            toast({
+                title: 'Profile Saved!',
+                description: 'Your new theme and photo have been saved.',
+            });
+             // No need to sign out to apply theme, but we might need to if other things depend on it.
+             // For now, let's keep the user signed in.
         }
     };
 
@@ -195,4 +261,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
