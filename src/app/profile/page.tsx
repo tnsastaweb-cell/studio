@@ -18,28 +18,20 @@ import Link from 'next/link';
 
 const themes = [
     { name: 'Default', id: 'default', colors: ['#F4F4F2', '#495464', '#E8E8E8', '#BBBFCA'] },
-    { name: 'Ocean Breeze', id: 'ocean-breeze', colors: ['#E7F6F2', '#2C3333', '#A5C9CA', '#395B64'] },
     { name: 'Earthy Sage', id: 'earthy-sage', colors: ['#F0EBE3', '#576F72', '#7D9D9C', '#E4DCCF'] },
     { name: 'Warm Clay', id: 'warm-clay', colors: ['#F3EEEA', '#776B5D', '#EBE3D5', '#B0A695'] },
     { name: 'Desert Sunset', id: 'desert-sunset', colors: ['#F8EDE3', '#7D6E83', '#DFD3C3', '#D0B8A8'] },
-    { name: 'Olive Grove', id: 'olive-grove', colors: ['#EDF1D6', '#40513B', '#609966', '#9DC08B'] },
-    { name: 'Cool Slate', id: 'cool-slate', colors: ['#DDE6ED', '#27374D', '#9DB2BF', '#526D82'] },
-    { name: 'Rosewater', id: 'rosewater', colors: ['#DCD7C9', '#2C3639', '#A27B5C', '#3F4E4F'] },
+    { name: 'Cool Slate', id: 'cool-slate', colors: ['#DDE6ED', '#27374D', '#526D82', '#9DB2BF'] },
     { name: 'Lavender Sky', id: 'lavender-sky', colors: ['#F4EEFF', '#424874', '#DCD6F7', '#A6B1E1'] },
-    { name: 'Modern Teal', id: 'modern-teal', colors: ['#EEEEEE', '#222831', '#00ADB5', '#393E46'] },
 ];
 
 const themeHslMap: { [key: string]: { [key: string]: string } } = {
     default: { "--background": "48 33% 96%", "--foreground": "215 15% 34%", "--card": "0 0% 91%", "--primary": "215 15% 34%", "--accent": "222 11% 77%" },
-    'ocean-breeze': { "--background": "165 42% 94%", "--foreground": "180 6% 19%", "--card": "182 27% 72%", "--primary": "180 6% 19%", "--accent": "196 29% 31%" },
     'earthy-sage': { "--background": "40 31% 91%", "--foreground": "189 13% 40%", "--card": "181 14% 69%", "--primary": "189 13% 40%", "--accent": "40 31% 88%" },
     'warm-clay': { "--background": "36 29% 94%", "--foreground": "32 10% 41%", "--card": "40 31% 91%", "--primary": "32 10% 41%", "--accent": "34 16% 64%" },
     'desert-sunset': { "--background": "30 64% 94%", "--foreground": "283 10% 44%", "--card": "35 29% 85%", "--primary": "283 10% 44%", "--accent": "30 33% 71%" },
-    'olive-grove': { "--background": "76 43% 90%", "--foreground": "83 17% 28%", "--card": "145 25% 48%", "--primary": "83 17% 28%", "--accent": "91 32% 65%" },
-    'cool-slate': { "--background": "210 29% 90%", "--foreground": "215 33% 23%", "--card": "208 19% 72%", "--primary": "215 33% 23%", "--accent": "209 24% 41%" },
-    'rosewater': { "--background": "43 15% 82%", "--foreground": "202 12% 20%", "--card": "26 31% 56%", "--primary": "202 12% 20%", "--accent": "182 10% 28%" },
+    'cool-slate': { "--background": "210 29% 90%", "--foreground": "215 33% 23%", "--card": "209 24% 41%", "--primary": "215 33% 23%", "--accent": "208 19% 72%" },
     'lavender-sky': { "--background": "252 100% 96%", "--foreground": "236 29% 36%", "--card": "246 65% 91%", "--primary": "236 29% 36%", "--accent": "226 50% 77%" },
-    'modern-teal': { "--background": "0 0% 93%", "--foreground": "209 16% 16%", "--card": "183 100% 36%", "--primary": "209 16% 16%", "--accent": "214 9% 25%" },
 };
 
 
