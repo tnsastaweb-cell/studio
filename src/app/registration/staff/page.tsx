@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format, differenceInYears } from 'date-fns';
@@ -85,12 +85,13 @@ const staffFormSchema = z.object({
   age: z.string().optional(),
   gender: z.string().min(1, "Gender is required"),
   femaleType: z.string().optional(),
+  bloodGroup: z.string().optional(),
   isDifferentlyAbled: z.enum(['yes', 'no'], { required_error: "This field is required."}),
   differentlyAbledCert: z.any().optional(),
   healthIssues: z.enum(['normal', 'minor', 'major'], { required_error: "This field is required."}),
   healthIssuesDetails: z.string().optional(),
   medicalCert: z.any().optional(),
-
+  
   // Personal Info
   contactNumber2: z.string().optional(),
   emailId: z.string().email("Invalid email address."),
@@ -164,6 +165,7 @@ export default function StaffRegistrationPage() {
           age: '',
           gender: '',
           femaleType: '',
+          bloodGroup: '',
           isDifferentlyAbled: undefined,
           healthIssues: undefined,
           healthIssuesDetails: '',
@@ -259,6 +261,7 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
+            form.setValue('emailId', selectedUser.email || '');
         }
     };
     
@@ -364,7 +367,7 @@ export default function StaffRegistrationPage() {
                                         <TabsContent value="basic-info">
                                             <Card>
                                                 <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
-                                                <CardContent className="space-y-6">
+                                                <CardContent className="space-y-6 pt-6">
                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                       <FormField
                                                           control={form.control}
@@ -466,7 +469,7 @@ export default function StaffRegistrationPage() {
                                          <TabsContent value="location-details">
                                             <Card>
                                                  <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
-                                                 <CardContent className="space-y-6">
+                                                 <CardContent className="space-y-6 pt-6">
                                                      <FormField control={form.control} name="locationType" render={({ field }) => (
                                                         <FormItem className="space-y-3">
                                                             <FormLabel>Type*</FormLabel>
@@ -544,7 +547,7 @@ export default function StaffRegistrationPage() {
                                         <TabsContent value="family-details">
                                              <Card>
                                                  <CardHeader><CardTitle>Family Details</CardTitle></CardHeader>
-                                                 <CardContent className="space-y-6">
+                                                 <CardContent className="space-y-6 pt-6">
                                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                          <FormField control={form.control} name="fatherName" render={({ field }) => (
                                                             <FormItem><FormLabel>Father's Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -565,16 +568,28 @@ export default function StaffRegistrationPage() {
                                         <TabsContent value="personal-details">
                                             <Card>
                                                 <CardHeader><CardTitle>Personal Details</CardTitle></CardHeader>
-                                                <CardContent className="space-y-6">
+                                                <CardContent className="space-y-6 pt-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                                                         <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="chirstian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl><SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="BC">BC</SelectItem><SelectItem value="MBC">MBC</SelectItem><SelectItem value="GENERAL">GENERAL</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                                         {watchedGender === 'female' && (<FormField control={form.control} name="femaleType" render={({ field }) => (<FormItem><FormLabel>Female Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">None</SelectItem><SelectItem value="single_women">Single Women</SelectItem><SelectItem value="widow">Widow</SelectItem><SelectItem value="married">Married</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />)}
                                                     </div>
                                                     <div className="space-y-4 pt-4 border-t">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                            <FormField control={form.control} name="bloodGroup" render={({ field }) => (<FormItem><FormLabel>Blood Group</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Blood Group" /></SelectTrigger></FormControl><SelectContent>
+                                                                <SelectItem value="A+">A+ (A Positive)</SelectItem>
+                                                                <SelectItem value="A-">A- (A Negative)</SelectItem>
+                                                                <SelectItem value="B+">B+ (B Positive)</SelectItem>
+                                                                <SelectItem value="B-">B- (B Negative)</SelectItem>
+                                                                <SelectItem value="AB+">AB+ (AB Positive)</SelectItem>
+                                                                <SelectItem value="AB-">AB- (AB Negative)</SelectItem>
+                                                                <SelectItem value="O+">O+ (O Positive)</SelectItem>
+                                                                <SelectItem value="O-">O- (O Negative)</SelectItem>
+                                                            </SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        </div>
                                                         <h4 className="font-medium">Health Related</h4>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                           <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Differently Abled?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
@@ -597,10 +612,9 @@ export default function StaffRegistrationPage() {
                                         <TabsContent value="personal-info">
                                             <Card>
                                                 <CardHeader><CardTitle>Personal Info</CardTitle></CardHeader>
-                                                <CardContent className="space-y-6">
+                                                <CardContent className="space-y-6 pt-6">
                                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         <FormField control={form.control} name="contactNumber2" render={({ field }) => (<FormItem><FormLabel>Contact 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="emailId" render={({ field }) => (<FormItem><FormLabel>Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="eportalEmailId" render={({ field }) => (<FormItem><FormLabel>E-Portal Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="pfmsId" render={({ field }) => (<FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="bankName" render={({ field }) => (<FormItem><FormLabel>Bank Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -620,7 +634,6 @@ export default function StaffRegistrationPage() {
                                             </Card>
                                         </TabsContent>
                                         
-
                                         {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
