@@ -162,10 +162,10 @@ const toTitleCase = (str: string) => {
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 const years = ["2025-2026", "2024-2025", "2023-2024"];
 
-const StaffDetailRow = ({ label, value }: { label: string, value: string | undefined | null }) => (
-    <div className="grid grid-cols-2 gap-4 border-b py-2">
-        <p className="font-semibold text-sm text-muted-foreground">{label}</p>
-        <p className="font-normal text-sm">{value || 'N/A'}</p>
+const StaffDetailRow = ({ label, value }: { label: string, value: string | undefined | null | React.ReactNode }) => (
+    <div className="grid grid-cols-2 gap-4 border-b py-2 text-sm">
+        <p className="font-semibold text-muted-foreground">{label}</p>
+        <div className="font-normal">{value || 'N/A'}</div>
     </div>
 );
 
@@ -256,7 +256,7 @@ export default function AdminPage() {
         return users.filter(u => {
             const searchLower = staffFilters.search.toLowerCase();
             const roleMatch = staffFilters.role === 'all' || u.designation === staffFilters.role;
-            // District filter will need to be applied on more complex user data
+            const districtMatch = staffFilters.district === 'all' || u.district === staffFilters.district;
             const employeeMatch = !staffFilters.employeeCode || u.employeeCode === staffFilters.employeeCode;
 
             const searchMatch = !staffFilters.search ? true : (
@@ -266,7 +266,7 @@ export default function AdminPage() {
                 (u.email || '').toLowerCase().includes(searchLower)
             );
             
-            return roleMatch && employeeMatch && searchMatch;
+            return roleMatch && districtMatch && employeeMatch && searchMatch;
         });
     }, [users, staffFilters]);
     
@@ -980,6 +980,7 @@ export default function AdminPage() {
                                         <StaffDetailRow label="Employee Code" value={viewingStaff.employeeCode} />
                                         <StaffDetailRow label="Name" value={viewingStaff.name} />
                                         <StaffDetailRow label="Contact Number" value={viewingStaff.mobileNumber} />
+                                        <StaffDetailRow label="Profile Picture" value={viewingStaff.profilePicture ? <Image src={viewingStaff.profilePicture} alt="Profile" width={80} height={80} className="rounded-md"/> : 'N/A'} />
                                     </CardContent>
                                 </Card>
                             </TabsContent>
@@ -1574,7 +1575,75 @@ export default function AdminPage() {
                     <TabsTrigger value="vrp-details">VRP</TabsTrigger>
                 </TabsList>
                 <TabsContent value="staff-details">
-                   <p className="p-4 text-muted-foreground">Staff details have been removed.</p>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Staff Details</CardTitle>
+                            <CardDescription>Manage and view all registered staff members.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <Input placeholder="Search by Name, Employee Code, Contact..." value={staffFilters.search} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
+                                <Select value={staffFilters.role} onValueChange={v => setStaffFilters(f => ({ ...f, role: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Roles</SelectItem>
+                                        {ROLES.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                 <Select value={staffFilters.district} onValueChange={v => setStaffFilters(f => ({ ...f, district: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <Input placeholder="Filter by Employee Code" value={staffFilters.employeeCode} onChange={e => setStaffFilters(f => ({ ...f, employeeCode: e.target.value }))} />
+                            </div>
+                            <div className="border rounded-lg">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>S.No</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Employee Code</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>District</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredStaff.map((staff, index) => (
+                                            <TableRow key={staff.id}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell className="font-medium">{staff.name}</TableCell>
+                                                <TableCell>{staff.employeeCode}</TableCell>
+                                                <TableCell>{staff.designation}</TableCell>
+                                                <TableCell>{staff.district}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="sm" onClick={() => handleViewStaffDetails(staff)}>View Details</Button>
+                                                     <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="sm">Delete</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>This will permanently delete the staff record for {staff.name}.</AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => deleteUser(staff.id)}>Continue</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="vrp-details">
                     <Card>
