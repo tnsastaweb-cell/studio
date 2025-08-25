@@ -39,6 +39,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const complaintSchema = z.object({
+  receivedOn: z.date(),
+  complainantDetails: z.string().optional(),
+  complaint: z.string().optional(),
+  remarks: z.string().optional(),
+  actionTaken: z.string().optional(),
+});
+
 const staffFormSchema = z.object({
   designation: z.string().min(1, "Role/Designation is required."),
   
@@ -175,6 +183,8 @@ const staffFormSchema = z.object({
     year: z.date(),
     workParticulars: z.string(),
   })).optional(),
+
+  complaints: z.array(complaintSchema).optional(),
   
   declaration: z.boolean().refine(val => val === true, {
     message: "You must accept the declaration to submit."
@@ -273,6 +283,7 @@ export default function StaffRegistrationPage() {
           pilotAuditDetails: [],
           stateOfficeActivities: 'no',
           stateOfficeActivitiesDetails: [],
+          complaints: [],
           declaration: false,
         }
     });
@@ -299,6 +310,7 @@ export default function StaffRegistrationPage() {
     const { fields: brpWorkFields, append: appendBrpWork, remove: removeBrpWork } = useFieldArray({ control: form.control, name: "brpWorkHistory" });
     const { fields: drpWorkFields, append: appendDrpWork, remove: removeDrpWork } = useFieldArray({ control: form.control, name: "drpWorkHistory" });
     const { fields: drpIcWorkFields, append: appendDrpIcWork, remove: removeDrpIcWork } = useFieldArray({ control: form.control, name: "drpIcWorkHistory" });
+    const { fields: complaintFields, append: appendComplaint, remove: removeComplaint } = useFieldArray({ control: form.control, name: "complaints" });
 
     const { fields: trainingTakenFields, append: appendTrainingTaken, remove: removeTrainingTaken } = useFieldArray({ control: form.control, name: 'trainingTakenDetails' });
     const { fields: trainingGivenFields, append: appendTrainingGiven, remove: removeTrainingGiven } = useFieldArray({ control: form.control, name: 'trainingGivenDetails' });
@@ -419,6 +431,8 @@ export default function StaffRegistrationPage() {
         setPhotoPreview(null);
     };
 
+    const canViewAndEditComplaints = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
+
     const tabsConfig = [
         { value: "basic-info", label: "Basic Information", roles: ['all'] },
         { value: "location-details", label: "Location Details", roles: ['all'] },
@@ -428,10 +442,15 @@ export default function StaffRegistrationPage() {
         { value: "education-experience", label: "Education & Experience", roles: ['all'] },
         { value: "working-details", label: "Working details", roles: ['BRP', 'DRP'] },
         { value: "training-audit", label: "Training & pilot Audit Particulars", roles: ['BRP', 'DRP'] },
+        { value: "complaints", label: "Complaints", roles: ['BRP', 'DRP'], adminOnly: true },
     ];
 
     const visibleTabs = selectedRole 
-        ? tabsConfig.filter(tab => tab.roles.includes('all') || tab.roles.includes(selectedRole))
+        ? tabsConfig.filter(tab => {
+            const roleMatch = tab.roles.includes('all') || tab.roles.includes(selectedRole);
+            const adminMatch = !tab.adminOnly || canViewAndEditComplaints;
+            return roleMatch && adminMatch;
+        })
         : [];
         
     const calculateDuration = (from: Date | undefined, to: Date | undefined) => {
@@ -1086,8 +1105,59 @@ export default function StaffRegistrationPage() {
                                                 </CardContent>
                                             </Card>
                                        </TabsContent>
+
+                                        <TabsContent value="complaints">
+                                            <Card>
+                                                <CardHeader><CardTitle>Complaints</CardTitle></CardHeader>
+                                                <CardContent>
+                                                <Tabs defaultValue="complaint" className="w-full">
+                                                    <TabsList>
+                                                        <TabsTrigger value="complaint">Complaint</TabsTrigger>
+                                                        <TabsTrigger value="others">Others</TabsTrigger>
+                                                    </TabsList>
+                                                    <TabsContent value="complaint" className="pt-4">
+                                                        <div className="overflow-x-auto">
+                                                            <Table>
+                                                                <TableHeader>
+                                                                    <TableRow>
+                                                                        <TableHead>Sl.No</TableHead>
+                                                                        <TableHead>Received On</TableHead>
+                                                                        <TableHead>Complainant Name & Contact</TableHead>
+                                                                        <TableHead>Complaint</TableHead>
+                                                                        <TableHead>Remarks</TableHead>
+                                                                        <TableHead>Action Taken</TableHead>
+                                                                        <TableHead>Action</TableHead>
+                                                                    </TableRow>
+                                                                </TableHeader>
+                                                                <TableBody>
+                                                                    {complaintFields.map((field, index) => (
+                                                                        <TableRow key={field.id}>
+                                                                            <TableCell>{index + 1}</TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`complaints.${index}.receivedOn`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`complaints.${index}.complainantDetails`} render={({ field }) => <Textarea {...field} />} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`complaints.${index}.complaint`} render={({ field }) => <Textarea {...field} />} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`complaints.${index}.remarks`} render={({ field }) => <Textarea {...field} />} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`complaints.${index}.actionTaken`} render={({ field }) => <Textarea {...field} />} /></TableCell>
+                                                                            <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeComplaint(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                </TableBody>
+                                                            </Table>
+                                                        </div>
+                                                        <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendComplaint({ receivedOn: new Date() })}><PlusCircle className="mr-2 h-4 w-4" /> Add Complaint</Button>
+                                                        <div className="flex justify-end mt-8">
+                                                            <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save Complaints</Button>
+                                                        </div>
+                                                    </TabsContent>
+                                                    <TabsContent value="others" className="pt-4">
+                                                        <p className="text-muted-foreground">This section is under construction.</p>
+                                                    </TabsContent>
+                                                </Tabs>
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
                                         
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience', 'working-details', 'training-audit'].includes(tab.value)).map(tab => (
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience', 'working-details', 'training-audit', 'complaints'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
