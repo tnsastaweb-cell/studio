@@ -21,6 +21,9 @@ import {
   Search,
   Trash2,
   Upload,
+  User as UserIcon,
+  ChevronsUpDown,
+  Check
 } from 'lucide-react';
 
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
@@ -87,6 +90,9 @@ import { useLogo } from '@/hooks/use-logo';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const userFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -167,6 +173,8 @@ export default function AdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isStaffDetailsOpen, setIsStaffDetailsOpen] = useState(false);
+  const [viewingStaff, setViewingStaff] = useState<User | null>(null);
   const [replyingToGrievance, setReplyingToGrievance] = useState<Grievance | null>(null);
   const [replyAttachment, setReplyAttachment] = useState<File | null>(null);
 
@@ -184,6 +192,13 @@ export default function AdminPage() {
     block: '',
     panchayat: '',
     lgdCode: '',
+  });
+
+  const [staffFilters, setStaffFilters] = useState({
+      search: '',
+      role: 'all',
+      district: 'all',
+      employeeCode: '',
   });
   
   const [vrpFilters, setVrpFilters] = useState({
@@ -229,6 +244,24 @@ export default function AdminPage() {
         const others = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
         return chennai ? [chennai, ...others] : others;
     }, []);
+
+    const filteredStaff = useMemo(() => {
+        return users.filter(u => {
+            const searchLower = staffFilters.search.toLowerCase();
+            const roleMatch = staffFilters.role === 'all' || u.designation === staffFilters.role;
+            // District filter will need to be applied on more complex user data
+            const employeeMatch = !staffFilters.employeeCode || u.employeeCode === staffFilters.employeeCode;
+
+            const searchMatch = !staffFilters.search ? true : (
+                u.name.toLowerCase().includes(searchLower) ||
+                u.employeeCode.toLowerCase().includes(searchLower) ||
+                u.mobileNumber.includes(searchLower) ||
+                (u.email || '').toLowerCase().includes(searchLower)
+            );
+            
+            return roleMatch && employeeMatch && searchMatch;
+        });
+    }, [users, staffFilters]);
     
     const filteredVrps = useMemo(() => {
         return vrps.filter(vrp => {
@@ -311,6 +344,12 @@ export default function AdminPage() {
     });
     setIsFormOpen(true);
   };
+  
+   const handleViewStaffDetails = (staff: User) => {
+    setViewingStaff(staff);
+    setIsStaffDetailsOpen(true);
+  };
+
 
   const handleAddNewUser = () => {
     setEditingUser(null);
@@ -895,6 +934,50 @@ export default function AdminPage() {
             </DialogContent>
          </Dialog>
 
+        <Dialog open={isStaffDetailsOpen} onOpenChange={setIsStaffDetailsOpen}>
+            <DialogContent className="max-w-7xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>Staff Details</DialogTitle>
+                </DialogHeader>
+                {viewingStaff && (
+                     <div className="flex-grow overflow-hidden flex flex-col">
+                        <Card className="mb-4 flex-shrink-0">
+                            <CardContent className="p-4 flex items-center gap-4">
+                                 <Avatar className="h-16 w-16">
+                                     <AvatarImage src={viewingStaff.profilePicture || ''} />
+                                     <AvatarFallback><UserIcon /></AvatarFallback>
+                                 </Avatar>
+                                 <div>
+                                     <p className="font-bold text-xl">{viewingStaff.name}</p>
+                                     <p className="text-sm text-muted-foreground"><strong>ID:</strong> {viewingStaff.employeeCode} | <strong>Role:</strong> {viewingStaff.designation}</p>
+                                 </div>
+                            </CardContent>
+                        </Card>
+                         <Tabs defaultValue="basic-info" className="w-full flex-grow flex flex-col overflow-hidden">
+                             <TabsList>
+                                 <TabsTrigger value="basic-info">Basic Information</TabsTrigger>
+                                 <TabsTrigger value="location-details">Location</TabsTrigger>
+                                 <TabsTrigger value="family-details">Family</TabsTrigger>
+                                 <TabsTrigger value="personal-details">Personal</TabsTrigger>
+                                 <TabsTrigger value="personal-info">Contact &amp; Bank</TabsTrigger>
+                                 <TabsTrigger value="education-experience">Education &amp; Experience</TabsTrigger>
+                                 <TabsTrigger value="working-details">Working Details</TabsTrigger>
+                                 <TabsTrigger value="training-audit">Training</TabsTrigger>
+                             </TabsList>
+                             <TabsContent value="basic-info" className="flex-grow overflow-y-auto"><p>Basic Info for {viewingStaff.name}</p></TabsContent>
+                             <TabsContent value="location-details" className="flex-grow overflow-y-auto"><p>Location Details for {viewingStaff.name}</p></TabsContent>
+                             {/* Add other tab contents here */}
+                         </Tabs>
+                         <DialogFooter className="mt-4 flex-shrink-0">
+                            <Button variant="outline">Update Details</Button>
+                            <DialogClose asChild><Button>Close</Button></DialogClose>
+                        </DialogFooter>
+                     </div>
+                )}
+            </DialogContent>
+        </Dialog>
+
+
         <Tabs defaultValue="signup-details" className="w-full">
           <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="roles">Roles</TabsTrigger>
@@ -1408,13 +1491,110 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
           <TabsContent value="details">
-            <Tabs defaultValue="vrp-details">
+            <Tabs defaultValue="staff-details">
                 <TabsList>
                     <TabsTrigger value="staff-details">Staff Details</TabsTrigger>
                     <TabsTrigger value="vrp-details">VRP</TabsTrigger>
                 </TabsList>
                 <TabsContent value="staff-details">
-                    <Card><CardContent className="p-4">Staff details will be shown here.</CardContent></Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Staff Details</CardTitle>
+                            <CardDescription>Review and manage all registered staff members.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border rounded-lg">
+                                <Input placeholder="Search..." value={staffFilters.search} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
+                                <Select value={staffFilters.role} onValueChange={v => setStaffFilters(f => ({ ...f, role: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Roles</SelectItem>
+                                        {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                 <Select value={staffFilters.district} onValueChange={v => setStaffFilters(f => ({ ...f, district: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                 <Popover>
+                                     <PopoverTrigger asChild>
+                                        <Button variant="outline" role="combobox" className="justify-between">
+                                            {staffFilters.employeeCode || "Select Employee..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                     </PopoverTrigger>
+                                     <PopoverContent className="w-[300px] p-0">
+                                         <Command>
+                                            <CommandInput placeholder="Search employee..."/>
+                                             <CommandEmpty>No employee found.</CommandEmpty>
+                                             <CommandList>
+                                                 {users.map((u) => (
+                                                     <CommandItem
+                                                         key={u.id}
+                                                         value={u.employeeCode}
+                                                         onSelect={(currentValue) => {
+                                                             setStaffFilters(f => ({ ...f, employeeCode: currentValue === staffFilters.employeeCode ? "" : currentValue }))
+                                                         }}
+                                                     >
+                                                         <Check className={cn("mr-2 h-4 w-4", staffFilters.employeeCode === u.employeeCode ? "opacity-100" : "opacity-0")} />
+                                                         {u.employeeCode} - {u.name}
+                                                     </CommandItem>
+                                                 ))}
+                                             </CommandList>
+                                         </Command>
+                                     </PopoverContent>
+                                 </Popover>
+                            </div>
+                            <div className="border rounded-lg">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>S.No</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Employee Code</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>Contact</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredStaff.map((staff, index) => (
+                                            <TableRow key={staff.id}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell className="font-medium">{staff.name}</TableCell>
+                                                <TableCell>{staff.employeeCode}</TableCell>
+                                                <TableCell>{staff.designation}</TableCell>
+                                                <TableCell>{staff.mobileNumber}</TableCell>
+                                                <TableCell>{staff.email || 'N/A'}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="sm" onClick={() => handleViewStaffDetails(staff)}>View / Edit</Button>
+                                                     <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="sm">Delete</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>This will permanently delete the record for {staff.name}.</AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => deleteUser(staff.id)}>Continue</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="vrp-details">
                     <Card>
