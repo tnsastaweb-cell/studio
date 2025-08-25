@@ -92,7 +92,7 @@ export default function Home() {
         )}
       </main>
       <Footer />
-      <div id="bhashini-embed" user-id="88813755-4048-4720-8a22-acb83b341f7e" primary-color="#000" style={{height:'0px'}}></div>
+      <div id="bhashini-embed" data-user-id="88813755-4048-4720-8a22-acb83b341f7e" data-primary-color="#000" style={{height:'0px'}}></div>
       <BottomNavigation />
     </div>
   );
