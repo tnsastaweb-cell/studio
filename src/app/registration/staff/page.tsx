@@ -90,6 +90,21 @@ const staffFormSchema = z.object({
   healthIssues: z.enum(['normal', 'minor', 'major'], { required_error: "This field is required."}),
   healthIssuesDetails: z.string().optional(),
   medicalCert: z.any().optional(),
+
+  // Personal Info
+  contactNumber2: z.string().optional(),
+  emailId: z.string().email("Invalid email address."),
+  eportalEmailId: z.string().email("Invalid E-Portal email address."),
+  pfmsId: z.string().min(1, "PFMS ID is required."),
+  bankName: z.string().min(1, "Bank Name is required."),
+  branchName: z.string().min(1, "Branch Name is required."),
+  accountNumber: z.string().min(1, "Account Number is required."),
+  ifscCode: z.string().min(1, "IFSC Code is required."),
+  aadhaar: z.string().min(12, "Aadhaar must be 12 digits.").max(12, "Aadhaar must be 12 digits."),
+  aadhaarUpload: z.any().refine(file => file?.[0], "Aadhaar copy is required."),
+  pan: z.string().min(10, "PAN must be 10 characters.").max(10, "PAN must be 10 characters."),
+  panUpload: z.any().refine(file => file?.[0], "PAN copy is required."),
+  uan: z.string().optional(),
   
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
@@ -100,11 +115,11 @@ const staffFormSchema = z.object({
     return true;
 }, { message: "Urban Body Type and Name are required for Urban locations.", path: ['urbanBodyName'],
 }).refine(data => {
-    if (data.isDifferentlyAbled === 'yes') return !!data.differentlyAbledCert;
+    if (data.isDifferentlyAbled === 'yes') return !!data.differentlyAbledCert?.[0];
     return true;
 }, { message: "Certificate is required if differently abled.", path: ['differentlyAbledCert']
 }).refine(data => {
-    if (data.healthIssues === 'major') return !!data.medicalCert;
+    if (data.healthIssues === 'major') return !!data.medicalCert?.[0];
     return true;
 }, { message: "Medical certificate is required for major health issues.", path: ['medicalCert']
 });
@@ -125,32 +140,48 @@ export default function StaffRegistrationPage() {
     const form = useForm<StaffFormValues>({
         resolver: zodResolver(staffFormSchema),
         defaultValues: {
-            designation: '',
-            recruitmentType: undefined,
-            employeeCode: '',
-            name: '',
-            contactNumber: '',
-            locationType: undefined,
-            district: '',
-            block: '',
-            panchayat: '',
-            lgdCode: '',
-            urbanBodyType: undefined,
-            urbanBodyName: '',
-            fullAddress: '',
-            pincode: '',
-            fatherName: '',
-            motherName: '',
-            spouseName: '',
-            religion: '',
-            caste: '',
-            dateOfBirth: undefined,
-            age: '',
-            gender: '',
-            femaleType: '',
-            isDifferentlyAbled: undefined,
-            healthIssues: undefined,
-            healthIssuesDetails: '',
+          designation: '',
+          recruitmentType: undefined,
+          employeeCode: '',
+          name: '',
+          contactNumber: '',
+          photo: undefined,
+          locationType: undefined,
+          district: '',
+          block: '',
+          panchayat: '',
+          lgdCode: '',
+          urbanBodyType: undefined,
+          urbanBodyName: '',
+          fullAddress: '',
+          pincode: '',
+          fatherName: '',
+          motherName: '',
+          spouseName: '',
+          religion: '',
+          caste: '',
+          dateOfBirth: undefined,
+          age: '',
+          gender: '',
+          femaleType: '',
+          isDifferentlyAbled: undefined,
+          healthIssues: undefined,
+          healthIssuesDetails: '',
+          differentlyAbledCert: undefined,
+          medicalCert: undefined,
+          contactNumber2: '',
+          emailId: '',
+          eportalEmailId: '',
+          pfmsId: '',
+          bankName: '',
+          branchName: '',
+          accountNumber: '',
+          ifscCode: '',
+          aadhaar: '',
+          aadhaarUpload: undefined,
+          pan: '',
+          panUpload: undefined,
+          uan: '',
         }
     });
     
@@ -228,9 +259,6 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
-            if (selectedUser.dateOfBirth) {
-              form.setValue('dateOfBirth', new Date(selectedUser.dateOfBirth))
-            }
         }
     };
     
@@ -566,9 +594,34 @@ export default function StaffRegistrationPage() {
                                                 </CardContent>
                                             </Card>
                                         </TabsContent>
+                                        <TabsContent value="personal-info">
+                                            <Card>
+                                                <CardHeader><CardTitle>Personal Info</CardTitle></CardHeader>
+                                                <CardContent className="space-y-6">
+                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                        <FormField control={form.control} name="contactNumber2" render={({ field }) => (<FormItem><FormLabel>Contact 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="emailId" render={({ field }) => (<FormItem><FormLabel>Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="eportalEmailId" render={({ field }) => (<FormItem><FormLabel>E-Portal Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="pfmsId" render={({ field }) => (<FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="bankName" render={({ field }) => (<FormItem><FormLabel>Bank Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="branchName" render={({ field }) => (<FormItem><FormLabel>Branch Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="accountNumber" render={({ field }) => (<FormItem><FormLabel>Account Number*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="ifscCode" render={({ field }) => (<FormItem><FormLabel>IFSC Code*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="aadhaar" render={({ field }) => (<FormItem><FormLabel>Aadhaar*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="aadhaarUpload" render={({ field }) => (<FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="pan" render={({ field }) => (<FormItem><FormLabel>PAN*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="panUpload" render={({ field }) => (<FormItem><FormLabel>PAN Upload*</FormLabel><FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="uan" render={({ field }) => (<FormItem><FormLabel>UAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                     </div>
+                                                     <div className="flex justify-end mt-8">
+                                                        <Button type="submit">Save</Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
+                                        
 
-
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details'].includes(tab.value)).map(tab => (
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
@@ -600,4 +653,3 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
-
