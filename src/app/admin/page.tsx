@@ -162,6 +162,13 @@ const toTitleCase = (str: string) => {
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 const years = ["2025-2026", "2024-2025", "2023-2024"];
 
+const StaffDetailRow = ({ label, value }: { label: string, value: string | undefined | null }) => (
+    <div className="grid grid-cols-2 gap-4 border-b py-2">
+        <p className="font-semibold text-sm text-muted-foreground">{label}</p>
+        <p className="font-normal text-sm">{value || 'N/A'}</p>
+    </div>
+);
+
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
@@ -964,9 +971,79 @@ export default function AdminPage() {
                                  <TabsTrigger value="working-details">Working Details</TabsTrigger>
                                  <TabsTrigger value="training-audit">Training</TabsTrigger>
                              </TabsList>
-                             <TabsContent value="basic-info" className="flex-grow overflow-y-auto"><p>Basic Info for {viewingStaff.name}</p></TabsContent>
-                             <TabsContent value="location-details" className="flex-grow overflow-y-auto"><p>Location Details for {viewingStaff.name}</p></TabsContent>
-                             {/* Add other tab contents here */}
+                             <TabsContent value="basic-info" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle>Basic Info</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <StaffDetailRow label="Role/Designation" value={viewingStaff.designation} />
+                                        <StaffDetailRow label="Recruitment Type" value={viewingStaff.recruitmentType} />
+                                        <StaffDetailRow label="Employee Code" value={viewingStaff.employeeCode} />
+                                        <StaffDetailRow label="Name" value={viewingStaff.name} />
+                                        <StaffDetailRow label="Contact Number" value={viewingStaff.mobileNumber} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                             <TabsContent value="location-details" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <StaffDetailRow label="Type" value={viewingStaff.locationType} />
+                                        <StaffDetailRow label="District" value={viewingStaff.district} />
+                                        <StaffDetailRow label="Block" value={viewingStaff.block} />
+                                        <StaffDetailRow label="Panchayat" value={viewingStaff.panchayatName} />
+                                        <StaffDetailRow label="LGD Code" value={viewingStaff.lgdCode} />
+                                        <StaffDetailRow label="Urban Body Type" value={viewingStaff.urbanBodyType} />
+                                        <StaffDetailRow label="Urban Body Name" value={viewingStaff.urbanBodyName} />
+                                        <StaffDetailRow label="Full Address" value={viewingStaff.fullAddress} />
+                                        <StaffDetailRow label="Pincode" value={viewingStaff.pincode} />
+                                    </CardContent>
+                                </Card>
+                             </TabsContent>
+                              <TabsContent value="family-details" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle>Family Details</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <StaffDetailRow label="Father's Name" value={viewingStaff.fatherName} />
+                                        <StaffDetailRow label="Mother's Name" value={viewingStaff.motherName} />
+                                        <StaffDetailRow label="Spouse's Name" value={viewingStaff.spouseName} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                            <TabsContent value="personal-details" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle>Personal Details</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <StaffDetailRow label="Religion" value={viewingStaff.religion} />
+                                        <StaffDetailRow label="Caste" value={viewingStaff.caste} />
+                                        <StaffDetailRow label="Date of Birth" value={format(new Date(viewingStaff.dateOfBirth), 'dd/MM/yyyy')} />
+                                        <StaffDetailRow label="Age" value={viewingStaff.age} />
+                                        <StaffDetailRow label="Gender" value={viewingStaff.gender} />
+                                        <StaffDetailRow label="Female Type" value={viewingStaff.femaleType} />
+                                        <StaffDetailRow label="Blood Group" value={viewingStaff.bloodGroup} />
+                                        <StaffDetailRow label="Differently Abled" value={viewingStaff.isDifferentlyAbled} />
+                                        <StaffDetailRow label="Health Issues" value={viewingStaff.healthIssues} />
+                                        <StaffDetailRow label="Health Issue Details" value={viewingStaff.healthIssuesDetails} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                             <TabsContent value="personal-info" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card>
+                                    <CardHeader><CardTitle>Contact & Bank Details</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <StaffDetailRow label="Contact 2" value={viewingStaff.contactNumber2} />
+                                        <StaffDetailRow label="Email ID" value={viewingStaff.emailId} />
+                                        <StaffDetailRow label="E-Portal Email ID" value={viewingStaff.eportalEmailId} />
+                                        <StaffDetailRow label="PFMS ID" value={viewingStaff.pfmsId} />
+                                        <StaffDetailRow label="Bank Name" value={viewingStaff.bankName} />
+                                        <StaffDetailRow label="Branch Name" value={viewingStaff.branchName} />
+                                        <StaffDetailRow label="Account Number" value={viewingStaff.accountNumber} />
+                                        <StaffDetailRow label="IFSC Code" value={viewingStaff.ifscCode} />
+                                        <StaffDetailRow label="Aadhaar No" value={viewingStaff.aadhaar} />
+                                        <StaffDetailRow label="PAN No" value={viewingStaff.pan} />
+                                        <StaffDetailRow label="UAN No" value={viewingStaff.uan} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
                          </Tabs>
                          <DialogFooter className="mt-4 flex-shrink-0">
                             <Button variant="outline">Update Details</Button>
