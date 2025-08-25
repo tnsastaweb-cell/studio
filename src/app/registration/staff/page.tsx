@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -63,7 +63,7 @@ const staffFormSchema = z.object({
 
   // Personal details
   religion: z.string().min(1, "Religion is required."),
-  caste: z.string().min(1, "Caste is required."),
+  caste: z.string().optional(),
   dateOfBirth: z.date({ required_error: "Date of birth is required." }),
   age: z.string().optional(),
   gender: z.string().min(1, "Gender is required"),
@@ -113,6 +113,32 @@ const staffFormSchema = z.object({
   skills: z.array(z.object({
     skill: z.string().min(1, "Skill cannot be empty")
   })).min(1, "At least one skill is required."),
+
+  // Working Details
+  joiningDate: z.date({ required_error: "Joining date is required." }),
+  brpWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    block: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
+  drpWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
+  workedAsDrpIc: z.enum(['yes', 'no']).optional(),
+  drpIcWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
 
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
@@ -194,6 +220,11 @@ export default function StaffRegistrationPage() {
           academicDetails: [],
           workExperience: [],
           skills: [],
+          joiningDate: undefined,
+          brpWorkHistory: [],
+          drpWorkHistory: [],
+          workedAsDrpIc: 'no',
+          drpIcWorkHistory: [],
         }
     });
     
@@ -206,11 +237,14 @@ export default function StaffRegistrationPage() {
     const watchedGender = form.watch("gender");
     const watchedDifferentlyAbled = form.watch("isDifferentlyAbled");
     const watchedHealthIssues = form.watch("healthIssues");
+    const watchedWorkedAsDrpIc = form.watch("workedAsDrpIc");
     
     const { fields: academicFields, append: appendAcademic, remove: removeAcademic } = useFieldArray({ control: form.control, name: "academicDetails" });
     const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({ control: form.control, name: "workExperience" });
     const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
-
+    const { fields: brpWorkFields, append: appendBrpWork, remove: removeBrpWork } = useFieldArray({ control: form.control, name: "brpWorkHistory" });
+    const { fields: drpWorkFields, append: appendDrpWork, remove: removeDrpWork } = useFieldArray({ control: form.control, name: "drpWorkHistory" });
+    const { fields: drpIcWorkFields, append: appendDrpIcWork, remove: removeDrpIcWork } = useFieldArray({ control: form.control, name: "drpIcWorkHistory" });
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -276,8 +310,7 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
-            form.setValue('dateOfBirth', new Date(selectedUser.dateOfBirth));
-            form.setValue('emailId', selectedUser.email || '');
+            // form.setValue('emailId', selectedUser.email || ''); // Will be entered manually
         }
     };
     
@@ -329,7 +362,7 @@ export default function StaffRegistrationPage() {
         ? tabsConfig.filter(tab => tab.roles.includes('all') || tab.roles.includes(selectedRole))
         : [];
         
-    const calculateDuration = (from: Date, to: Date) => {
+    const calculateDuration = (from: Date | undefined, to: Date | undefined) => {
       if (!from || !to) return '';
       const years = differenceInYears(to, from);
       const months = differenceInMonths(to, from) % 12;
@@ -450,12 +483,7 @@ export default function StaffRegistrationPage() {
                                                                     </PopoverTrigger>
                                                                     <PopoverContent className="w-[300px] p-0">
                                                                         <Command>
-                                                                            <CommandInput placeholder="Search employee code..." onValueChange={(query) => {
-                                                                                // This is a simple search, can be improved
-                                                                                if (!filteredUsersByRole.find(u => u.employeeCode === query)) {
-                                                                                    handleEmployeeCodeChange(query);
-                                                                                }
-                                                                            }} />
+                                                                            <CommandInput placeholder="Search employee code..." />
                                                                             <CommandEmpty>No employee found.</CommandEmpty>
                                                                             <CommandGroup>
                                                                                 <CommandList>
@@ -515,7 +543,7 @@ export default function StaffRegistrationPage() {
                                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                                             <FormField control={form.control} name="district" render={({ field }) => (
                                                                 <FormItem><FormLabel>District*</FormLabel>
-                                                                <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value ?? ""}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                                     <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                                 </Select><FormMessage /></FormItem>
                                                             )} />
@@ -540,7 +568,7 @@ export default function StaffRegistrationPage() {
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                             <FormField control={form.control} name="district" render={({ field }) => (
                                                                 <FormItem><FormLabel>District*</FormLabel>
-                                                                <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value ?? ""}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                                                     <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                                 </Select><FormMessage /></FormItem>
                                                             )} />
@@ -599,7 +627,7 @@ export default function StaffRegistrationPage() {
                                                 <CardContent className="space-y-6 pt-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                                                         <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="christian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl><SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="BC">BC</SelectItem><SelectItem value="MBC">MBC</SelectItem><SelectItem value="GENERAL">GENERAL</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
@@ -644,7 +672,7 @@ export default function StaffRegistrationPage() {
                                                         <FormField control={form.control} name="aadhaarUpload" render={({ field }) => (<FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="pan" render={({ field }) => (<FormItem><FormLabel>PAN*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="panUpload" render={({ field }) => (<FormItem><FormLabel>PAN Upload*</FormLabel><FormControl><Input type="file" onChange={e => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="uan" render={({ field }) => (<FormItem><FormLabel>UAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="uan" render={({ field }) => (<FormItem><FormLabel>UAN No(Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                      </div>
                                                      <div className="flex justify-end mt-8">
                                                         <Button type="submit">Save</Button>
@@ -759,7 +787,169 @@ export default function StaffRegistrationPage() {
                                             </div>
                                         </TabsContent>
                                         
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience'].includes(tab.value)).map(tab => (
+                                        <TabsContent value="working-details">
+                                            <Card>
+                                                <CardHeader><CardTitle>Working Details</CardTitle></CardHeader>
+                                                <CardContent className="space-y-6 pt-6">
+                                                   <FormField
+                                                      control={form.control}
+                                                      name="joiningDate"
+                                                      render={({ field }) => (
+                                                        <FormItem className="flex flex-col max-w-xs">
+                                                            <FormLabel>Joining Date*</FormLabel>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <FormControl>
+                                                                        <Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                                        </Button>
+                                                                    </FormControl>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent>
+                                                            </Popover>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                      )}
+                                                    />
+
+                                                    {selectedRole === 'BRP' && (
+                                                         <div>
+                                                            <h3 className="text-lg font-semibold mb-2">BRP Working Info*</h3>
+                                                             <Table>
+                                                                <TableHeader>
+                                                                    <TableRow>
+                                                                        <TableHead>Sl.No</TableHead>
+                                                                        <TableHead>Station</TableHead>
+                                                                        <TableHead>District</TableHead>
+                                                                        <TableHead>Block</TableHead>
+                                                                        <TableHead>From Date</TableHead>
+                                                                        <TableHead>To Date</TableHead>
+                                                                        <TableHead>Duration</TableHead>
+                                                                        <TableHead>Action</TableHead>
+                                                                    </TableRow>
+                                                                </TableHeader>
+                                                                <TableBody>
+                                                                    {brpWorkFields.map((item, index) => (
+                                                                        <TableRow key={item.id}>
+                                                                            <TableCell>{index + 1}</TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`brpWorkHistory.${index}.station`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="worked">Worked</SelectItem><SelectItem value="present">Present</SelectItem></SelectContent></Select>}/></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`brpWorkHistory.${index}.district`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>}/></TableCell>
+                                                                            <TableCell>
+                                                                                <FormField control={form.control} name={`brpWorkHistory.${index}.block`} render={({ field }) => (
+                                                                                    <Select onValueChange={field.onChange} value={field.value || ""} disabled={!form.watch(`brpWorkHistory.${index}.district`)}>
+                                                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
+                                                                                        <SelectContent>
+                                                                                            {MOCK_PANCHAYATS.filter(p=>p.district === form.watch(`brpWorkHistory.${index}.district`)).map(p => p.block).filter((v, i, a) => a.indexOf(v) === i).map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                                                                                        </SelectContent>
+                                                                                    </Select>
+                                                                                )} />
+                                                                            </TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`brpWorkHistory.${index}.fromDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`brpWorkHistory.${index}.toDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                            <TableCell><Input value={calculateDuration(form.watch(`brpWorkHistory.${index}.fromDate`), form.watch(`brpWorkHistory.${index}.toDate`))} readOnly className="bg-muted"/></TableCell>
+                                                                            <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeBrpWork(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                </TableBody>
+                                                             </Table>
+                                                              <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendBrpWork({ station: 'worked', district: '', block: '', fromDate: new Date(), toDate: new Date() })}><PlusCircle className="mr-2 h-4 w-4" /> Add Station</Button>
+                                                         </div>
+                                                    )}
+                                                     {selectedRole === 'DRP' && (
+                                                         <div className="space-y-4">
+                                                             <div>
+                                                                <h3 className="text-lg font-semibold mb-2">DRP Working Info*</h3>
+                                                                <Table>
+                                                                    <TableHeader>
+                                                                        <TableRow>
+                                                                            <TableHead>Sl.No</TableHead>
+                                                                            <TableHead>Station</TableHead>
+                                                                            <TableHead>District</TableHead>
+                                                                            <TableHead>From Date</TableHead>
+                                                                            <TableHead>To Date</TableHead>
+                                                                            <TableHead>Duration</TableHead>
+                                                                            <TableHead>Action</TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                    {drpWorkFields.map((item, index) => (
+                                                                        <TableRow key={item.id}>
+                                                                            <TableCell>{index + 1}</TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`drpWorkHistory.${index}.station`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="worked">Worked</SelectItem><SelectItem value="present">Present</SelectItem></SelectContent></Select>}/></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`drpWorkHistory.${index}.district`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>}/></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`drpWorkHistory.${index}.fromDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                            <TableCell><FormField control={form.control} name={`drpWorkHistory.${index}.toDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                            <TableCell><Input value={calculateDuration(form.watch(`drpWorkHistory.${index}.fromDate`), form.watch(`drpWorkHistory.${index}.toDate`))} readOnly className="bg-muted"/></TableCell>
+                                                                            <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeDrpWork(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                    </TableBody>
+                                                                </Table>
+                                                                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendDrpWork({ station: 'worked', district: '', fromDate: new Date(), toDate: new Date() })}><PlusCircle className="mr-2 h-4 w-4" /> Add Station</Button>
+                                                             </div>
+                                                             <div className="pt-4 border-t">
+                                                                <FormField
+                                                                    control={form.control}
+                                                                    name="workedAsDrpIc"
+                                                                    render={({ field }) => (
+                                                                        <FormItem className="space-y-3">
+                                                                            <FormLabel>Have you worked as DRP I/C?*</FormLabel>
+                                                                            <FormControl>
+                                                                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
+                                                                                    <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
+                                                                                    <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                                                                </RadioGroup>
+                                                                            </FormControl>
+                                                                            <FormMessage />
+                                                                        </FormItem>
+                                                                    )}
+                                                                />
+                                                             </div>
+
+                                                             {watchedWorkedAsDrpIc === 'yes' && (
+                                                                 <div>
+                                                                    <h3 className="text-lg font-semibold mb-2">DRP I/C Working Info</h3>
+                                                                    <Table>
+                                                                         <TableHeader>
+                                                                            <TableRow>
+                                                                                <TableHead>Sl.No</TableHead>
+                                                                                <TableHead>Station</TableHead>
+                                                                                <TableHead>District</TableHead>
+                                                                                <TableHead>From Date</TableHead>
+                                                                                <TableHead>To Date</TableHead>
+                                                                                <TableHead>Duration</TableHead>
+                                                                                <TableHead>Action</TableHead>
+                                                                            </TableRow>
+                                                                        </TableHeader>
+                                                                         <TableBody>
+                                                                            {drpIcWorkFields.map((item, index) => (
+                                                                                <TableRow key={item.id}>
+                                                                                    <TableCell>{index + 1}</TableCell>
+                                                                                    <TableCell><FormField control={form.control} name={`drpIcWorkHistory.${index}.station`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="worked">Worked</SelectItem><SelectItem value="present">Present</SelectItem></SelectContent></Select>}/></TableCell>
+                                                                                    <TableCell><FormField control={form.control} name={`drpIcWorkHistory.${index}.district`} render={({field}) => <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>}/></TableCell>
+                                                                                    <TableCell><FormField control={form.control} name={`drpIcWorkHistory.${index}.fromDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                                    <TableCell><FormField control={form.control} name={`drpIcWorkHistory.${index}.toDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                                    <TableCell><Input value={calculateDuration(form.watch(`drpIcWorkHistory.${index}.fromDate`), form.watch(`drpIcWorkHistory.${index}.toDate`))} readOnly className="bg-muted"/></TableCell>
+                                                                                    <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeDrpIcWork(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                                                </TableRow>
+                                                                            ))}
+                                                                        </TableBody>
+                                                                    </Table>
+                                                                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendDrpIcWork({ station: 'worked', district: '', fromDate: new Date(), toDate: new Date() })}><PlusCircle className="mr-2 h-4 w-4" /> Add Station</Button>
+                                                                 </div>
+                                                             )}
+                                                         </div>
+                                                     )}
+
+                                                    <div className="flex justify-end mt-8">
+                                                        <Button type="submit">Save</Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
+                                        
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience', 'working-details'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
