@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_ULBS, UrbanLocalBody, ULB_TYPES } from '@/services/ulb';
 import { uniqueDistricts } from '@/lib/utils';
+import { MOCK_SCHEMES } from '@/services/schemes';
+
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -140,6 +142,38 @@ const staffFormSchema = z.object({
     duration: z.string().optional(),
   })).optional(),
 
+  // Training & Audit Particulars
+  trainingTaken: z.enum(['yes', 'no']),
+  trainingTakenDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    trainingName: z.string(),
+    grade: z.string(),
+  })).optional(),
+  
+  trainingGiven: z.enum(['yes', 'no']),
+  trainingGivenDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    trainingName: z.string(),
+  })).optional(),
+
+  pilotAudit: z.enum(['yes', 'no']),
+  pilotAuditDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    schemeName: z.string(),
+  })).optional(),
+
+  stateOfficeActivities: z.enum(['yes', 'no']),
+  stateOfficeActivitiesDetails: z.array(z.object({
+    year: z.date(),
+    workParticulars: z.string(),
+  })).optional(),
+
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
     return true;
@@ -225,6 +259,14 @@ export default function StaffRegistrationPage() {
           drpWorkHistory: [],
           workedAsDrpIc: 'no',
           drpIcWorkHistory: [],
+          trainingTaken: 'no',
+          trainingTakenDetails: [],
+          trainingGiven: 'no',
+          trainingGivenDetails: [],
+          pilotAudit: 'no',
+          pilotAuditDetails: [],
+          stateOfficeActivities: 'no',
+          stateOfficeActivitiesDetails: [],
         }
     });
     
@@ -238,6 +280,11 @@ export default function StaffRegistrationPage() {
     const watchedDifferentlyAbled = form.watch("isDifferentlyAbled");
     const watchedHealthIssues = form.watch("healthIssues");
     const watchedWorkedAsDrpIc = form.watch("workedAsDrpIc");
+    const watchedTrainingTaken = form.watch("trainingTaken");
+    const watchedTrainingGiven = form.watch("trainingGiven");
+    const watchedPilotAudit = form.watch("pilotAudit");
+    const watchedStateOfficeActivities = form.watch("stateOfficeActivities");
+
     
     const { fields: academicFields, append: appendAcademic, remove: removeAcademic } = useFieldArray({ control: form.control, name: "academicDetails" });
     const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({ control: form.control, name: "workExperience" });
@@ -245,6 +292,13 @@ export default function StaffRegistrationPage() {
     const { fields: brpWorkFields, append: appendBrpWork, remove: removeBrpWork } = useFieldArray({ control: form.control, name: "brpWorkHistory" });
     const { fields: drpWorkFields, append: appendDrpWork, remove: removeDrpWork } = useFieldArray({ control: form.control, name: "drpWorkHistory" });
     const { fields: drpIcWorkFields, append: appendDrpIcWork, remove: removeDrpIcWork } = useFieldArray({ control: form.control, name: "drpIcWorkHistory" });
+
+    const { fields: trainingTakenFields, append: appendTrainingTaken, remove: removeTrainingTaken } = useFieldArray({ control: form.control, name: 'trainingTakenDetails' });
+    const { fields: trainingGivenFields, append: appendTrainingGiven, remove: removeTrainingGiven } = useFieldArray({ control: form.control, name: 'trainingGivenDetails' });
+    const { fields: pilotAuditFields, append: appendPilotAudit, remove: removePilotAudit } = useFieldArray({ control: form.control, name: 'pilotAuditDetails' });
+    const { fields: stateOfficeFields, append: appendStateOffice, remove: removeStateOffice } = useFieldArray({ control: form.control, name: 'stateOfficeActivitiesDetails' });
+
+
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -861,7 +915,7 @@ export default function StaffRegistrationPage() {
                                                                 </div>
                                                                 <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendBrpWork({ station: 'worked', district: '', block: '', fromDate: new Date(), toDate: new Date() })}><PlusCircle className="mr-2 h-4 w-4" /> Add Station</Button>
                                                             </div>
-
+                                                            
                                                              <div className="space-y-4 pt-4 border-t">
                                                                 <FormField control={form.control} name="workedAsDrpIc" render={({ field }) => (
                                                                     <FormItem className="space-y-3"><FormLabel>Have you worked as DRP I/C?*</FormLabel><FormControl>
@@ -947,7 +1001,78 @@ export default function StaffRegistrationPage() {
                                             </Card>
                                         </TabsContent>
                                         
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience', 'working-details'].includes(tab.value)).map(tab => (
+                                       <TabsContent value="training-audit">
+                                            <Card>
+                                                <CardHeader><CardTitle>Training & Pilot Audit Particulars</CardTitle></CardHeader>
+                                                <CardContent>
+                                                    <Tabs defaultValue="training-taken" className="w-full">
+                                                        <TabsList>
+                                                            <TabsTrigger value="training-taken">Training Taken</TabsTrigger>
+                                                            <TabsTrigger value="training-given">Training Given</TabsTrigger>
+                                                            <TabsTrigger value="pilot-audit">Pilot Audit</TabsTrigger>
+                                                            <TabsTrigger value="state-office-activities">State Office Activities</TabsTrigger>
+                                                        </TabsList>
+                                                        <TabsContent value="training-taken" className="pt-4">
+                                                            <FormField control={form.control} name="trainingTaken" render={({ field }) => (
+                                                                <FormItem className="mb-4"><FormLabel>Training Taken?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>
+                                                            )} />
+                                                            {watchedTrainingTaken === 'yes' && (
+                                                                <div className="space-y-4">
+                                                                     <Table><TableHeader><TableRow><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Location</TableHead><TableHead>Training Name</TableHead><TableHead>Grade</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+                                                                        <TableBody>{trainingTakenFields.map((field, index) => (<TableRow key={field.id}><TableCell><FormField control={form.control} name={`trainingTakenDetails.${index}.startDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`trainingTakenDetails.${index}.endDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`trainingTakenDetails.${index}.location`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><FormField control={form.control} name={`trainingTakenDetails.${index}.trainingName`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><FormField control={form.control} name={`trainingTakenDetails.${index}.grade`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeTrainingTaken(index)}><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>))}</TableBody>
+                                                                     </Table>
+                                                                     <Button type="button" variant="outline" size="sm" onClick={() => appendTrainingTaken({ startDate: new Date(), endDate: new Date(), location: '', trainingName: '', grade: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
+                                                                </div>
+                                                            )}
+                                                        </TabsContent>
+                                                         <TabsContent value="training-given" className="pt-4">
+                                                            <FormField control={form.control} name="trainingGiven" render={({ field }) => (
+                                                                <FormItem className="mb-4"><FormLabel>Training Given?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>
+                                                            )} />
+                                                            {watchedTrainingGiven === 'yes' && (
+                                                                <div className="space-y-4">
+                                                                    <Table><TableHeader><TableRow><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Location</TableHead><TableHead>Training Name</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+                                                                        <TableBody>{trainingGivenFields.map((field, index) => (<TableRow key={field.id}><TableCell><FormField control={form.control} name={`trainingGivenDetails.${index}.startDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`trainingGivenDetails.${index}.endDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`trainingGivenDetails.${index}.location`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><FormField control={form.control} name={`trainingGivenDetails.${index}.trainingName`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeTrainingGiven(index)}><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>))}</TableBody>
+                                                                     </Table>
+                                                                    <Button type="button" variant="outline" size="sm" onClick={() => appendTrainingGiven({ startDate: new Date(), endDate: new Date(), location: '', trainingName: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
+                                                                </div>
+                                                            )}
+                                                        </TabsContent>
+                                                        <TabsContent value="pilot-audit" className="pt-4">
+                                                             <FormField control={form.control} name="pilotAudit" render={({ field }) => (
+                                                                <FormItem className="mb-4"><FormLabel>Pilot Audit?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>
+                                                             )} />
+                                                             {watchedPilotAudit === 'yes' && (
+                                                                <div className="space-y-4">
+                                                                     <Table><TableHeader><TableRow><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Location</TableHead><TableHead>Scheme Name</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+                                                                         <TableBody>{pilotAuditFields.map((field, index) => (<TableRow key={field.id}><TableCell><FormField control={form.control} name={`pilotAuditDetails.${index}.startDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`pilotAuditDetails.${index}.endDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`pilotAuditDetails.${index}.location`} render={({ field }) => <Input {...field} />} /></TableCell><TableCell><FormField control={form.control} name={`pilotAuditDetails.${index}.schemeName`} render={({ field }) => <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl><SelectContent>{MOCK_SCHEMES.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent></Select>} /></TableCell><TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removePilotAudit(index)}><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>))}</TableBody>
+                                                                     </Table>
+                                                                     <Button type="button" variant="outline" size="sm" onClick={() => appendPilotAudit({ startDate: new Date(), endDate: new Date(), location: '', schemeName: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
+                                                                </div>
+                                                             )}
+                                                        </TabsContent>
+                                                        <TabsContent value="state-office-activities" className="pt-4">
+                                                             <FormField control={form.control} name="stateOfficeActivities" render={({ field }) => (
+                                                                <FormItem className="mb-4"><FormLabel>State Office Activities?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>
+                                                             )} />
+                                                             {watchedStateOfficeActivities === 'yes' && (
+                                                                <div className="space-y-4">
+                                                                     <Table><TableHeader><TableRow><TableHead>Year</TableHead><TableHead>Work Particulars</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+                                                                         <TableBody>{stateOfficeFields.map((field, index) => (<TableRow key={field.id}><TableCell><FormField control={form.control} name={`stateOfficeActivitiesDetails.${index}.year`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'yyyy') : 'Year'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell><TableCell><FormField control={form.control} name={`stateOfficeActivitiesDetails.${index}.workParticulars`} render={({ field }) => <Textarea {...field} />} /></TableCell><TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeStateOffice(index)}><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>))}</TableBody>
+                                                                     </Table>
+                                                                     <Button type="button" variant="outline" size="sm" onClick={() => appendStateOffice({ year: new Date(), workParticulars: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
+                                                                </div>
+                                                             )}
+                                                        </TabsContent>
+                                                    </Tabs>
+                                                    <div className="flex justify-end mt-8">
+                                                        <Button type="submit">Save</Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                       </TabsContent>
+                                        
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience', 'working-details', 'training-audit'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
@@ -964,9 +1089,12 @@ export default function StaffRegistrationPage() {
                                 )}
 
                                 {selectedRole && (
-                                    <div className="flex justify-end space-x-4 pt-8">
-                                        <Button variant="outline" type="button">Preview All Details</Button>
-                                        <Button type="submit">Final Submit</Button>
+                                     <div className="pt-8 mt-8 border-t">
+                                        <p className="text-sm text-muted-foreground mb-4">I hereby declare that the information provided is true and correct to the best of my knowledge.</p>
+                                        <div className="flex justify-end space-x-4">
+                                            <Button variant="outline" type="button">Preview All Details</Button>
+                                            <Button type="submit">Final Submit</Button>
+                                        </div>
                                     </div>
                                 )}
                             </form>
