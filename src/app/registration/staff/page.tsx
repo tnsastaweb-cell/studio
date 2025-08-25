@@ -5,8 +5,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, differenceInYears } from 'date-fns';
-import { CalendarIcon, Upload, ChevronsUpDown, Check, X } from 'lucide-react';
+import { format, differenceInYears, differenceInMonths, differenceInDays } from 'date-fns';
+import { CalendarIcon, Upload, ChevronsUpDown, Check, X, PlusCircle, Trash2 } from 'lucide-react';
 
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/use-auth';
@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_ULBS, UrbanLocalBody, ULB_TYPES } from '@/services/ulb';
 import { uniqueDistricts } from '@/lib/utils';
-
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -28,29 +27,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 
 const staffFormSchema = z.object({
   designation: z.string().min(1, "Role/Designation is required."),
@@ -59,8 +42,8 @@ const staffFormSchema = z.object({
   photo: z.any().optional(),
   recruitmentType: z.enum(['direct', 'retired'], { required_error: "Recruitment Type is required."}),
   employeeCode: z.string().min(1, "Employee Code is required."),
-  name: z.string(),
-  contactNumber: z.string(),
+  name: z.string().min(1, "Name is required."),
+  contactNumber: z.string().min(1, "Contact Number is required."),
 
   // Location Details
   locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
@@ -70,7 +53,7 @@ const staffFormSchema = z.object({
   lgdCode: z.string().optional(),
   urbanBodyType: z.enum(ULB_TYPES).optional(),
   urbanBodyName: z.string().optional(),
-  fullAddress: z.string().min(1, "Full Address is required."),
+  fullAddress: z.string().min(1, "Full Address is required.").max(200, "Address is too long"),
   pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits."),
 
   // Family Details
@@ -106,7 +89,31 @@ const staffFormSchema = z.object({
   pan: z.string().min(10, "PAN must be 10 characters.").max(10, "PAN must be 10 characters."),
   panUpload: z.any().refine(file => file?.[0], "PAN copy is required."),
   uan: z.string().optional(),
-  
+
+  // Education & Experience
+  academicDetails: z.array(z.object({
+    course: z.string().min(1, 'Course is required'),
+    institution: z.string().min(1, 'Institution is required'),
+    board: z.string().min(1, 'Board/University is required'),
+    fromYear: z.date({ required_error: 'From year is required' }),
+    toYear: z.date({ required_error: 'To year is required' }),
+    aggregate: z.coerce.number().min(0).max(100, "Cannot be over 100%"),
+    certificate: z.any().optional(),
+  })).min(1, "At least one academic detail is required."),
+
+  workExperience: z.array(z.object({
+    companyName: z.string().min(1, 'Company Name is required'),
+    natureOfJob: z.string().min(1, 'Nature of Job is required'),
+    fromDate: z.date({ required_error: 'From date is required' }),
+    toDate: z.date({ required_error: 'To date is required' }),
+    duration: z.string().optional(),
+    certificate: z.any().optional(),
+  })).min(1, "At least one work experience is required."),
+
+  skills: z.array(z.object({
+    skill: z.string().min(1, "Skill cannot be empty")
+  })).min(1, "At least one skill is required."),
+
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
     return true;
@@ -164,7 +171,7 @@ export default function StaffRegistrationPage() {
           dateOfBirth: undefined,
           age: '',
           gender: '',
-          femaleType: '',
+          femaleType: 'none',
           bloodGroup: '',
           isDifferentlyAbled: undefined,
           healthIssues: undefined,
@@ -184,6 +191,9 @@ export default function StaffRegistrationPage() {
           pan: '',
           panUpload: undefined,
           uan: '',
+          academicDetails: [],
+          workExperience: [],
+          skills: [],
         }
     });
     
@@ -196,6 +206,11 @@ export default function StaffRegistrationPage() {
     const watchedGender = form.watch("gender");
     const watchedDifferentlyAbled = form.watch("isDifferentlyAbled");
     const watchedHealthIssues = form.watch("healthIssues");
+    
+    const { fields: academicFields, append: appendAcademic, remove: removeAcademic } = useFieldArray({ control: form.control, name: "academicDetails" });
+    const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({ control: form.control, name: "workExperience" });
+    const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
+
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -261,6 +276,7 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
+            form.setValue('dateOfBirth', new Date(selectedUser.dateOfBirth));
             form.setValue('emailId', selectedUser.email || '');
         }
     };
@@ -312,6 +328,13 @@ export default function StaffRegistrationPage() {
     const visibleTabs = selectedRole 
         ? tabsConfig.filter(tab => tab.roles.includes('all') || tab.roles.includes(selectedRole))
         : [];
+        
+    const calculateDuration = (from: Date, to: Date) => {
+      if (!from || !to) return '';
+      const years = differenceInYears(to, from);
+      const months = differenceInMonths(to, from) % 12;
+      return `${years} years, ${months} months`;
+    };
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -337,7 +360,7 @@ export default function StaffRegistrationPage() {
                                             <Select onValueChange={(value) => {
                                                 field.onChange(value);
                                                 handleRoleChange(value);
-                                            }} value={field.value}>
+                                            }} value={field.value || ''}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select a role" />
@@ -427,7 +450,12 @@ export default function StaffRegistrationPage() {
                                                                     </PopoverTrigger>
                                                                     <PopoverContent className="w-[300px] p-0">
                                                                         <Command>
-                                                                            <CommandInput placeholder="Search employee code..." onValueChange={handleEmployeeCodeChange} />
+                                                                            <CommandInput placeholder="Search employee code..." onValueChange={(query) => {
+                                                                                // This is a simple search, can be improved
+                                                                                if (!filteredUsersByRole.find(u => u.employeeCode === query)) {
+                                                                                    handleEmployeeCodeChange(query);
+                                                                                }
+                                                                            }} />
                                                                             <CommandEmpty>No employee found.</CommandEmpty>
                                                                             <CommandGroup>
                                                                                 <CommandList>
@@ -570,26 +598,16 @@ export default function StaffRegistrationPage() {
                                                 <CardHeader><CardTitle>Personal Details</CardTitle></CardHeader>
                                                 <CardContent className="space-y-6 pt-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                                                        <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="chirstian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="christian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl><SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="BC">BC</SelectItem><SelectItem value="MBC">MBC</SelectItem><SelectItem value="GENERAL">GENERAL</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                                         {watchedGender === 'female' && (<FormField control={form.control} name="femaleType" render={({ field }) => (<FormItem><FormLabel>Female Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">None</SelectItem><SelectItem value="single_women">Single Women</SelectItem><SelectItem value="widow">Widow</SelectItem><SelectItem value="married">Married</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />)}
+                                                        <FormField control={form.control} name="bloodGroup" render={({ field }) => (<FormItem><FormLabel>Blood Group</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Blood Group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+ (A Positive)</SelectItem><SelectItem value="A-">A- (A Negative)</SelectItem><SelectItem value="B+">B+ (B Positive)</SelectItem><SelectItem value="B-">B- (B Negative)</SelectItem><SelectItem value="AB+">AB+ (AB Positive)</SelectItem><SelectItem value="AB-">AB- (AB Negative)</SelectItem><SelectItem value="O+">O+ (O Positive)</SelectItem><SelectItem value="O-">O- (O Negative)</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+
                                                     </div>
                                                     <div className="space-y-4 pt-4 border-t">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                            <FormField control={form.control} name="bloodGroup" render={({ field }) => (<FormItem><FormLabel>Blood Group</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Blood Group" /></SelectTrigger></FormControl><SelectContent>
-                                                                <SelectItem value="A+">A+ (A Positive)</SelectItem>
-                                                                <SelectItem value="A-">A- (A Negative)</SelectItem>
-                                                                <SelectItem value="B+">B+ (B Positive)</SelectItem>
-                                                                <SelectItem value="B-">B- (B Negative)</SelectItem>
-                                                                <SelectItem value="AB+">AB+ (AB Positive)</SelectItem>
-                                                                <SelectItem value="AB-">AB- (AB Negative)</SelectItem>
-                                                                <SelectItem value="O+">O+ (O Positive)</SelectItem>
-                                                                <SelectItem value="O-">O- (O Negative)</SelectItem>
-                                                            </SelectContent></Select><FormMessage /></FormItem>)} />
-                                                        </div>
                                                         <h4 className="font-medium">Health Related</h4>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                           <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Differently Abled?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
@@ -615,6 +633,7 @@ export default function StaffRegistrationPage() {
                                                 <CardContent className="space-y-6 pt-6">
                                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         <FormField control={form.control} name="contactNumber2" render={({ field }) => (<FormItem><FormLabel>Contact 2</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="emailId" render={({ field }) => (<FormItem><FormLabel>Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="eportalEmailId" render={({ field }) => (<FormItem><FormLabel>E-Portal Email ID*</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="pfmsId" render={({ field }) => (<FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="bankName" render={({ field }) => (<FormItem><FormLabel>Bank Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -633,8 +652,114 @@ export default function StaffRegistrationPage() {
                                                 </CardContent>
                                             </Card>
                                         </TabsContent>
+                                        <TabsContent value="education-experience">
+                                            <div className="space-y-8">
+                                                <Card>
+                                                  <CardHeader><CardTitle>Academic Details*</CardTitle></CardHeader>
+                                                  <CardContent>
+                                                      <Table>
+                                                        <TableHeader>
+                                                          <TableRow>
+                                                            <TableHead>Sl.No</TableHead>
+                                                            <TableHead>Course</TableHead>
+                                                            <TableHead>Institution</TableHead>
+                                                            <TableHead>Board/University</TableHead>
+                                                            <TableHead>From</TableHead>
+                                                            <TableHead>To</TableHead>
+                                                            <TableHead>Aggregate %</TableHead>
+                                                            <TableHead>Certificate</TableHead>
+                                                            <TableHead>Action</TableHead>
+                                                          </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                          {academicFields.map((field, index) => (
+                                                            <TableRow key={field.id}>
+                                                                <TableCell>{index + 1}</TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.course`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.institution`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.board`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.fromYear`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'yyyy') : 'Year'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.toYear`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'yyyy') : 'Year'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.aggregate`} render={({ field }) => <Input type="number" {...field} />} /></TableCell>
+                                                                <TableCell><FormField control={form.control} name={`academicDetails.${index}.certificate`} render={({ field }) => <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} /> } /></TableCell>
+                                                                <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeAcademic(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                            </TableRow>
+                                                          ))}
+                                                        </TableBody>
+                                                      </Table>
+                                                      <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAcademic({ course: '', institution: '', board: '', fromYear: new Date(), toYear: new Date(), aggregate: 0, certificate: null })}><PlusCircle className="mr-2 h-4 w-4" /> Add Academic Record</Button>
+                                                  </CardContent>
+                                                </Card>
+                                                <Card>
+                                                  <CardHeader><CardTitle>Work Experience*</CardTitle></CardHeader>
+                                                  <CardContent>
+                                                      <Table>
+                                                         <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead>Sl.No</TableHead>
+                                                                <TableHead>Company Name</TableHead>
+                                                                <TableHead>Nature of Job</TableHead>
+                                                                <TableHead>From</TableHead>
+                                                                <TableHead>To</TableHead>
+                                                                <TableHead>Duration</TableHead>
+                                                                <TableHead>Certificate</TableHead>
+                                                                <TableHead>Action</TableHead>
+                                                            </TableRow>
+                                                          </TableHeader>
+                                                          <TableBody>
+                                                            {experienceFields.map((field, index) => {
+                                                              const fromDate = form.watch(`workExperience.${index}.fromDate`);
+                                                              const toDate = form.watch(`workExperience.${index}.toDate`);
+                                                              const duration = calculateDuration(fromDate, toDate);
+                                                              return (
+                                                                <TableRow key={field.id}>
+                                                                    <TableCell>{index + 1}</TableCell>
+                                                                    <TableCell><FormField control={form.control} name={`workExperience.${index}.companyName`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                    <TableCell><FormField control={form.control} name={`workExperience.${index}.natureOfJob`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                    <TableCell><FormField control={form.control} name={`workExperience.${index}.fromDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                    <TableCell><FormField control={form.control} name={`workExperience.${index}.toDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(field.value, 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
+                                                                    <TableCell><Input value={duration} readOnly className="bg-muted" /></TableCell>
+                                                                    <TableCell><FormField control={form.control} name={`workExperience.${index}.certificate`} render={({ field }) => <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} /> } /></TableCell>
+                                                                    <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeExperience(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                                </TableRow>
+                                                              )
+                                                            })}
+                                                          </TableBody>
+                                                      </Table>
+                                                      <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendExperience({ companyName: '', natureOfJob: '', fromDate: new Date(), toDate: new Date(), duration: '', certificate: null })}><PlusCircle className="mr-2 h-4 w-4" /> Add Work Experience</Button>
+                                                  </CardContent>
+                                                </Card>
+                                                <Card>
+                                                    <CardHeader><CardTitle>Skills*</CardTitle></CardHeader>
+                                                    <CardContent>
+                                                      <Table>
+                                                        <TableHeader>
+                                                          <TableRow>
+                                                            <TableHead>Sl.No</TableHead>
+                                                            <TableHead>Skill</TableHead>
+                                                            <TableHead>Action</TableHead>
+                                                          </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                          {skillFields.map((field, index) => (
+                                                            <TableRow key={field.id}>
+                                                                <TableCell>{index + 1}</TableCell>
+                                                                <TableCell><FormField control={form.control} name={`skills.${index}.skill`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                                                <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeSkill(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                                                            </TableRow>
+                                                          ))}
+                                                        </TableBody>
+                                                      </Table>
+                                                      <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendSkill({ skill: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill</Button>
+                                                    </CardContent>
+                                                </Card>
+                                                <div className="flex justify-end mt-8">
+                                                    <Button type="submit">Save</Button>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
                                         
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info'].includes(tab.value)).map(tab => (
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details', 'personal-info', 'education-experience'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
