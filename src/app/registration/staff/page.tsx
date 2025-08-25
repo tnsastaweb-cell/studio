@@ -27,7 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -53,11 +53,14 @@ import { Textarea } from '@/components/ui/textarea';
 
 const staffFormSchema = z.object({
   designation: z.string().min(1, "Role/Designation is required."),
-  photo: z.any().refine(file => file?.length > 0, "Photo is required."),
+  
+  // Basic Information
+  photo: z.any().refine(file => file instanceof File, "Photo is required."),
   recruitmentType: z.enum(['direct', 'retired'], { required_error: "Recruitment Type is required."}),
   employeeCode: z.string().min(1, "Employee Code is required."),
   name: z.string(),
   contactNumber: z.string(),
+  email: z.string().optional(),
 
   // Location Details
   locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
@@ -69,6 +72,12 @@ const staffFormSchema = z.object({
   urbanBodyName: z.string().optional(),
   fullAddress: z.string().min(1, "Full Address is required."),
   pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits."),
+
+  // Family Details
+  fatherName: z.string().min(1, "Father's Name is required."),
+  motherName: z.string().min(1, "Mother's Name is required."),
+  spouseName: z.string().optional(),
+  
 }).refine(data => {
     if (data.locationType === 'rural') {
         return !!data.block && !!data.panchayat;
@@ -108,6 +117,7 @@ export default function StaffRegistrationPage() {
             employeeCode: '',
             name: '',
             contactNumber: '',
+            email: '',
             locationType: undefined,
             district: '',
             block: '',
@@ -117,6 +127,9 @@ export default function StaffRegistrationPage() {
             urbanBodyName: '',
             fullAddress: '',
             pincode: '',
+            fatherName: '',
+            motherName: '',
+            spouseName: '',
         }
     });
     
@@ -183,7 +196,7 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
-            // We'll leave email to be manually entered as per new instructions
+            form.setValue('email', selectedUser.email || '');
         }
     };
     
@@ -363,7 +376,7 @@ export default function StaffRegistrationPage() {
                                                                                             }}
                                                                                         >
                                                                                             <Check className={cn("mr-2 h-4 w-4", u.employeeCode === field.value ? "opacity-100" : "opacity-0")} />
-                                                                                            {u.employeeCode} - {u.name}
+                                                                                            {u.employeeCode}
                                                                                         </CommandItem>
                                                                                     ))}
                                                                                 </CommandList>
@@ -375,7 +388,6 @@ export default function StaffRegistrationPage() {
                                                             </FormItem>
                                                         )}
                                                     />
-
                                                       <FormField control={form.control} name="name" render={({ field }) => (
                                                           <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>
                                                       )} />
@@ -397,7 +409,7 @@ export default function StaffRegistrationPage() {
                                                         <FormItem className="space-y-3">
                                                             <FormLabel>Type*</FormLabel>
                                                             <FormControl>
-                                                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                                                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
                                                                     <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="rural" /></FormControl><FormLabel className="font-normal">Rural</FormLabel></FormItem>
                                                                     <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="urban" /></FormControl><FormLabel className="font-normal">Urban</FormLabel></FormItem>
                                                                 </RadioGroup>
@@ -416,13 +428,13 @@ export default function StaffRegistrationPage() {
                                                             )} />
                                                             <FormField control={form.control} name="block" render={({ field }) => (
                                                                 <FormItem><FormLabel>Block*</FormLabel>
-                                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                                                     <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
                                                                 </Select><FormMessage /></FormItem>
                                                             )} />
                                                              <FormField control={form.control} name="panchayat" render={({ field }) => (
                                                                 <FormItem><FormLabel>Panchayat*</FormLabel>
-                                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
+                                                                <Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
                                                                     <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent>
                                                                 </Select><FormMessage /></FormItem>
                                                             )} />
@@ -447,7 +459,7 @@ export default function StaffRegistrationPage() {
                                                             )} />
                                                             <FormField control={form.control} name="urbanBodyName" render={({ field }) => (
                                                                 <FormItem><FormLabel>Urban Body Name*</FormLabel>
-                                                                <Select onValueChange={field.onChange} value={field.value} disabled={!watchedUrbanBodyType}>
+                                                                <Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedUrbanBodyType}>
                                                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Name" /></SelectTrigger></FormControl>
                                                                     <SelectContent>{urbanBodiesForDistrictAndType.map(u => <SelectItem key={u.id} value={u.name}>{u.name}</SelectItem>)}</SelectContent>
                                                                 </Select><FormMessage /></FormItem>
@@ -467,8 +479,30 @@ export default function StaffRegistrationPage() {
                                                  </CardContent>
                                             </Card>
                                         </TabsContent>
+                                        <TabsContent value="family-details">
+                                             <Card>
+                                                 <CardHeader><CardTitle>Family Details</CardTitle></CardHeader>
+                                                 <CardContent className="space-y-6">
+                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                         <FormField control={form.control} name="fatherName" render={({ field }) => (
+                                                            <FormItem><FormLabel>Father's Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                         )} />
+                                                         <FormField control={form.control} name="motherName" render={({ field }) => (
+                                                            <FormItem><FormLabel>Mother's Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                         )} />
+                                                         <FormField control={form.control} name="spouseName" render={({ field }) => (
+                                                            <FormItem><FormLabel>Spouse Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                         )} />
+                                                     </div>
+                                                     <div className="flex justify-end mt-8">
+                                                        <Button type="submit">Save</Button>
+                                                    </div>
+                                                 </CardContent>
+                                             </Card>
+                                        </TabsContent>
 
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details'].includes(tab.value)).map(tab => (
+
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
