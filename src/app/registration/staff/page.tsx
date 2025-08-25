@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -36,6 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const staffFormSchema = z.object({
   designation: z.string().min(1, "Role/Designation is required."),
@@ -173,6 +175,10 @@ const staffFormSchema = z.object({
     year: z.date(),
     workParticulars: z.string(),
   })).optional(),
+  
+  declaration: z.boolean().refine(val => val === true, {
+    message: "You must accept the declaration to submit."
+  }),
 
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
@@ -267,6 +273,7 @@ export default function StaffRegistrationPage() {
           pilotAuditDetails: [],
           stateOfficeActivities: 'no',
           stateOfficeActivitiesDetails: [],
+          declaration: false,
         }
     });
     
@@ -400,6 +407,18 @@ export default function StaffRegistrationPage() {
         });
     };
 
+    const onFinalSubmit = (data: StaffFormValues) => {
+        console.log("Final Submit:", data);
+        toast({
+            title: "Registration Submitted!",
+            description: "Your registration has been submitted for review.",
+        });
+        // Here you would typically send the data to a server
+        form.reset();
+        setSelectedRole(null);
+        setPhotoPreview(null);
+    };
+
     const tabsConfig = [
         { value: "basic-info", label: "Basic Information", roles: ['all'] },
         { value: "location-details", label: "Location Details", roles: ['all'] },
@@ -436,7 +455,7 @@ export default function StaffRegistrationPage() {
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <form onSubmit={form.handleSubmit(onFinalSubmit)} className="space-y-8">
                                 <FormField
                                     control={form.control}
                                     name="designation"
@@ -570,7 +589,7 @@ export default function StaffRegistrationPage() {
                                                       )} />
                                                    </div>
                                                    <div className="flex justify-end">
-                                                       <Button type="submit">Save</Button>
+                                                       <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                    </div>
                                                 </CardContent>
                                             </Card>
@@ -648,7 +667,7 @@ export default function StaffRegistrationPage() {
                                                      )} />
 
                                                     <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                  </CardContent>
                                             </Card>
@@ -669,7 +688,7 @@ export default function StaffRegistrationPage() {
                                                          )} />
                                                      </div>
                                                      <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                  </CardContent>
                                              </Card>
@@ -680,7 +699,7 @@ export default function StaffRegistrationPage() {
                                                 <CardContent className="space-y-6 pt-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                                                         <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="christian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl><SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="BC">BC</SelectItem><SelectItem value="MBC">MBC</SelectItem><SelectItem value="GENERAL">GENERAL</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
@@ -703,7 +722,7 @@ export default function StaffRegistrationPage() {
                                                         </div>
                                                     </div>
                                                     <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -728,7 +747,7 @@ export default function StaffRegistrationPage() {
                                                         <FormField control={form.control} name="uan" render={({ field }) => (<FormItem><FormLabel>UAN No(Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                      </div>
                                                      <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -839,7 +858,7 @@ export default function StaffRegistrationPage() {
                                                     </CardContent>
                                                 </Card>
                                                 <div className="flex justify-end mt-8">
-                                                    <Button type="submit">Save</Button>
+                                                    <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                 </div>
                                             </div>
                                         </TabsContent>
@@ -995,7 +1014,7 @@ export default function StaffRegistrationPage() {
                                                      )}
 
                                                     <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -1066,7 +1085,7 @@ export default function StaffRegistrationPage() {
                                                         </TabsContent>
                                                     </Tabs>
                                                     <div className="flex justify-end mt-8">
-                                                        <Button type="submit">Save</Button>
+                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -1079,7 +1098,7 @@ export default function StaffRegistrationPage() {
                                                     <CardContent>
                                                         <p className="text-muted-foreground">Content for {tab.label} will be built here.</p>
                                                         <div className="flex justify-end mt-8">
-                                                          <Button type="submit">Save</Button>
+                                                          <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
                                                         </div>
                                                     </CardContent>
                                                 </Card>
@@ -1089,11 +1108,31 @@ export default function StaffRegistrationPage() {
                                 )}
 
                                 {selectedRole && (
-                                     <div className="pt-8 mt-8 border-t">
-                                        <p className="text-sm text-muted-foreground mb-4">I hereby declare that the information provided is true and correct to the best of my knowledge.</p>
+                                     <div className="pt-8 mt-8 border-t space-y-4">
+                                         <h3 className="text-lg font-semibold text-primary">Disclaimer</h3>
+                                        <FormField
+                                            control={form.control}
+                                            name="declaration"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                    <div className="space-y-1 leading-none">
+                                                        <FormLabel>
+                                                            I hereby declare that the information provided is true and correct to the best of my knowledge.
+                                                        </FormLabel>
+                                                        <FormMessage />
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
                                         <div className="flex justify-end space-x-4">
                                             <Button variant="outline" type="button">Preview All Details</Button>
-                                            <Button type="submit">Final Submit</Button>
+                                            <Button type="submit" disabled={!form.watch('declaration')}>Final Submit</Button>
                                         </div>
                                     </div>
                                 )}
