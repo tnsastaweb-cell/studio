@@ -49,18 +49,18 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
 
 
 const staffFormSchema = z.object({
   designation: z.string().min(1, "Role/Designation is required."),
   
   // Basic Information
-  photo: z.any().refine(file => file instanceof File, "Photo is required."),
+  photo: z.any().optional(),
   recruitmentType: z.enum(['direct', 'retired'], { required_error: "Recruitment Type is required."}),
   employeeCode: z.string().min(1, "Employee Code is required."),
   name: z.string(),
   contactNumber: z.string(),
-  email: z.string().optional(),
 
   // Location Details
   locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
@@ -77,23 +77,36 @@ const staffFormSchema = z.object({
   fatherName: z.string().min(1, "Father's Name is required."),
   motherName: z.string().min(1, "Mother's Name is required."),
   spouseName: z.string().optional(),
+
+  // Personal details
+  religion: z.string().min(1, "Religion is required."),
+  caste: z.string().min(1, "Caste is required."),
+  dateOfBirth: z.date({ required_error: "Date of birth is required." }),
+  age: z.string().optional(),
+  gender: z.string().min(1, "Gender is required"),
+  femaleType: z.string().optional(),
+  isDifferentlyAbled: z.enum(['yes', 'no'], { required_error: "This field is required."}),
+  differentlyAbledCert: z.any().optional(),
+  healthIssues: z.enum(['normal', 'minor', 'major'], { required_error: "This field is required."}),
+  healthIssuesDetails: z.string().optional(),
+  medicalCert: z.any().optional(),
   
 }).refine(data => {
-    if (data.locationType === 'rural') {
-        return !!data.block && !!data.panchayat;
-    }
+    if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
     return true;
-}, {
-    message: "Block and Panchayat are required for Rural locations.",
-    path: ['panchayat'],
+}, { message: "Block and Panchayat are required for Rural locations.", path: ['panchayat'],
 }).refine(data => {
-    if (data.locationType === 'urban') {
-        return !!data.urbanBodyType && !!data.urbanBodyName;
-    }
+    if (data.locationType === 'urban') return !!data.urbanBodyType && !!data.urbanBodyName;
     return true;
-}, {
-    message: "Urban Body Type and Name are required for Urban locations.",
-    path: ['urbanBodyName'],
+}, { message: "Urban Body Type and Name are required for Urban locations.", path: ['urbanBodyName'],
+}).refine(data => {
+    if (data.isDifferentlyAbled === 'yes') return !!data.differentlyAbledCert;
+    return true;
+}, { message: "Certificate is required if differently abled.", path: ['differentlyAbledCert']
+}).refine(data => {
+    if (data.healthIssues === 'major') return !!data.medicalCert;
+    return true;
+}, { message: "Medical certificate is required for major health issues.", path: ['medicalCert']
 });
 
 
@@ -117,7 +130,6 @@ export default function StaffRegistrationPage() {
             employeeCode: '',
             name: '',
             contactNumber: '',
-            email: '',
             locationType: undefined,
             district: '',
             block: '',
@@ -130,6 +142,15 @@ export default function StaffRegistrationPage() {
             fatherName: '',
             motherName: '',
             spouseName: '',
+            religion: '',
+            caste: '',
+            dateOfBirth: undefined,
+            age: '',
+            gender: '',
+            femaleType: '',
+            isDifferentlyAbled: undefined,
+            healthIssues: undefined,
+            healthIssuesDetails: '',
         }
     });
     
@@ -138,6 +159,10 @@ export default function StaffRegistrationPage() {
     const watchedBlock = form.watch("block");
     const watchedPanchayat = form.watch("panchayat");
     const watchedUrbanBodyType = form.watch("urbanBodyType");
+    const watchedDob = form.watch("dateOfBirth");
+    const watchedGender = form.watch("gender");
+    const watchedDifferentlyAbled = form.watch("isDifferentlyAbled");
+    const watchedHealthIssues = form.watch("healthIssues");
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -183,6 +208,13 @@ export default function StaffRegistrationPage() {
         }
     }, [watchedUrbanBodyType, form]);
 
+     useEffect(() => {
+        if (watchedDob) {
+            const age = differenceInYears(new Date(), watchedDob);
+            form.setValue('age', age.toString());
+        }
+    }, [watchedDob, form]);
+
 
     const handleRoleChange = (value: string) => {
         setSelectedRole(value);
@@ -196,7 +228,9 @@ export default function StaffRegistrationPage() {
             form.setValue('employeeCode', selectedUser.employeeCode);
             form.setValue('name', selectedUser.name);
             form.setValue('contactNumber', selectedUser.mobileNumber);
-            form.setValue('email', selectedUser.email || '');
+            if (selectedUser.dateOfBirth) {
+              form.setValue('dateOfBirth', new Date(selectedUser.dateOfBirth))
+            }
         }
     };
     
@@ -241,7 +275,7 @@ export default function StaffRegistrationPage() {
         { value: "personal-info", label: "Personal Info", roles: ['all'] },
         { value: "education-experience", label: "Education & Experience", roles: ['all'] },
         { value: "working-details", label: "Working details", roles: ['BRP', 'DRP'] },
-        { value: "training-audit", label: "Training & Pilot Audit Particulars", roles: ['BRP', 'DRP'] },
+        { value: "training-audit", label: "Training & pilot Audit Particulars", roles: ['BRP', 'DRP'] },
     ];
 
     const visibleTabs = selectedRole 
@@ -362,7 +396,7 @@ export default function StaffRegistrationPage() {
                                                                     </PopoverTrigger>
                                                                     <PopoverContent className="w-[300px] p-0">
                                                                         <Command>
-                                                                            <CommandInput placeholder="Search employee code..." />
+                                                                            <CommandInput placeholder="Search employee code..." onValueChange={handleEmployeeCodeChange} />
                                                                             <CommandEmpty>No employee found.</CommandEmpty>
                                                                             <CommandGroup>
                                                                                 <CommandList>
@@ -467,7 +501,7 @@ export default function StaffRegistrationPage() {
                                                         </div>
                                                      )}
                                                      <FormField control={form.control} name="fullAddress" render={({ field }) => (
-                                                        <FormItem><FormLabel>Full Address* (as per Aadhaar)</FormLabel><FormControl><Textarea placeholder="Enter full address" {...field} className="h-24" /></FormControl><FormMessage /></FormItem>
+                                                        <FormItem><FormLabel>Full Address* (as per Aadhaar)</FormLabel><FormControl><Textarea placeholder="Enter full address" {...field} className="h-28" /></FormControl><FormMessage /></FormItem>
                                                      )} />
                                                      <FormField control={form.control} name="pincode" render={({ field }) => (
                                                         <FormItem className="max-w-xs"><FormLabel>Pincode*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -500,9 +534,41 @@ export default function StaffRegistrationPage() {
                                                  </CardContent>
                                              </Card>
                                         </TabsContent>
+                                        <TabsContent value="personal-details">
+                                            <Card>
+                                                <CardHeader><CardTitle>Personal Details</CardTitle></CardHeader>
+                                                <CardContent className="space-y-6">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                                                        <FormField control={form.control} name="religion" render={({ field }) => (<FormItem><FormLabel>Religion*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Religion" /></SelectTrigger></FormControl><SelectContent><SelectItem value="hindu">Hindu</SelectItem><SelectItem value="muslim">Muslim</SelectItem><SelectItem value="chirstian">Christian</SelectItem><SelectItem value="others">Others</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="caste" render={({ field }) => (<FormItem><FormLabel>Caste*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl><SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="BC">BC</SelectItem><SelectItem value="MBC">MBC</SelectItem><SelectItem value="GENERAL">GENERAL</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name="gender" render={({ field }) => (<FormItem><FormLabel>Gender*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                                        {watchedGender === 'female' && (<FormField control={form.control} name="femaleType" render={({ field }) => (<FormItem><FormLabel>Female Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="none">None</SelectItem><SelectItem value="single_women">Single Women</SelectItem><SelectItem value="widow">Widow</SelectItem><SelectItem value="married">Married</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />)}
+                                                    </div>
+                                                    <div className="space-y-4 pt-4 border-t">
+                                                        <h4 className="font-medium">Health Related</h4>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                          <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Differently Abled?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
+                                                          {watchedDifferentlyAbled === 'yes' && (<FormField control={form.control} name="differentlyAbledCert" render={({ field }) => (<FormItem><FormLabel>Upload Certificate* (Max 5MB)</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} /></FormControl><FormMessage /></FormItem>)} />)}
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                           <FormField control={form.control} name="healthIssues" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Health Issues?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="normal" /></FormControl><FormLabel className="font-normal">Normal</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="minor" /></FormControl><FormLabel className="font-normal">Minor</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="major" /></FormControl><FormLabel className="font-normal">Major</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
+                                                           <div className="space-y-4">
+                                                                {(watchedHealthIssues === 'minor' || watchedHealthIssues === 'major') && (<FormField control={form.control} name="healthIssuesDetails" render={({ field }) => (<FormItem><FormLabel>Type of Issues</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+                                                                {watchedHealthIssues === 'major' && (<FormField control={form.control} name="medicalCert" render={({ field }) => (<FormItem><FormLabel>Upload Medical Certificate* (Max 20MB)</FormLabel><FormControl><Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} /></FormControl><FormMessage /></FormItem>)} />)}
+                                                           </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-end mt-8">
+                                                        <Button type="submit">Save</Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </TabsContent>
 
 
-                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details'].includes(tab.value)).map(tab => (
+                                        {visibleTabs.filter(tab => !['basic-info', 'location-details', 'family-details', 'personal-details'].includes(tab.value)).map(tab => (
                                             <TabsContent key={tab.value} value={tab.value}>
                                                 <Card>
                                                     <CardHeader><CardTitle>{tab.label}</CardTitle></CardHeader>
