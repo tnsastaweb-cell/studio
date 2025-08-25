@@ -55,7 +55,6 @@ export function Header() {
         </div>
       </Link>
       <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
-        <div id="google_translate_element"></div>
         {canAccessAdminPanel && (
           <Button asChild variant="link" className="text-primary hidden sm:inline-flex">
             <Link href="/admin" prefetch={false}>
