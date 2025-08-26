@@ -169,6 +169,7 @@ export default function PmaygDataEntryPage() {
 
     const watchedDistrict = form.watch("district");
     const watchedBlock = form.watch("block");
+    const watchedPanchayat = form.watch("panchayat");
     const watchedSgsDate = form.watch("sgsDate");
     const watchedSeccSelected = form.watch("seccSelected");
     const watchedAwaasPlusSelected = form.watch("awaasPlusSelected");
@@ -193,7 +194,7 @@ export default function PmaygDataEntryPage() {
         } else {
             form.setValue('lgdCode', '');
         }
-    }, [form.watch("panchayat"), form]);
+    }, [form, form.watch("panchayat")]);
     
     useEffect(() => {
         if (watchedSgsDate) {
