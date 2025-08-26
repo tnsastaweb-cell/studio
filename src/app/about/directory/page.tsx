@@ -65,7 +65,8 @@ export default function DirectoryPage() {
           district = presentStation.district;
           block = presentStation.block; // Block is only for BRPs
         }
-      } else if (isDRP && user.drpWorkHistory?.length > 0) {
+      } else if ((isDRP || user.designation) && user.drpWorkHistory?.length > 0) {
+        // Apply district logic for DRP and other roles with drpWorkHistory
         const presentStation = user.drpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
