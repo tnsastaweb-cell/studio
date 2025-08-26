@@ -131,6 +131,7 @@ export default function PmaygDataEntryPage() {
     }, []);
 
     const getDistrictCode = (district: string) => {
+        if (!district) return 'XX';
         if (district === "Chennai") return "00";
         const index = sortedDistrictsForCode.indexOf(district);
         return index !== -1 ? String(index + 1).padStart(2, '0') : 'XX';
@@ -490,7 +491,7 @@ export default function PmaygDataEntryPage() {
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
                                                         <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
-                                                     <Controller
+                                                    <Controller
                                                       control={form.control}
                                                       name={`paraParticulars.${index}.subCategory`}
                                                       render={({ field }) => (
@@ -559,3 +560,4 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
+
