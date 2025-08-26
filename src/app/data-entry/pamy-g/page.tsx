@@ -15,17 +15,8 @@ import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { useHlc } from '@/services/hlc';
 import { useUsers, User } from '@/services/users';
 import { DISTRICTS } from '@/services/district-offices';
+import { DISTRICT_CODE_MAP } from '@/services/panchayat-data/district-codes';
 
-const DISTRICT_CODE_MAP: { [key: string]: string } = {
-  "Ariyalur": "16", "Chengalpattu": "33", "Chennai": "00", "Coimbatore": "09", "Cuddalore": "17",
-  "Dharmapuri": "06", "Dindigul": "25", "Erode": "11", "Kallakurichi": "32", "Kancheepuram": "02",
-  "Kanniyakumari": "30", "Karur": "14", "Krishnagiri": "07", "Madurai": "23", "Mayiladuthurai": "36",
-  "Nagapattinam": "18", "Namakkal": "08", "Nilgiris": "10", "Perambalur": "15", "Pudukkottai": "21",
-  "Ramanathapuram": "26", "Ranipet": "34", "Salem": "08", "Sivaganga": "22", "Tenkasi": "31",
-  "Thanjavur": "20", "Theni": "24", "Thoothukudi": "29", "Tiruchirappalli": "13", "Tirunelveli": "28",
-  "Tirupathur": "35", "Tiruppur": "12", "Tiruvallur": "01", "Tiruvannamalai": "04", "Tiruvarur": "19",
-  "Vellore": "03", "Viluppuram": "05", "Virudhunagar": "27"
-};
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -222,13 +213,10 @@ export default function PmaygDataEntryPage() {
         form.setValue('totalSelectedMIS', total);
     }, [watchedSeccSelected, watchedAwaasPlusSelected, form]);
     
-    const totalVerifiedField = useMemo(() => {
-        return (Number(watchedInterviewed) || 0) + (Number(watchedVisited) || 0);
-    }, [watchedInterviewed, watchedVisited]);
-    
     useEffect(() => {
-        form.setValue('totalVerifiedField', totalVerifiedField);
-    }, [totalVerifiedField, form]);
+        const total = (Number(watchedInterviewed) || 0) + (Number(watchedVisited) || 0);
+        form.setValue('totalVerifiedField', total);
+    }, [watchedInterviewed, watchedVisited, form]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0] || null;
@@ -489,10 +477,20 @@ export default function PmaygDataEntryPage() {
                                                             field.onChange(value);
                                                             const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
                                                             form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                        }} value={field.value} disabled={!selectedCategory}><FormControl><SelectTrigger><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl><SelectContent>{subCategories.map(sc => <SelectItem key={sc} value={sc}><div className="whitespace-normal">{sc}</div></SelectItem>)}</SelectContent></Select></FormItem>
+                                                        }} value={field.value} disabled={!selectedCategory}>
+                                                            <FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal"><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl>
+                                                            <SelectContent>
+                                                                {subCategories.map(sc => 
+                                                                    <SelectItem key={sc} value={sc}>
+                                                                        <div className="whitespace-normal text-wrap">{sc}</div>
+                                                                    </SelectItem>
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select></FormItem>
                                                     )} />
                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-3"><FormLabel>Description (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
+
                                                     <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.othersAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />

@@ -1,4 +1,5 @@
 
+
 export interface PmaygData {
   type: string;
   category: string;
