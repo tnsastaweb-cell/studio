@@ -52,26 +52,27 @@ export default function DirectoryPage() {
 
   const mergedUsers = useMemo((): MergedUser[] => {
     // Process registered staff from useUsers
-    const registeredStaff: MergedUser[] = users.map((user: any) => { // Use any to access potential extra fields
-      let district = user.district || 'N/A';
-      let block = user.block || '';
+    const registeredStaff: MergedUser[] = users.map((user: any) => {
+      let district = 'N/A';
+      let block = '';
 
-      // Prioritize work history for location if available
-      if (user.brpWorkHistory?.length > 0) {
+      const isBRP = user.designation === 'BRP';
+      const isDRP = user.designation === 'DRP' || user.designation === 'DRP I/C';
+
+      if (isBRP && user.brpWorkHistory?.length > 0) {
         const presentStation = user.brpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
-          // Block is only for BRPs
-          if (user.designation === 'BRP') {
-             block = presentStation.block;
-          }
+          block = presentStation.block; // Block is only for BRPs
         }
-      } else if (user.drpWorkHistory?.length > 0) {
+      } else if (isDRP && user.drpWorkHistory?.length > 0) {
         const presentStation = user.drpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
-          block = ''; // DRPs and other roles don't have blocks assigned this way
         }
+      } else if (user.district) {
+        // Fallback for other roles if they have a primary district in their main profile
+        district = user.district;
       }
       
       return {
@@ -94,6 +95,7 @@ export default function DirectoryPage() {
         ...contact,
         id: `static-${index}`,
         employeeCode: 'N/A', // Placeholder
+        district: 'N/A'
       }));
 
     return [...registeredStaff, ...uniqueStaticContacts];
