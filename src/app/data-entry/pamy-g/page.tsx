@@ -76,14 +76,14 @@ const pmaygFormSchema = z.object({
   coram: z.coerce.number().max(999, "Must be max 3 digits"),
 
   // Section C - Verification
-  totalHouses: z.coerce.number(),
-  housesVisited: z.coerce.number(),
-  housesNotVisited: z.coerce.number(),
-  firstInstallment: z.coerce.number(),
-  secondInstallment: z.coerce.number(),
-  thirdInstallment: z.coerce.number(),
-  fourthInstallment: z.coerce.number(),
-  notCompletedAfterFourth: z.coerce.number(),
+  totalHouses: z.coerce.number().optional(),
+  housesVisited: z.coerce.number().optional(),
+  housesNotVisited: z.coerce.number().optional(),
+  firstInstallment: z.coerce.number().optional(),
+  secondInstallment: z.coerce.number().optional(),
+  thirdInstallment: z.coerce.number().optional(),
+  fourthInstallment: z.coerce.number().optional(),
+  notCompletedAfterFourth: z.coerce.number().optional(),
 
   // Section D - Panchayat Summary
   newBeneficiaryDecision: z.enum(['yes', 'no']),
@@ -92,17 +92,17 @@ const pmaygFormSchema = z.object({
   auditOutcome: z.string().optional(),
 
   // Section E - Verification Analysis
-  seccCount: z.coerce.number(),
-  seccNonRejected: z.coerce.number(),
-  seccSelected: z.coerce.number(),
-  awaasPlusCount: z.coerce.number(),
-  awaasPlusSelected: z.coerce.number(),
-  totalSelectedMIS: z.coerce.number(),
-  beneficiariesInterviewed: z.coerce.number(),
-  notInterviewedButVisited: z.coerce.number(),
-  couldNotIdentify: z.coerce.number(),
-  totalVerifiedField: z.coerce.number(),
-  seccInKutcha: z.coerce.number(),
+  seccCount: z.coerce.number().optional(),
+  seccNonRejected: z.coerce.number().optional(),
+  seccSelected: z.coerce.number().optional(),
+  awaasPlusCount: z.coerce.number().optional(),
+  awaasPlusSelected: z.coerce.number().optional(),
+  totalSelectedMIS: z.coerce.number().optional(),
+  beneficiariesInterviewed: z.coerce.number().optional(),
+  notInterviewedButVisited: z.coerce.number().optional(),
+  couldNotIdentify: z.coerce.number().optional(),
+  totalVerifiedField: z.coerce.number().optional(),
+  seccInKutcha: z.coerce.number().optional(),
 
   // Section F - Report
   reportFile: z.any().optional(),
@@ -115,6 +115,15 @@ type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
 const uniqueTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
 
+const sortedDistrictsForCode = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
+
+const getDistrictCode = (district: string) => {
+    if (!district) return 'XX';
+    if (district === "Chennai") return "00";
+    const index = sortedDistrictsForCode.indexOf(district);
+    return index !== -1 ? String(index + 1).padStart(2, '0') : 'XX';
+};
+
 export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
     const { users } = useUsers();
@@ -125,17 +134,6 @@ export default function PmaygDataEntryPage() {
     const [isEmployeeCodeOpen, setEmployeeCodeOpen] = useState(false);
 
     const pmayHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
-
-    const sortedDistrictsForCode = useMemo(() => {
-        return DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
-    }, []);
-
-    const getDistrictCode = (district: string) => {
-        if (!district) return 'XX';
-        if (district === "Chennai") return "00";
-        const index = sortedDistrictsForCode.indexOf(district);
-        return index !== -1 ? String(index + 1).padStart(2, '0') : 'XX';
-    };
 
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
@@ -489,9 +487,9 @@ export default function PmaygDataEntryPage() {
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c} className="whitespace-normal">{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
-                                                    <Controller
+                                                     <Controller
                                                       control={form.control}
                                                       name={`paraParticulars.${index}.subCategory`}
                                                       render={({ field }) => (
