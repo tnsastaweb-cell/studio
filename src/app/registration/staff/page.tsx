@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -220,7 +221,7 @@ export default function StaffRegistrationPage() {
     const searchParams = useSearchParams();
     const editEmployeeCode = searchParams.get('edit');
 
-    const [isEditMode, setIsEditMode] = useState(!!editEmployeeCode);
+    const [isEditMode, setIsEditMode] = useState(false);
     const [editingUser, setEditingUser] = useState<StaffUser | null>(null);
     
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -294,7 +295,7 @@ export default function StaffRegistrationPage() {
     });
 
     useEffect(() => {
-        if (editEmployeeCode) {
+        if (editEmployeeCode && users.length > 0) {
             const userToEdit = users.find(u => u.employeeCode === editEmployeeCode);
             if (userToEdit) {
                 setEditingUser(userToEdit);
@@ -302,22 +303,33 @@ export default function StaffRegistrationPage() {
                 setSelectedRole(userToEdit.designation);
 
                 const dateFieldsToConvert = ['dateOfBirth', 'joiningDate'];
-                const arrayFieldsToConvert = ['academicDetails', 'workExperience', 'brpWorkHistory', 'drpWorkHistory', 'drpIcWorkHistory', 'trainingTakenDetails', 'trainingGivenDetails', 'pilotAuditDetails', 'stateOfficeActivitiesDetails', 'complaints'];
+                const arrayDateFields = {
+                    'academicDetails': ['fromYear', 'toYear'],
+                    'workExperience': ['fromDate', 'toDate'],
+                    'brpWorkHistory': ['fromDate', 'toDate'],
+                    'drpWorkHistory': ['fromDate', 'toDate'],
+                    'drpIcWorkHistory': ['fromDate', 'toDate'],
+                    'trainingTakenDetails': ['startDate', 'endDate'],
+                    'trainingGivenDetails': ['startDate', 'endDate'],
+                    'pilotAuditDetails': ['startDate', 'endDate'],
+                    'stateOfficeActivitiesDetails': ['year'],
+                    'complaints': ['receivedOn']
+                };
 
                 let formData: any = {...userToEdit};
 
                 dateFieldsToConvert.forEach(field => {
-                    if (formData[field]) {
+                    if (formData[field] && typeof formData[field] === 'string') {
                         formData[field] = parseISO(formData[field]);
                     }
                 });
 
-                arrayFieldsToConvert.forEach(arrayField => {
+                Object.entries(arrayDateFields).forEach(([arrayField, dateKeys]) => {
                     if (formData[arrayField] && Array.isArray(formData[arrayField])) {
                         formData[arrayField] = formData[arrayField].map((item: any) => {
                              let newItem: any = {...item};
-                             Object.keys(item).forEach(key => {
-                                 if (key.toLowerCase().includes('date') && item[key]) {
+                             dateKeys.forEach(key => {
+                                 if (item[key] && typeof item[key] === 'string') {
                                      newItem[key] = parseISO(item[key]);
                                  }
                              });
@@ -325,6 +337,11 @@ export default function StaffRegistrationPage() {
                         });
                     }
                 });
+                
+                // Remove readonly/file fields that cannot be reset
+                delete formData.aadhaarUpload;
+                delete formData.panUpload;
+                delete formData.photo;
 
                 form.reset(formData);
                 setPhotoPreview(userToEdit.profilePicture || null);
@@ -416,11 +433,9 @@ export default function StaffRegistrationPage() {
 
 
     const handleRoleChange = (value: string) => {
-        if (!isEditMode) {
-            setSelectedRole(value);
-            form.reset(); // Reset form when role changes, but not in edit mode
-            form.setValue('designation', value);
-        }
+        setSelectedRole(value);
+        form.reset(); // Reset form when role changes
+        form.setValue('designation', value);
     };
 
     const handleEmployeeCodeChange = (employeeCode: string) => {
@@ -1245,3 +1260,5 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
+
+    

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -84,6 +85,7 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "text-popover-foreground",
       inset && "pl-8",
       className
     )}
@@ -162,7 +164,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px border-b border-dotted border-white/30 bg-transparent", className)}
+    className={cn("-mx-1 my-1 h-px bg-muted border-b border-dotted border-white/30", className)}
     {...props}
   />
 ))
@@ -198,3 +200,5 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 }
+
+    
