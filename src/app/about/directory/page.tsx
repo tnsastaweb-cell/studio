@@ -57,28 +57,38 @@ export default function DirectoryPage() {
 
         // Process registered users first
         users.forEach(user => {
-             let presentStation: any = null;
-            if (user.designation === 'BRP' && user.brpWorkHistory?.length) {
-                presentStation = user.brpWorkHistory.find(h => h.station === 'present');
-            } else if ((user.designation === 'DRP' || user.designation === 'DRP I/C') && user.drpWorkHistory?.length) {
-                presentStation = user.drpWorkHistory.find(h => h.station === 'present');
-            } else if (user.district) { // Fallback for other roles with district info
-                presentStation = { district: user.district };
+            let district: string | undefined;
+            const targetRoles: User['designation'][] = ['BRP', 'DRP', 'DRP I/C'];
+
+            if (targetRoles.includes(user.designation)) {
+                 if (user.designation === 'BRP' && user.brpWorkHistory?.length) {
+                    const presentStation = user.brpWorkHistory.find(h => h.station === 'present');
+                    district = presentStation?.district;
+                } else if ((user.designation === 'DRP' || user.designation === 'DRP I/C') && user.drpWorkHistory?.length) {
+                    const presentStation = user.drpWorkHistory.find(h => h.station === 'present');
+                    district = presentStation?.district;
+                } else {
+                    district = user.district; // Fallback to base district if no history
+                }
+            } else {
+                 district = "Chennai";
             }
+            
+            const presentStationForBlock = user.brpWorkHistory?.find(h => h.station === 'present');
 
             staffMap.set(user.employeeCode, {
                 ...user,
                 contactNumber: user.mobileNumber,
                 photo: user.profilePicture,
-                district: presentStation?.district || user.district || 'N/A',
-                block: user.designation === 'BRP' ? (presentStation?.block || user.block || 'N/A') : undefined,
+                district: district || 'N/A', // Fallback
+                block: user.designation === 'BRP' ? (presentStationForBlock?.block || user.block || 'N/A') : undefined,
             });
         });
 
         // Add static contacts only if they don't already exist in the registered list
         initialContacts.forEach(contact => {
-            const staticKey = `static-${contact.role.replace(/\s+/g, '')}-${contact.name}`;
              if (!Array.from(staffMap.values()).some(u => u.name === contact.name && u.designation === contact.role)) {
+                const staticKey = `static-${contact.role.replace(/\s+/g, '')}-${contact.name}`;
                 staffMap.set(staticKey, {
                     id: contact.id + 1000,
                     name: contact.name,
@@ -86,7 +96,7 @@ export default function DirectoryPage() {
                     contactNumber: contact.phone,
                     employeeCode: 'N/A',
                     photo: null,
-                    district: 'N/A', // Static contacts don't have this info
+                    district: "Chennai", // Static contacts are at Chennai
                 });
              }
         });
