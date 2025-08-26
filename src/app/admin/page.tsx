@@ -27,6 +27,7 @@ import {
   View,
   X,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
@@ -170,6 +171,7 @@ export default function AdminPage() {
   const { feedbacks, deleteFeedback } = useFeedback();
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
   const { hlcItems, deleteHlc } = useHlc();
+  const router = useRouter();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
@@ -329,20 +331,10 @@ export default function AdminPage() {
       description: 'The user has been successfully deleted.',
     });
   };
-
-  const handleEditUser = (user: User) => {
-    setEditingUser(user);
-    userForm.reset({
-      name: user.name,
-      employeeCode: user.employeeCode,
-      designation: user.designation,
-      mobileNumber: user.mobileNumber,
-      dateOfBirth: new Date(user.dateOfBirth),
-      email: user.email || '',
-      password: user.password,
-    });
-    setIsFormOpen(true);
-  };
+  
+    const handleEditUser = (user: User) => {
+        router.push(`/registration/staff?edit=${user.employeeCode}`);
+    };
 
   const handleAddNewUser = () => {
     setEditingUser(null);
@@ -1024,7 +1016,7 @@ export default function AdminPage() {
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
+                                <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>
                                   Delete
                                 </Button>
                               </AlertDialogTrigger>
@@ -1360,7 +1352,7 @@ export default function AdminPage() {
                                     </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm">
+                                            <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>
                                                 <Trash2 className="h-3 w-3" />
                                             </Button>
                                         </AlertDialogTrigger>
@@ -1424,7 +1416,7 @@ export default function AdminPage() {
                           <TableCell className="text-right">
                              <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
+                                <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>
                                   Delete
                                 </Button>
                               </AlertDialogTrigger>
@@ -1530,7 +1522,7 @@ export default function AdminPage() {
                                           <TableHead colSpan={4} className="text-center border-r">Location Details</TableHead>
                                           <TableHead colSpan={3} className="text-center border-r">Family Details</TableHead>
                                           <TableHead colSpan={7} className="text-center border-r">Personal Details</TableHead>
-                                          <TableHead colSpan={13} className="text-center border-r">Personal Info</TableHead>
+                                          <TableHead colSpan={11} className="text-center border-r">Personal Info</TableHead>
                                           <TableHead colSpan={3} className="text-center border-r">Education & Experience</TableHead>
                                           <TableHead colSpan={4} className="text-center border-r">Working Details</TableHead>
                                           <TableHead colSpan={8} className="text-center border-r">Training & Pilot Audit</TableHead>
@@ -1573,7 +1565,7 @@ export default function AdminPage() {
                                             <TableHead>Aadhaar</TableHead>
                                             <TableHead>PAN</TableHead>
                                             <TableHead>UAN</TableHead>
-                                            {/* Education & Experience */}
+                                            {/* Edu & Exp */}
                                             <TableHead>Qualification</TableHead>
                                             <TableHead>Experience</TableHead>
                                             <TableHead>Skills</TableHead>
@@ -1752,7 +1744,7 @@ export default function AdminPage() {
                                                     <Button variant="outline" size="sm" onClick={() => { /* handle edit */ }}>Edit</Button>
                                                      <AlertDialog>
                                                         <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="sm">Delete</Button>
+                                                            <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>Delete</Button>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
@@ -1851,7 +1843,7 @@ export default function AdminPage() {
                                                         <Button variant="outline" size="sm">Edit</Button>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
-                                                                <Button variant="destructive" size="sm">Delete</Button>
+                                                                <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>Delete</Button>
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent>
                                                                 <AlertDialogHeader>
@@ -2166,7 +2158,7 @@ export default function AdminPage() {
                                       <TableCell className="text-right">
                                           <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm">Delete</Button>
+                                                <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>Delete</Button>
                                               </AlertDialogTrigger>
                                               <AlertDialogContent>
                                                 <AlertDialogHeader>
@@ -2253,7 +2245,7 @@ export default function AdminPage() {
                                             <TableCell className="text-right">
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" size="sm">Delete</Button>
+                                                        <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>Delete</Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>

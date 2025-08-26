@@ -1,13 +1,13 @@
 
-
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, differenceInYears, differenceInMonths, differenceInDays } from 'date-fns';
+import { format, differenceInYears, differenceInMonths, differenceInDays, parseISO } from 'date-fns';
 import { CalendarIcon, Upload, ChevronsUpDown, Check, X, PlusCircle, Trash2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/use-auth';
@@ -215,8 +215,14 @@ const allowedRoles: StaffUser['designation'][] = ['AO', 'SS', 'AAO', 'SLM', 'ADM
 
 export default function StaffRegistrationPage() {
     const { user, loading: authLoading } = useAuth();
-    const { users } = useUsers();
+    const { users, updateUser: updateUserService, addUser: addUserService } = useUsers();
     const { toast } = useToast();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const editEmployeeCode = searchParams.get('edit');
+
+    const [isEditMode, setIsEditMode] = useState(!!editEmployeeCode);
+    const [editingUser, setEditingUser] = useState<StaffUser | null>(null);
     
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -287,6 +293,45 @@ export default function StaffRegistrationPage() {
           declaration: false,
         }
     });
+
+    useEffect(() => {
+        if (editEmployeeCode) {
+            const userToEdit = users.find(u => u.employeeCode === editEmployeeCode);
+            if (userToEdit) {
+                setEditingUser(userToEdit);
+                setIsEditMode(true);
+                setSelectedRole(userToEdit.designation);
+
+                const dateFieldsToConvert = ['dateOfBirth', 'joiningDate'];
+                const arrayFieldsToConvert = ['academicDetails', 'workExperience', 'brpWorkHistory', 'drpWorkHistory', 'drpIcWorkHistory', 'trainingTakenDetails', 'trainingGivenDetails', 'pilotAuditDetails', 'stateOfficeActivitiesDetails', 'complaints'];
+
+                let formData: any = {...userToEdit};
+
+                dateFieldsToConvert.forEach(field => {
+                    if (formData[field]) {
+                        formData[field] = parseISO(formData[field]);
+                    }
+                });
+
+                arrayFieldsToConvert.forEach(arrayField => {
+                    if (formData[arrayField] && Array.isArray(formData[arrayField])) {
+                        formData[arrayField] = formData[arrayField].map((item: any) => {
+                             let newItem: any = {...item};
+                             Object.keys(item).forEach(key => {
+                                 if (key.toLowerCase().includes('date')) {
+                                     newItem[key] = parseISO(item[key]);
+                                 }
+                             });
+                             return newItem;
+                        });
+                    }
+                });
+
+                form.reset(formData);
+                setPhotoPreview(userToEdit.profilePicture || null);
+            }
+        }
+    }, [editEmployeeCode, users, form]);
     
     const watchedLocationType = form.watch("locationType");
     const watchedDistrict = form.watch("district");
@@ -373,11 +418,14 @@ export default function StaffRegistrationPage() {
 
     const handleRoleChange = (value: string) => {
         setSelectedRole(value);
-        form.reset(); // Reset form when role changes
+        if (!isEditMode) {
+             form.reset(); // Reset form when role changes, but not in edit mode
+        }
         form.setValue('designation', value);
     };
 
     const handleEmployeeCodeChange = (employeeCode: string) => {
+        if(isEditMode) return;
         const selectedUser = users.find(u => u.employeeCode === employeeCode);
         if (selectedUser) {
             form.setValue('employeeCode', selectedUser.employeeCode);
@@ -412,7 +460,7 @@ export default function StaffRegistrationPage() {
     }, [selectedRole, users]);
 
     const onSubmit = (data: StaffFormValues) => {
-        console.log(data);
+        console.log("Saving section:", data);
         toast({
             title: "Form Section Saved!",
             description: "Your details have been saved for this section.",
@@ -421,14 +469,28 @@ export default function StaffRegistrationPage() {
 
     const onFinalSubmit = (data: StaffFormValues) => {
         console.log("Final Submit:", data);
-        toast({
-            title: "Registration Submitted!",
-            description: "Your registration has been submitted for review.",
-        });
-        // Here you would typically send the data to a server
-        form.reset();
-        setSelectedRole(null);
-        setPhotoPreview(null);
+
+        const finalData = { ...data };
+        // Convert date objects back to strings before saving
+        finalData.dateOfBirth = format(data.dateOfBirth, 'yyyy-MM-dd');
+        finalData.joiningDate = format(data.joiningDate, 'yyyy-MM-dd');
+        // TODO: Handle file uploads and convert other dates in arrays
+
+        if (isEditMode && editingUser) {
+            updateUserService({ ...editingUser, ...finalData });
+             toast({
+                title: "Registration Updated!",
+                description: "The staff details have been successfully updated.",
+            });
+        } else {
+             // addUserService(finalData); This will be for new registration.
+             toast({
+                title: "Registration Submitted!",
+                description: "Your registration has been submitted for review.",
+            });
+        }
+       
+        router.push('/admin'); // Redirect to admin panel after submit
     };
 
     const canViewAndEditComplaints = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
@@ -440,9 +502,9 @@ export default function StaffRegistrationPage() {
         { value: "personal-details", label: "Personal Details", roles: ['all'] },
         { value: "personal-info", label: "Personal Info", roles: ['all'] },
         { value: "education-experience", label: "Education & Experience", roles: ['all'] },
-        { value: "working-details", label: "Working details", roles: ['BRP', 'DRP'] },
-        { value: "training-audit", label: "Training & pilot Audit Particulars", roles: ['BRP', 'DRP'] },
-        { value: "complaints", label: "Complaints", roles: ['BRP', 'DRP'], adminOnly: true },
+        { value: "working-details", label: "Working details", roles: ['BRP', 'DRP', 'DRP I/C'] },
+        { value: "training-audit", label: "Training & pilot Audit Particulars", roles: ['BRP', 'DRP', 'DRP I/C'] },
+        { value: "complaints", label: "Complaints", roles: ['BRP', 'DRP', 'DRP I/C'], adminOnly: true },
     ];
 
     const visibleTabs = selectedRole 
@@ -467,9 +529,9 @@ export default function StaffRegistrationPage() {
             <main className="flex-1 container mx-auto px-4 py-8 pb-24 space-y-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Staff Registration</CardTitle>
+                        <CardTitle>{isEditMode ? 'Edit Staff Details' : 'Staff Registration'}</CardTitle>
                         <CardDescription>
-                            Please select a role to begin the registration process. The form will adapt based on the selected role.
+                             {isEditMode ? `Editing details for ${editingUser?.name}` : 'Please select a role to begin the registration process. The form will adapt based on the selected role.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -484,7 +546,7 @@ export default function StaffRegistrationPage() {
                                             <Select onValueChange={(value) => {
                                                 field.onChange(value);
                                                 handleRoleChange(value);
-                                            }} value={field.value || ''}>
+                                            }} value={field.value || ''} disabled={isEditMode}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select a role" />
@@ -566,7 +628,7 @@ export default function StaffRegistrationPage() {
                                                                 <Popover>
                                                                     <PopoverTrigger asChild>
                                                                         <FormControl>
-                                                                            <Button variant="outline" role="combobox" className={cn("justify-between", !field.value && "text-muted-foreground")}>
+                                                                            <Button variant="outline" role="combobox" className={cn("justify-between", !field.value && "text-muted-foreground")} disabled={isEditMode}>
                                                                                 {field.value ? users.find(u => u.employeeCode === field.value)?.employeeCode : "Select Employee Code"}
                                                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                                             </Button>
@@ -601,10 +663,10 @@ export default function StaffRegistrationPage() {
                                                         )}
                                                     />
                                                       <FormField control={form.control} name="name" render={({ field }) => (
-                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly={!isEditMode} className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                        <FormField control={form.control} name="contactNumber" render={({ field }) => (
-                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly={!isEditMode} className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                    </div>
                                                    <div className="flex justify-end">
@@ -1198,7 +1260,7 @@ export default function StaffRegistrationPage() {
                                         />
                                         <div className="flex justify-end space-x-4">
                                             <Button variant="outline" type="button">Preview All Details</Button>
-                                            <Button type="submit" disabled={!form.watch('declaration')}>Final Submit</Button>
+                                            <Button type="submit" disabled={!form.watch('declaration')}>{isEditMode ? 'Update Details' : 'Final Submit'}</Button>
                                         </div>
                                     </div>
                                 )}
