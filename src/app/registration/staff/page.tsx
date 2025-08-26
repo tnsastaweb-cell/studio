@@ -186,9 +186,7 @@ const staffFormSchema = z.object({
 
   complaints: z.array(complaintSchema).optional(),
   
-  declaration: z.boolean().refine(val => val === true, {
-    message: "You must accept the declaration to submit."
-  }),
+  declaration: z.boolean().default(true),
 
 }).refine(data => {
     if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
@@ -1223,30 +1221,9 @@ export default function StaffRegistrationPage() {
 
                                 {selectedRole && (
                                      <div className="pt-8 mt-8 border-t space-y-4">
-                                         <h3 className="text-lg font-semibold text-primary">Disclaimer</h3>
-                                        <FormField
-                                            control={form.control}
-                                            name="declaration"
-                                            render={({ field }) => (
-                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                                    <FormControl>
-                                                        <Checkbox
-                                                            checked={field.value}
-                                                            onCheckedChange={field.onChange}
-                                                        />
-                                                    </FormControl>
-                                                    <div className="space-y-1 leading-none">
-                                                        <FormLabel>
-                                                            I hereby declare that the information provided is true and correct to the best of my knowledge.
-                                                        </FormLabel>
-                                                        <FormMessage />
-                                                    </div>
-                                                </FormItem>
-                                            )}
-                                        />
                                         <div className="flex justify-end space-x-4">
                                             <Button variant="outline" type="button">Preview All Details</Button>
-                                            <Button type="submit" disabled={!form.watch('declaration')}>{isEditMode ? 'Update Details' : 'Final Submit'}</Button>
+                                            <Button type="submit">{isEditMode ? 'Update Details' : 'Final Submit'}</Button>
                                         </div>
                                     </div>
                                 )}
