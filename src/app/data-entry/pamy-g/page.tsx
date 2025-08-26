@@ -126,6 +126,16 @@ export default function PmaygDataEntryPage() {
 
     const pmayHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
 
+    const sortedDistrictsForCode = useMemo(() => {
+        return DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
+    }, []);
+
+    const getDistrictCode = (district: string) => {
+        if (district === "Chennai") return "00";
+        const index = sortedDistrictsForCode.indexOf(district);
+        return index !== -1 ? String(index + 1).padStart(2, '0') : 'XX';
+    };
+
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
         defaultValues: {
@@ -243,8 +253,7 @@ export default function PmaygDataEntryPage() {
             return;
         }
 
-        const sortedDistricts = [...DISTRICTS].sort((a, b) => a.localeCompare(b));
-        const districtCode = toTitleCase(district) === "Chennai" ? "00" : String(sortedDistricts.indexOf(toTitleCase(district))).padStart(2, '0');
+        const districtCode = getDistrictCode(district);
 
         const serialNumber = (form.getValues('paraParticulars')?.length || 0) + 1;
         const issueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
@@ -479,7 +488,7 @@ export default function PmaygDataEntryPage() {
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                      <Controller
                                                       control={form.control}
@@ -497,7 +506,7 @@ export default function PmaygDataEntryPage() {
                                                             disabled={!selectedCategory}
                                                           >
                                                             <FormControl>
-                                                              <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
+                                                              <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
                                                                 <SelectValue placeholder="Select Sub-Category" />
                                                               </SelectTrigger>
                                                             </FormControl>
