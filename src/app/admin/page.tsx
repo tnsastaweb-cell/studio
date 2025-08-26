@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
+import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -25,6 +25,7 @@ import {
   ChevronsUpDown,
   Check,
   View,
+  X,
 } from 'lucide-react';
 
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
@@ -193,10 +194,10 @@ export default function AdminPage() {
   });
 
   const [staffFilters, setStaffFilters] = useState({
-      search: '',
-      role: 'all',
-      district: 'all',
-      employeeCode: '',
+    search: '',
+    role: 'all',
+    district: 'all',
+    employeeCodes: [] as string[],
   });
   
   const [vrpFilters, setVrpFilters] = useState({
@@ -248,7 +249,7 @@ export default function AdminPage() {
             const searchLower = staffFilters.search.toLowerCase();
             const roleMatch = staffFilters.role === 'all' || u.designation === staffFilters.role;
             const districtMatch = staffFilters.district === 'all' || u.district === staffFilters.district;
-            const employeeMatch = !staffFilters.employeeCode || u.employeeCode === staffFilters.employeeCode;
+            const employeeMatch = staffFilters.employeeCodes.length === 0 || staffFilters.employeeCodes.includes(u.employeeCode);
 
             const searchMatch = !staffFilters.search ? true : (
                 u.name.toLowerCase().includes(searchLower) ||
@@ -638,6 +639,19 @@ export default function AdminPage() {
         } else {
             processSubmit(replyingToGrievance.reply?.attachment);
         }
+    };
+    
+    const calculateExperience = (experience: any[]) => {
+      if (!experience || experience.length === 0) return 'N/A';
+      let totalMonths = 0;
+      experience.forEach(exp => {
+        const fromDate = new Date(exp.fromDate);
+        const toDate = new Date(exp.toDate);
+        totalMonths += differenceInMonths(toDate, fromDate);
+      });
+      const years = Math.floor(totalMonths / 12);
+      const months = totalMonths % 12;
+      return `${years} years, ${months} months`;
     };
 
 
@@ -1457,77 +1471,212 @@ export default function AdminPage() {
                                     <Input placeholder="Search by Name, Contact, Email..." className="pl-10" value={staffFilters.search} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
                                 </div>
                                 <Select value={staffFilters.role} onValueChange={v => setStaffFilters(f => ({ ...f, role: v }))}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="All Roles"/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Roles</SelectItem>
                                         {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                  <Select value={staffFilters.district} onValueChange={v => setStaffFilters(f => ({ ...f, district: v }))}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="All Districts"/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Districts</SelectItem>
                                         {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
+                                 <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="justify-between">
+                                            {staffFilters.employeeCodes.length > 0 ? `${staffFilters.employeeCodes.length} codes selected` : "Select Employee Code..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[300px] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Search Employee Code..." />
+                                            <CommandEmpty>No employee found.</CommandEmpty>
+                                            <CommandList>
+                                                {users.map((u) => (
+                                                    <CommandItem
+                                                        key={u.employeeCode}
+                                                        value={u.employeeCode}
+                                                        onSelect={(currentValue) => {
+                                                             setStaffFilters(f => {
+                                                                const codes = f.employeeCodes;
+                                                                const index = codes.indexOf(u.employeeCode);
+                                                                if (index > -1) {
+                                                                    codes.splice(index, 1);
+                                                                } else {
+                                                                    codes.push(u.employeeCode);
+                                                                }
+                                                                return {...f, employeeCodes: [...codes] };
+                                                             })
+                                                        }}
+                                                    >
+                                                        <Check className={cn("mr-2 h-4 w-4", staffFilters.employeeCodes.includes(u.employeeCode) ? "opacity-100" : "opacity-0")} />
+                                                        {u.employeeCode}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                            <div className="w-full overflow-x-auto">
+                            <div className="w-full overflow-x-auto relative">
                                 <Table className="min-w-max">
-                                    <TableHeader>
+                                    <TableHeader className="sticky top-0 bg-background z-20">
                                         <TableRow>
+                                          <TableHead colSpan={6} className="text-center border-r">Basic Information</TableHead>
+                                          <TableHead colSpan={4} className="text-center border-r">Location Details</TableHead>
+                                          <TableHead colSpan={3} className="text-center border-r">Family Details</TableHead>
+                                          <TableHead colSpan={7} className="text-center border-r">Personal Details</TableHead>
+                                          <TableHead colSpan={13} className="text-center border-r">Personal Info</TableHead>
+                                          <TableHead colSpan={3} className="text-center border-r">Education & Experience</TableHead>
+                                          <TableHead colSpan={4} className="text-center border-r">Working Details</TableHead>
+                                          <TableHead colSpan={8} className="text-center border-r">Training & Pilot Audit</TableHead>
+                                          <TableHead className="text-center">Actions</TableHead>
+                                        </TableRow>
+                                        <TableRow>
+                                            {/* Basic */}
                                             <TableHead className="sticky left-0 bg-background z-10">S.No</TableHead>
                                             <TableHead className="sticky left-12 bg-background z-10">Name</TableHead>
+                                            <TableHead>Photo</TableHead>
                                             <TableHead>Recruitment Type</TableHead>
                                             <TableHead>Employee Code</TableHead>
-                                            <TableHead>Role</TableHead>
                                             <TableHead>Contact No</TableHead>
-                                            <TableHead>Location Type</TableHead>
-                                            <TableHead>District</TableHead>
-                                            <TableHead>Block</TableHead>
-                                            <TableHead>Panchayat</TableHead>
+                                            {/* Location */}
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>District/Block/Urban</TableHead>
+                                            <TableHead>Address</TableHead>
+                                            <TableHead>Pincode</TableHead>
+                                            {/* Family */}
                                             <TableHead>Father's Name</TableHead>
                                             <TableHead>Mother's Name</TableHead>
                                             <TableHead>Spouse's Name</TableHead>
+                                            {/* Personal */}
                                             <TableHead>Religion</TableHead>
                                             <TableHead>Caste</TableHead>
-                                            <TableHead>Date of Birth</TableHead>
+                                            <TableHead>DOB</TableHead>
                                             <TableHead>Age</TableHead>
                                             <TableHead>Gender</TableHead>
                                             <TableHead>Differently Abled</TableHead>
+                                            <TableHead>Health Issues</TableHead>
+                                            {/* Personal Info */}
+                                            <TableHead>Contact 2</TableHead>
                                             <TableHead>Email ID</TableHead>
+                                            <TableHead>E-Portal Email</TableHead>
+                                            <TableHead>PFMS ID</TableHead>
+                                            <TableHead>Bank</TableHead>
+                                            <TableHead>Branch</TableHead>
+                                            <TableHead>Account No</TableHead>
+                                            <TableHead>IFSC</TableHead>
+                                            <TableHead>Aadhaar</TableHead>
+                                            <TableHead>PAN</TableHead>
+                                            <TableHead>UAN</TableHead>
+                                            {/* Education & Experience */}
+                                            <TableHead>Qualification</TableHead>
+                                            <TableHead>Experience</TableHead>
+                                            <TableHead>Skills</TableHead>
+                                            {/* Working */}
+                                            <TableHead>Joining Date</TableHead>
+                                            <TableHead>Worked Duration</TableHead>
+                                            <TableHead>Present Duration</TableHead>
+                                            <TableHead>DRP I/C</TableHead>
+                                            {/* Training */}
+                                            <TableHead>Training Taken</TableHead>
+                                            <TableHead>Training Name</TableHead>
+                                            <TableHead>Training Given</TableHead>
+                                            <TableHead>Training Name</TableHead>
+                                            <TableHead>Pilot Audit</TableHead>
+                                            <TableHead>Scheme Name</TableHead>
+                                            <TableHead>State Office</TableHead>
+                                            <TableHead>Work Particulars</TableHead>
+                                            {/* Actions */}
                                             <TableHead>Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredStaff.map((staff, index) => (
+                                        {filteredStaff.map((staff, index) => {
+                                            const lastCourse = staff.academicDetails?.[staff.academicDetails.length - 1]?.course || 'N/A';
+                                            const totalExperience = calculateExperience(staff.workExperience || []);
+                                            const skills = staff.skills?.map(s => s.skill).join(', ') || 'N/A';
+                                            const presentStation = staff.designation === 'BRP' 
+                                                ? staff.brpWorkHistory?.find(h => h.station === 'present')
+                                                : staff.designation === 'DRP' || staff.designation === 'DRP I/C'
+                                                ? staff.drpWorkHistory?.find(h => h.station === 'present')
+                                                : null;
+
+                                            return (
                                             <TableRow key={staff.id}>
                                                 <TableCell className="sticky left-0 bg-background z-10">{index + 1}</TableCell>
                                                 <TableCell className="font-medium sticky left-12 bg-background z-10">{staff.name}</TableCell>
+                                                {/* Basic */}
+                                                <TableCell>
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage src={staff.profilePicture || undefined} alt={staff.name}/>
+                                                        <AvatarFallback><UserIcon /></AvatarFallback>
+                                                    </Avatar>
+                                                </TableCell>
                                                 <TableCell>{staff.recruitmentType}</TableCell>
                                                 <TableCell>{staff.employeeCode}</TableCell>
-                                                <TableCell>{staff.designation}</TableCell>
                                                 <TableCell>{staff.mobileNumber}</TableCell>
+                                                {/* Location */}
                                                 <TableCell>{staff.locationType}</TableCell>
-                                                <TableCell>{staff.district}</TableCell>
-                                                <TableCell>{staff.block}</TableCell>
-                                                <TableCell>{staff.panchayatName}</TableCell>
+                                                <TableCell>
+                                                    {staff.locationType === 'rural' ? `${staff.district}, ${staff.block}, ${staff.panchayatName}` : `${staff.district}, ${staff.urbanBodyType}, ${staff.urbanBodyName}`}
+                                                </TableCell>
+                                                <TableCell>{staff.fullAddress}</TableCell>
+                                                <TableCell>{staff.pincode}</TableCell>
+                                                {/* Family */}
                                                 <TableCell>{staff.fatherName}</TableCell>
                                                 <TableCell>{staff.motherName}</TableCell>
                                                 <TableCell>{staff.spouseName}</TableCell>
+                                                {/* Personal */}
                                                 <TableCell>{staff.religion}</TableCell>
                                                 <TableCell>{staff.caste}</TableCell>
                                                 <TableCell>{staff.dateOfBirth ? format(new Date(staff.dateOfBirth), 'dd/MM/yyyy') : 'N/A'}</TableCell>
                                                 <TableCell>{staff.age}</TableCell>
-                                                <TableCell>{staff.gender}</TableCell>
+                                                <TableCell>{staff.gender} {staff.gender === 'female' && staff.femaleType ? `(${staff.femaleType})` : ''}</TableCell>
                                                 <TableCell>{staff.isDifferentlyAbled}</TableCell>
+                                                <TableCell>{staff.healthIssues}</TableCell>
+                                                {/* Personal Info */}
+                                                <TableCell>{staff.contactNumber2}</TableCell>
                                                 <TableCell>{staff.emailId}</TableCell>
+                                                <TableCell>{staff.eportalEmailId}</TableCell>
+                                                <TableCell>{staff.pfmsId}</TableCell>
+                                                <TableCell>{staff.bankName}</TableCell>
+                                                <TableCell>{staff.branchName}</TableCell>
+                                                <TableCell>{staff.accountNumber}</TableCell>
+                                                <TableCell>{staff.ifscCode}</TableCell>
+                                                <TableCell>{staff.aadhaar}</TableCell>
+                                                <TableCell>{staff.pan}</TableCell>
+                                                <TableCell>{staff.uan}</TableCell>
+                                                {/* Edu & Exp */}
+                                                <TableCell>{lastCourse}</TableCell>
+                                                <TableCell>{totalExperience}</TableCell>
+                                                <TableCell>{skills}</TableCell>
+                                                {/* Working */}
+                                                <TableCell>{staff.joiningDate ? format(new Date(staff.joiningDate), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                                                <TableCell>{/* Worked Duration - Placeholder */}</TableCell>
+                                                <TableCell>{presentStation ? calculateExperience([presentStation]) : 'N/A'}</TableCell>
+                                                <TableCell>{staff.workedAsDrpIc}</TableCell>
+                                                {/* Training */}
+                                                <TableCell>{staff.trainingTaken}</TableCell>
+                                                <TableCell>{staff.trainingTakenDetails?.[0]?.trainingName || 'N/A'}</TableCell>
+                                                <TableCell>{staff.trainingGiven}</TableCell>
+                                                <TableCell>{staff.trainingGivenDetails?.[0]?.trainingName || 'N/A'}</TableCell>
+                                                <TableCell>{staff.pilotAudit}</TableCell>
+                                                <TableCell>{staff.pilotAuditDetails?.[0]?.schemeName || 'N/A'}</TableCell>
+                                                <TableCell>{staff.stateOfficeActivities}</TableCell>
+                                                <TableCell>{staff.stateOfficeActivitiesDetails?.[0]?.workParticulars || 'N/A'}</TableCell>
+                                                {/* Actions */}
                                                 <TableCell>
                                                     <Button variant="outline" size="sm" onClick={() => handleEditUser(staff)}>
                                                       <Edit className="h-4 w-4"/>
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        )})}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -1584,7 +1733,7 @@ export default function AdminPage() {
                                                 <TableCell>
                                                     {vrp.hasEmployeeCode === 'no' ? (
                                                         <div className="text-xs">
-                                                            <p className="font-bold">{toTitleCase(vrp.locationType)}</p>
+                                                            <p className="font-bold">{toTitleCase(vrp.locationType || '')}</p>
                                                              <p className="text-muted-foreground">
                                                                 {vrp.locationType === 'rural' ? `${vrp.panchayatName}, ${vrp.block}` : `${vrp.urbanBodyName}`}
                                                             </p>
@@ -2136,3 +2285,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
