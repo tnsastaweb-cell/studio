@@ -475,17 +475,17 @@ export default function PmaygDataEntryPage() {
                                             const subCategories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory).map(d => d.subCategory)));
                                             
                                             return (
-                                            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                                            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
-                                                    <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
+                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
+                                                        <FormItem className="lg:col-span-4"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
                                                             field.onChange(value);
                                                             const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
                                                             form.setValue(`paraParticulars.${index}.codeNumber`, code);
