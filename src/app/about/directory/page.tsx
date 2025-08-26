@@ -57,17 +57,20 @@ export default function DirectoryPage() {
       let block = user.block || '';
 
       // Prioritize work history for location if available
-      if (user.designation === 'BRP' && user.brpWorkHistory?.length > 0) {
+      if (user.brpWorkHistory?.length > 0) {
         const presentStation = user.brpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
-          block = presentStation.block;
+          // Block is only for BRPs
+          if (user.designation === 'BRP') {
+             block = presentStation.block;
+          }
         }
-      } else if (user.designation === 'DRP' && user.drpWorkHistory?.length > 0) {
+      } else if (user.drpWorkHistory?.length > 0) {
         const presentStation = user.drpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
-          block = ''; // DRPs don't have blocks
+          block = ''; // DRPs and other roles don't have blocks assigned this way
         }
       }
       
