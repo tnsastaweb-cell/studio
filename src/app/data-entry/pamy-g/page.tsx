@@ -370,7 +370,7 @@ export default function PmaygDataEntryPage() {
                                          <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="panchayat" render={({ field }) => (<FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="lgdCode" render={({ field }) => (<FormItem><FormLabel>LGD Code*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
-                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['Pilot - 1', '0', ...Array.from({length: 30}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['0', 'Pilot - 1', ...Array.from({length: 30}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditStartDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit Start Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditEndDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit End Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="sgsDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>SGS Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
@@ -474,34 +474,47 @@ export default function PmaygDataEntryPage() {
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
                                                         <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
-                                                    <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-4"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
-                                                            field.onChange(value);
-                                                            const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
-                                                            form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                        }} value={field.value} disabled={!selectedCategory}>
-                                                            <FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal"><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl>
-                                                            <SelectContent className="w-[700px]"><Command>
-                                                                <CommandInput placeholder="Search sub-category..."/>
-                                                                <CommandList><CommandEmpty>No results found.</CommandEmpty><CommandGroup>
-                                                                    {subCategories.map(sc => 
-                                                                        <CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { form.setValue(`paraParticulars.${index}.subCategory`, sc.subCategory); form.setValue(`paraParticulars.${index}.codeNumber`, sc.codeNumber || ''); }}>
-                                                                            <div className="whitespace-normal text-wrap">{sc.subCategory}</div></CommandItem>
-                                                                    )}
-                                                                </CommandGroup></CommandList></Command>
+                                                     <Controller
+                                                      control={form.control}
+                                                      name={`paraParticulars.${index}.subCategory`}
+                                                      render={({ field }) => (
+                                                        <FormItem className="lg:col-span-4">
+                                                          <FormLabel>Sub-Category</FormLabel>
+                                                          <Select
+                                                            onValueChange={(value) => {
+                                                              field.onChange(value);
+                                                              const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
+                                                              form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                            }}
+                                                            value={field.value || ''}
+                                                            disabled={!selectedCategory}
+                                                          >
+                                                            <FormControl>
+                                                              <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
+                                                                <SelectValue placeholder="Select Sub-Category" />
+                                                              </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                                                              {subCategories.map(sc => (
+                                                                <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal">
+                                                                  {sc.subCategory}
+                                                                </SelectItem>
+                                                              ))}
                                                             </SelectContent>
-                                                        </Select></FormItem>
-                                                    )} />
-                                                   
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description* (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
+                                                          </Select>
+                                                          <FormMessage />
+                                                        </FormItem>
+                                                      )}
+                                                    />
 
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description* (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
                                                     <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.othersAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
