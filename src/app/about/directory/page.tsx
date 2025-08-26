@@ -10,9 +10,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useUsers, User, ROLES } from '@/services/users';
+import { useUsers, User as StaffUser, ROLES } from '@/services/users';
 import { Loader2, Search, User as UserIcon } from 'lucide-react';
 import { uniqueDistricts } from '@/lib/utils';
+
+
+// Simplified contact type for merging
+interface MergedUser {
+  id: string | number;
+  name: string;
+  designation: string;
+  employeeCode?: string;
+  mobileNumber: string;
+  district?: string;
+  block?: string;
+  profilePicture?: string | null;
+}
+
+const whoIsWhoContacts: Omit<MergedUser, 'id'>[] = [
+    { name: 'Thiru. [Name Placeholder]', designation: 'Director', mobileNumber: '044-XXXX XXXX' },
+    { name: 'Thiru. [Name Placeholder]', designation: 'Joint Director', mobileNumber: '044-XXXX XXXX' },
+    { name: 'Thiru. [Name Placeholder]', designation: 'Joint Director', mobileNumber: '044-XXXX XXXX' },
+    { name: 'Thiru. [Name Placeholder]', designation: 'Assistant Director', mobileNumber: '044-XXXX XXXX' },
+    { name: 'Thiru. [Name Placeholder]', designation: 'Assistant Director', mobileNumber: '044-XXXX XXXX' },
+    { name: 'Thiru. [Name Placeholder]', designation: 'Consultant', mobileNumber: '044-XXXX XXXX' },
+];
 
 
 export default function DirectoryPage() {
@@ -21,8 +43,60 @@ export default function DirectoryPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [districtFilter, setDistrictFilter] = useState('all');
 
+ const mergedUsers = useMemo((): MergedUser[] => {
+    // Process registered staff from useUsers
+    const registeredStaff: MergedUser[] = users.map(user => {
+      let district = user.district;
+      let block = user.block;
+
+      if (user.designation === 'BRP' && user.brpWorkHistory?.length > 0) {
+        const presentStation = user.brpWorkHistory.find(h => h.station === 'present');
+        if (presentStation) {
+          district = presentStation.district;
+          block = presentStation.block;
+        }
+      } else if (user.designation === 'DRP' && user.drpWorkHistory?.length > 0) {
+        const presentStation = user.drpWorkHistory.find(h => h.station === 'present');
+        if (presentStation) {
+          district = presentStation.district;
+        }
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        designation: user.designation,
+        employeeCode: user.employeeCode,
+        mobileNumber: user.mobileNumber,
+        profilePicture: user.photo,
+        district,
+        block,
+      };
+    });
+    
+    // Process static contacts and add unique ID
+    const staticContacts: MergedUser[] = whoIsWhoContacts.map((contact, index) => ({
+      ...contact,
+      id: `static-${index}`,
+      employeeCode: 'N/A', // Placeholder
+    }));
+    
+    // Combine and remove duplicates, giving preference to registered staff
+    const combined = [...registeredStaff, ...staticContacts];
+    const unique = Array.from(new Map(combined.map(item => [item.name, item])).values());
+    
+    return unique;
+
+  }, [users]);
+  
+  
+  const allRoles = useMemo(() => {
+      const roles = new Set(mergedUsers.map(u => u.designation));
+      return Array.from(roles).sort();
+  }, [mergedUsers]);
+
   const filteredUsers = useMemo(() => {
-    return users.filter(user => {
+    return mergedUsers.filter(user => {
       const searchLower = searchTerm.toLowerCase();
       const nameMatch = user.name.toLowerCase().includes(searchLower);
       const contactMatch = user.mobileNumber.includes(searchTerm);
@@ -31,7 +105,7 @@ export default function DirectoryPage() {
       
       return (nameMatch || contactMatch) && roleMatch && districtMatch;
     });
-  }, [users, searchTerm, roleFilter, districtFilter]);
+  }, [mergedUsers, searchTerm, roleFilter, districtFilter]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,7 +134,7 @@ export default function DirectoryPage() {
                        <SelectTrigger><SelectValue placeholder="Filter by Role" /></SelectTrigger>
                        <SelectContent>
                            <SelectItem value="all">All Roles</SelectItem>
-                           {ROLES.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                           {allRoles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
                        </SelectContent>
                    </Select>
                    <Select value={districtFilter} onValueChange={setDistrictFilter}>
@@ -85,7 +159,7 @@ export default function DirectoryPage() {
                                         <div className="flex-grow space-y-1 text-sm">
                                             <p><strong className="text-muted-foreground w-24 inline-block">Name</strong>: {user.name}</p>
                                             <p><strong className="text-muted-foreground w-24 inline-block">Role</strong>: {user.designation}</p>
-                                            <p><strong className="text-muted-foreground w-24 inline-block">Employee ID</strong>: {user.employeeCode}</p>
+                                            <p><strong className="text-muted-foreground w-24 inline-block">Employee ID</strong>: {user.employeeCode || 'N/A'}</p>
                                             <p><strong className="text-muted-foreground w-24 inline-block">Contact</strong>: {user.mobileNumber}</p>
                                             {user.district && <p><strong className="text-muted-foreground w-24 inline-block">District</strong>: {user.district}</p>}
                                             {user.designation === 'BRP' && user.block && <p><strong className="text-muted-foreground w-24 inline-block">Block</strong>: {user.block}</p>}
@@ -114,3 +188,5 @@ export default function DirectoryPage() {
     </div>
   );
 }
+
+    
