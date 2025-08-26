@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useUsers, User } from '@/services/users';
-import { initialContacts, initialPageContent } from '../page'; // Assuming these are exported
+import { initialContacts } from '../page'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -53,22 +53,20 @@ export default function DirectoryPage() {
     const combinedStaffList = useMemo(() => {
         if (usersLoading) return [];
 
-        const registeredStaffMap = new Map<string, DirectoryStaff>();
+        const staffMap = new Map<string, DirectoryStaff>();
 
         // Process registered users first
         users.forEach(user => {
-            let presentStation: any = null;
+             let presentStation: any = null;
             if (user.designation === 'BRP' && user.brpWorkHistory?.length) {
                 presentStation = user.brpWorkHistory.find(h => h.station === 'present');
             } else if ((user.designation === 'DRP' || user.designation === 'DRP I/C') && user.drpWorkHistory?.length) {
                 presentStation = user.drpWorkHistory.find(h => h.station === 'present');
-            }
-             // For other roles that might have district/block info in their registration
-            if (!presentStation && user.district) {
-                presentStation = { district: user.district, block: user.block };
+            } else if (user.district) { // Fallback for other roles with district info
+                presentStation = { district: user.district };
             }
 
-            registeredStaffMap.set(user.employeeCode, {
+            staffMap.set(user.employeeCode, {
                 ...user,
                 contactNumber: user.mobileNumber,
                 photo: user.profilePicture,
@@ -79,11 +77,10 @@ export default function DirectoryPage() {
 
         // Add static contacts only if they don't already exist in the registered list
         initialContacts.forEach(contact => {
-             // A simple way to create a pseudo-unique key for static contacts
-            const staticKey = `static-${contact.role.replace(/\s+/g, '')}`;
-             if (!Array.from(registeredStaffMap.values()).some(u => u.name === contact.name && u.designation === contact.role)) {
-                 registeredStaffMap.set(staticKey, {
-                    id: contact.id + 1000, // Avoid key collision
+            const staticKey = `static-${contact.role.replace(/\s+/g, '')}-${contact.name}`;
+             if (!Array.from(staffMap.values()).some(u => u.name === contact.name && u.designation === contact.role)) {
+                staffMap.set(staticKey, {
+                    id: contact.id + 1000,
                     name: contact.name,
                     designation: contact.role,
                     contactNumber: contact.phone,
@@ -94,7 +91,7 @@ export default function DirectoryPage() {
              }
         });
         
-        return Array.from(registeredStaffMap.values());
+        return Array.from(staffMap.values());
 
     }, [users, usersLoading]);
 
@@ -116,6 +113,11 @@ export default function DirectoryPage() {
     const allRoles = useMemo(() => {
         const dynamicRoles = Array.from(new Set(combinedStaffList.map(s => s.designation)));
         return dynamicRoles.sort();
+    }, [combinedStaffList]);
+    
+    const allDistricts = useMemo(() => {
+         const dynamicDistricts = Array.from(new Set(combinedStaffList.map(s => s.district).filter(Boolean)));
+         return ['all', ...dynamicDistricts.sort()] as string[];
     }, [combinedStaffList]);
 
     return (
@@ -149,8 +151,7 @@ export default function DirectoryPage() {
                              <Select value={filters.district} onValueChange={v => setFilters(f => ({ ...f, district: v }))}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Districts</SelectItem>
-                                    {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    {allDistricts.map(d => <SelectItem key={d} value={d}>{d === 'all' ? 'All Districts' : toTitleCase(d)}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <Popover open={isEmployeeCodeOpen} onOpenChange={setEmployeeCodeOpen}>
@@ -169,7 +170,7 @@ export default function DirectoryPage() {
                                             {combinedStaffList.filter(s => s.employeeCode && s.employeeCode !== 'N/A').map((staff) => (
                                                 <CommandItem
                                                     key={staff.employeeCode}
-                                                    value={staff.employeeCode}
+                                                    value={staff.employeeCode!}
                                                     onSelect={(currentValue) => {
                                                         setFilters(f => ({ ...f, employeeCode: currentValue === f.employeeCode ? "" : currentValue}));
                                                         setEmployeeCodeOpen(false);
@@ -226,14 +227,5 @@ export default function DirectoryPage() {
     );
 }
 
-// These are needed for the data merge logic
-export const initialContacts: { id: number; role: string; name: string; phone: string; }[] = [
-    { id: 1, role: 'The Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-    { id: 2, role: 'Joint Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-    { id: 3, role: 'Joint Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-    { id: 4, role: 'Assistant Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-    { id: 5, role: 'Assistant Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-    { id: 6, role: 'Consultant', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
-];
-
-export const initialPageContent = {}; // Dummy export to satisfy the import
+// Dummy export to satisfy the import in other files if they use it.
+export const initialPageContent = {};

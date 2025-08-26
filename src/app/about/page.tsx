@@ -47,7 +47,7 @@ const initialPageContent = {
 };
 
 
-const initialContacts: Contact[] = [
+export const initialContacts: Contact[] = [
     { id: 1, role: 'The Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
     { id: 2, role: 'Joint Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
     { id: 3, role: 'Joint Director', name: 'Thiru. [Name Placeholder]', phone: '044-XXXX XXXX' },
