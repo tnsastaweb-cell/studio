@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -140,6 +139,12 @@ export default function PmaygDataEntryPage() {
             observer: 'no',
             newBeneficiaryDecision: 'no',
             paraParticulars: [],
+            totalHouses: 0, housesVisited: 0, housesNotVisited: 0, firstInstallment: 0,
+            secondInstallment: 0, thirdInstallment: 0, fourthInstallment: 0, notCompletedAfterFourth: 0,
+            seccCount: 0, seccNonRejected: 0, seccSelected: 0, awaasPlusCount: 0,
+            awaasPlusSelected: 0, totalSelectedMIS: 0, beneficiariesInterviewed: 0,
+            notInterviewedButVisited: 0, couldNotIdentify: 0, totalVerifiedField: 0,
+            seccInKutcha: 0
         },
     });
 
@@ -469,6 +474,7 @@ export default function PmaygDataEntryPage() {
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
@@ -476,7 +482,7 @@ export default function PmaygDataEntryPage() {
                                                         <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-3"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
+                                                        <FormItem className="lg:col-span-4"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
                                                             field.onChange(value);
                                                             const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
                                                             form.setValue(`paraParticulars.${index}.codeNumber`, code);
@@ -486,14 +492,14 @@ export default function PmaygDataEntryPage() {
                                                                 <CommandInput placeholder="Search sub-category..."/>
                                                                 <CommandList><CommandEmpty>No results found.</CommandEmpty><CommandGroup>
                                                                     {subCategories.map(sc => 
-                                                                        <CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { field.onChange(sc.subCategory); const code = sc.codeNumber || ''; form.setValue(`paraParticulars.${index}.codeNumber`, code); }}>
+                                                                        <CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { form.setValue(`paraParticulars.${index}.subCategory`, sc.subCategory); form.setValue(`paraParticulars.${index}.codeNumber`, sc.codeNumber || ''); }}>
                                                                             <div className="whitespace-normal text-wrap">{sc.subCategory}</div></CommandItem>
                                                                     )}
                                                                 </CommandGroup></CommandList></Command>
                                                             </SelectContent>
                                                         </Select></FormItem>
                                                     )} />
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                   
                                                     <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description* (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
 
                                                     <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
@@ -531,7 +537,3 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
-
-    
-
-    

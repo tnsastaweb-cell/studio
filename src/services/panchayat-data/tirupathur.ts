@@ -1,4 +1,3 @@
-
 import type { Panchayat } from './types';
 
 export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
@@ -211,5 +210,3 @@ export const TIRUPATHUR_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'MITTUR', lgdCode: '232847' },
     { district: 'TIRUPATHUR', block: 'ALANGAYAM', name: 'POONGULAM', lgdCode: '232852' }
 ];
-
-    

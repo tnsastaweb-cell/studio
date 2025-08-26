@@ -33,7 +33,7 @@ import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, C
 import Link from 'next/link';
 
 const paraParticularsSchema = z.object({
-  issueNumber: z.string(),
+  issueNumber: z.string().min(1, "Issue No. is required."),
   type: z.string().min(1, "Type is required."),
   category: z.string().min(1, "Category is required."),
   subCategory: z.string().min(1, "Sub-category is required."),
@@ -91,6 +91,7 @@ const mgnregsFormSchema = z.object({
   pubCommunityLandAmount: z.coerce.number().optional(),
   pubCommunityAssetsWorks: z.coerce.number().optional(),
   pubCommunityAssetsAmount: z.coerce.number().optional(),
+  skilledSemiSkilledAmount: z.coerce.number().optional(),
   materialAmount: z.coerce.number().optional(),
   totalWorks: z.coerce.number().optional(),
   totalAmount: z.coerce.number().optional(),
@@ -127,6 +128,13 @@ export default function MgnregsDataEntryPage() {
             expenditureYear: '2022-2023',
             observer: 'no',
             paraParticulars: [],
+            pvtIndividualLandWorks: 0, pvtIndividualLandAmount: 0,
+            pvtIndividualAssetsWorks: 0, pvtIndividualAssetsAmount: 0,
+            pubCommunityLandWorks: 0, pubCommunityLandAmount: 0,
+            pubCommunityAssetsWorks: 0, pubCommunityAssetsAmount: 0,
+            skilledSemiSkilledAmount: 0, materialAmount: 0,
+            totalWorks: 0, totalAmount: 0,
+            worksVerified: 0, householdsWorked: 0, householdsVerified: 0,
         },
     });
 
@@ -146,7 +154,7 @@ export default function MgnregsDataEntryPage() {
         "pvtIndividualAssetsWorks", "pvtIndividualAssetsAmount",
         "pubCommunityLandWorks", "pubCommunityLandAmount",
         "pubCommunityAssetsWorks", "pubCommunityAssetsAmount",
-        "materialAmount"
+        "skilledSemiSkilledAmount", "materialAmount"
     ]);
     
      useEffect(() => {
@@ -155,11 +163,11 @@ export default function MgnregsDataEntryPage() {
             pvtIndividualAssetsWorks, pvtIndividualAssetsAmount,
             pubCommunityLandWorks, pubCommunityLandAmount,
             pubCommunityAssetsWorks, pubCommunityAssetsAmount,
-            materialAmount
+            skilledSemiSkilledAmount, materialAmount
         ] = watchedVerificationFields;
 
         const totalWorks = (pvtIndividualLandWorks || 0) + (pvtIndividualAssetsWorks || 0) + (pubCommunityLandWorks || 0) + (pubCommunityAssetsWorks || 0);
-        const totalAmount = (pvtIndividualLandAmount || 0) + (pvtIndividualAssetsAmount || 0) + (pubCommunityLandAmount || 0) + (pubCommunityAssetsAmount || 0) + (materialAmount || 0);
+        const totalAmount = (pvtIndividualLandAmount || 0) + (pvtIndividualAssetsAmount || 0) + (pubCommunityLandAmount || 0) + (pubCommunityAssetsAmount || 0) + (skilledSemiSkilledAmount || 0) + (materialAmount || 0);
         
         form.setValue('totalWorks', totalWorks);
         form.setValue('totalAmount', totalAmount);
@@ -258,16 +266,15 @@ export default function MgnregsDataEntryPage() {
     };
     
     const addIssue = () => {
-        const issueNumber = `MGNREGS-ISSUE-${(fields.length || 0) + 1}`;
         append({
-            issueNumber, type: '', category: '', subCategory: '', codeNumber: '', paraStatus: 'PENDING',
+            issueNumber: '', type: '', category: '', subCategory: '', codeNumber: '', paraStatus: 'PENDING',
+            grievances: 0, beneficiaries: 0, cases: 0, amount: 0, recoveredAmount: 0, hlcRegNo: '', hlcRecoveryAmount: 0,
         });
     };
 
     const clearIssue = (index: number) => {
-        const currentIssueNumber = form.getValues(`paraParticulars.${index}.issueNumber`);
         update(index, {
-            issueNumber: currentIssueNumber, type: '', category: '', subCategory: '', codeNumber: '',
+            issueNumber: '', type: '', category: '', subCategory: '', codeNumber: '',
             grievances: 0, beneficiaries: 0, cases: 0, amount: 0, recoveredAmount: 0, hlcRegNo: '', paraStatus: 'PENDING', hlcRecoveryAmount: 0,
         });
     };
@@ -335,7 +342,7 @@ export default function MgnregsDataEntryPage() {
                                          <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="panchayat" render={({ field }) => (<FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="lgdCode" render={({ field }) => (<FormItem><FormLabel>LGD Code*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
-                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['Pilot - 1','Pilot - 2','Pilot - 3','Pilot - 4','Pilot - 5', ...Array.from({length: 35}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['Pilot - 1','Pilot - 2','Pilot - 3','Pilot - 4','Pilot - 5', '0', ...Array.from({length: 35}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditStartDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit Start Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditEndDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit End Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="sgsDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>SGS Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
@@ -383,6 +390,7 @@ export default function MgnregsDataEntryPage() {
                                                 <div className="grid grid-cols-2 gap-4"><FormField control={form.control} name="pubCommunityAssetsWorks" render={({ field }) => (<FormItem><FormLabel>Community Assets (Construction)</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} /><FormField control={form.control} name="pubCommunityAssetsAmount" render={({ field }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} /></div>
                                              </div>
                                         </div>
+                                         <FormField control={form.control} name="skilledSemiSkilledAmount" render={({ field }) => (<FormItem><FormLabel>Skilled/Semi Skilled Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="materialAmount" render={({ field }) => (<FormItem><FormLabel>Material Expenditure Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="totalWorks" render={({ field }) => (<FormItem><FormLabel>Total Works</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="totalAmount" render={({ field }) => (<FormItem><FormLabel>Total Expenditure Amount</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
@@ -420,7 +428,7 @@ export default function MgnregsDataEntryPage() {
                                             return (
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueMgnregsTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (<FormItem className="lg:col-span-3"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {field.onChange(value); const code = subCategories.find(d => d.subCategory === value)?.codeNumber || ''; form.setValue(`paraParticulars.${index}.codeNumber`, code); }} value={field.value} disabled={!selectedCategory}>
@@ -428,7 +436,7 @@ export default function MgnregsDataEntryPage() {
                                                          <SelectContent className="w-[700px]"><Command>
                                                                 <CommandInput placeholder="Search sub-category..."/>
                                                                 <CommandList><CommandEmpty>No results found.</CommandEmpty><CommandGroup>
-                                                                    {subCategories.map(sc => (<CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { field.onChange(sc.subCategory); const code = sc.codeNumber || ''; form.setValue(`paraParticulars.${index}.codeNumber`, code); }}>
+                                                                    {subCategories.map(sc => (<CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { form.setValue(`paraParticulars.${index}.subCategory`, sc.subCategory); form.setValue(`paraParticulars.${index}.codeNumber`, sc.codeNumber);}}>
                                                                         <div className="whitespace-normal text-wrap">{sc.subCategory}</div></CommandItem>))}
                                                                 </CommandGroup></CommandList></Command>
                                                          </SelectContent></Select></FormItem>)} />
@@ -439,6 +447,9 @@ export default function MgnregsDataEntryPage() {
                                                             <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                             <FormField control={form.control} name={`paraParticulars.${index}.beneficiaries`} render={({ field }) => (<FormItem><FormLabel>No. of Beneficiaries</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                         </>
+                                                     )}
+                                                     {selectedType !== 'GR - Grievances' && (
+                                                        <FormField control={form.control} name={`paraParticulars.${index}.cases`} render={({ field }) => (<FormItem><FormLabel>No. of Cases</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      )}
                                                      <FormField control={form.control} name={`paraParticulars.${index}.amount`} render={({ field }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.recoveredAmount`} render={({ field }) => (<FormItem><FormLabel>Recovered Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
@@ -470,5 +481,3 @@ export default function MgnregsDataEntryPage() {
         </div>
     );
 }
-
-    
