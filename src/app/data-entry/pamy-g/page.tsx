@@ -116,19 +116,6 @@ type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
 const uniqueTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
 
-const sortedDistrictsForCode = useMemo(() => {
-    const chennai = DISTRICTS.find(d => d === "Chennai");
-    const others = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
-    return chennai ? [chennai, ...others] : others;
-}, []);
-
-const getDistrictCode = (districtName: string): string => {
-    if (districtName === "Chennai") return "00";
-    const index = sortedDistrictsForCode.indexOf(districtName);
-    return index > -1 ? String(index).padStart(2, '0') : 'XX';
-};
-
-
 export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
     const { users } = useUsers();
@@ -250,7 +237,10 @@ export default function PmaygDataEntryPage() {
             toast({ variant: 'destructive', title: "District Required", description: "Please select a district before adding an issue." });
             return;
         }
-        const districtCode = getDistrictCode(district);
+
+        const sortedDistricts = [...DISTRICTS].sort((a, b) => a.localeCompare(b));
+        const districtCode = toTitleCase(district) === "Chennai" ? "00" : String(sortedDistricts.indexOf(toTitleCase(district))).padStart(2, '0');
+
         const serialNumber = (form.getValues('paraParticulars')?.length || 0) + 1;
         const issueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
         
@@ -473,7 +463,7 @@ export default function PmaygDataEntryPage() {
                                             const selectedCategory = form.watch(`paraParticulars.${index}.category`);
                                             
                                             const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
-                                            const subCategories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory).map(d => d.subCategory)));
+                                            const subCategories = MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory);
                                             
                                             return (
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
@@ -492,17 +482,19 @@ export default function PmaygDataEntryPage() {
                                                             form.setValue(`paraParticulars.${index}.codeNumber`, code);
                                                         }} value={field.value} disabled={!selectedCategory}>
                                                             <FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal"><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl>
-                                                            <SelectContent className="w-full md:w-[500px] lg:w-[700px]">
-                                                                {subCategories.map(sc => 
-                                                                    <SelectItem key={sc} value={sc}>
-                                                                        <div className="whitespace-normal text-wrap">{sc}</div>
-                                                                    </SelectItem>
-                                                                )}
+                                                            <SelectContent className="w-[700px]"><Command>
+                                                                <CommandInput placeholder="Search sub-category..."/>
+                                                                <CommandList><CommandEmpty>No results found.</CommandEmpty><CommandGroup>
+                                                                    {subCategories.map(sc => 
+                                                                        <CommandItem key={sc.codeNumber} value={sc.subCategory} onSelect={() => { field.onChange(sc.subCategory); const code = sc.codeNumber || ''; form.setValue(`paraParticulars.${index}.codeNumber`, code); }}>
+                                                                            <div className="whitespace-normal text-wrap">{sc.subCategory}</div></CommandItem>
+                                                                    )}
+                                                                </CommandGroup></CommandList></Command>
                                                             </SelectContent>
                                                         </Select></FormItem>
                                                     )} />
                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description* (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
 
                                                     <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
@@ -539,5 +531,7 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
+
+    
 
     

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 const dataEntryItems = [
-    { title: "MGNREGS", href: "/data-entry/mgnregs" },
+    { title: "MGNREGS", href: "/data-entry/mgnregs", disabled: false },
     { title: "PMAY-G", href: "/data-entry/pamy-g" },
     { title: "NSAP", href: "/data-entry/nsap", disabled: true },
     { title: "NMP", href: "/data-entry/nmp", disabled: true },
@@ -55,3 +55,5 @@ export default function DataEntryHubPage() {
     </div>
   );
 }
+
+    
