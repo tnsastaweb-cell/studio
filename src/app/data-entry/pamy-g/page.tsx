@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -15,7 +16,6 @@ import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { useHlc } from '@/services/hlc';
 import { useUsers, User } from '@/services/users';
 import { DISTRICTS } from '@/services/district-offices';
-import { DISTRICT_CODE_MAP } from '@/services/panchayat-data/district-codes';
 
 
 import { Header } from '@/components/header';
@@ -115,6 +115,19 @@ const pmaygFormSchema = z.object({
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
 const uniqueTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
+
+const sortedDistrictsForCode = useMemo(() => {
+    const chennai = DISTRICTS.find(d => d === "Chennai");
+    const others = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
+    return chennai ? [chennai, ...others] : others;
+}, []);
+
+const getDistrictCode = (districtName: string): string => {
+    if (districtName === "Chennai") return "00";
+    const index = sortedDistrictsForCode.indexOf(districtName);
+    return index > -1 ? String(index).padStart(2, '0') : 'XX';
+};
+
 
 export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
@@ -237,7 +250,7 @@ export default function PmaygDataEntryPage() {
             toast({ variant: 'destructive', title: "District Required", description: "Please select a district before adding an issue." });
             return;
         }
-        const districtCode = DISTRICT_CODE_MAP[district] || 'XX';
+        const districtCode = getDistrictCode(district);
         const serialNumber = (form.getValues('paraParticulars')?.length || 0) + 1;
         const issueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
         
@@ -303,7 +316,7 @@ export default function PmaygDataEntryPage() {
                                 {/* Section A */}
                                 <section>
                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section A: BRP Details</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                        <FormField
                                             control={form.control}
                                             name="employeeCode"
@@ -470,16 +483,16 @@ export default function PmaygDataEntryPage() {
                                                         <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                                     )} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-4"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
+                                                        <FormItem className="lg:col-span-3"><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
                                                             field.onChange(value);
                                                             const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
                                                             form.setValue(`paraParticulars.${index}.codeNumber`, code);
                                                         }} value={field.value} disabled={!selectedCategory}>
                                                             <FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal"><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl>
-                                                            <SelectContent>
+                                                            <SelectContent className="w-full md:w-[500px] lg:w-[700px]">
                                                                 {subCategories.map(sc => 
                                                                     <SelectItem key={sc} value={sc}>
                                                                         <div className="whitespace-normal text-wrap">{sc}</div>
@@ -526,3 +539,5 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
+
+    
