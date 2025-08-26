@@ -1662,10 +1662,27 @@ export default function AdminPage() {
                                                 <TableCell>{staff.stateOfficeActivities}</TableCell>
                                                 <TableCell>{staff.stateOfficeActivitiesDetails?.[0]?.workParticulars || 'N/A'}</TableCell>
                                                 {/* Actions */}
-                                                <TableCell>
+                                                 <TableCell className="space-x-2">
                                                     <Button variant="outline" size="sm" onClick={() => handleEditUser(staff)}>
-                                                      <Edit className="h-4 w-4"/>
+                                                        <Edit className="h-4 w-4" />
                                                     </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}><Trash2 className="h-4 w-4" /></Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This will permanently delete the staff record for {staff.name}.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDeleteUser(staff.id)}>Continue</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </TableCell>
                                             </TableRow>
                                         )})}
@@ -1685,14 +1702,14 @@ export default function AdminPage() {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                 <Input placeholder="Search by Name, Code, PFMS, Contact..." value={vrpFilters.search} onChange={e => setVrpFilters(f => ({ ...f, search: e.target.value }))} />
                                 <Select value={vrpFilters.district} onValueChange={v => setVrpFilters(f => ({ ...f, district: v }))}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="All Districts" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Districts</SelectItem>
                                         {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                  <Select value={vrpFilters.locationType} onValueChange={v => setVrpFilters(f => ({ ...f, locationType: v }))}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="All Locations" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Locations</SelectItem>
                                         <SelectItem value="rural">Rural</SelectItem>
@@ -1700,18 +1717,39 @@ export default function AdminPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="border rounded-lg">
-                                <Table>
-                                    <TableHeader>
+                            <div className="w-full overflow-x-auto relative">
+                                <Table className="min-w-max">
+                                    <TableHeader className="sticky top-0 bg-background z-10">
                                         <TableRow>
                                             <TableHead>S.No</TableHead>
                                             <TableHead>Name</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>Has Emp Code?</TableHead>
                                             <TableHead>Employee Code</TableHead>
+                                            <TableHead>Scheme</TableHead>
+                                            <TableHead>Job Card</TableHead>
+                                            <TableHead>Location Type</TableHead>
                                             <TableHead>District</TableHead>
-                                            <TableHead>Location</TableHead>
-                                            <TableHead>Contact</TableHead>
-                                            <TableHead>PFMS ID</TableHead>
+                                            <TableHead>Block</TableHead>
+                                            <TableHead>Panchayat</TableHead>
+                                            <TableHead>Urban Body</TableHead>
+                                            <TableHead>Address</TableHead>
+                                            <TableHead>Pincode</TableHead>
+                                            <TableHead>Contact 1</TableHead>
+                                            <TableHead>Contact 2</TableHead>
+                                            <TableHead>Father/Husband</TableHead>
+                                            <TableHead>Caste</TableHead>
+                                            <TableHead>DOB</TableHead>
+                                            <TableHead>Age</TableHead>
+                                            <TableHead>Gender</TableHead>
                                             <TableHead>Qualification</TableHead>
+                                            <TableHead>PFMS ID</TableHead>
+                                            <TableHead>Bank</TableHead>
+                                            <TableHead>Branch</TableHead>
+                                            <TableHead>Account No</TableHead>
+                                            <TableHead>IFSC</TableHead>
+                                            <TableHead>Aadhaar</TableHead>
+                                            <TableHead>PAN</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -1720,26 +1758,33 @@ export default function AdminPage() {
                                             <TableRow key={vrp.id}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell className="font-medium">{vrp.name}</TableCell>
+                                                <TableCell>{vrp.role}</TableCell>
+                                                <TableCell>{vrp.hasEmployeeCode}</TableCell>
                                                 <TableCell>{vrp.employeeCode}</TableCell>
+                                                <TableCell>{vrp.hasEmployeeCode === 'no' ? vrp.scheme : 'MGNREGS'}</TableCell>
+                                                <TableCell>{vrp.hasEmployeeCode === 'yes' ? vrp.mgnregaJobCard : 'N/A'}</TableCell>
+                                                <TableCell>{vrp.hasEmployeeCode === 'no' ? vrp.locationType : 'rural'}</TableCell>
                                                 <TableCell>{vrp.district}</TableCell>
-                                                <TableCell>
-                                                    {vrp.hasEmployeeCode === 'no' ? (
-                                                        <div className="text-xs">
-                                                            <p className="font-bold">{toTitleCase(vrp.locationType || '')}</p>
-                                                             <p className="text-muted-foreground">
-                                                                {vrp.locationType === 'rural' ? `${vrp.panchayatName}, ${vrp.block}` : `${vrp.urbanBodyName}`}
-                                                            </p>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-xs">
-                                                             <p className="font-bold">Rural</p>
-                                                             <p className="text-muted-foreground">{`${vrp.panchayatName}, ${vrp.block}`}</p>
-                                                        </div>
-                                                    )}
-                                                </TableCell>
+                                                <TableCell>{vrp.block}</TableCell>
+                                                <TableCell>{vrp.panchayatName}</TableCell>
+                                                <TableCell>{vrp.hasEmployeeCode === 'no' && vrp.locationType === 'urban' ? `${vrp.urbanBodyType} - ${vrp.urbanBodyName}` : 'N/A'}</TableCell>
+                                                <TableCell>{vrp.address}</TableCell>
+                                                <TableCell>{vrp.pincode}</TableCell>
                                                 <TableCell>{vrp.contactNumber1}</TableCell>
-                                                <TableCell>{vrp.pfmsId}</TableCell>
+                                                <TableCell>{vrp.contactNumber2}</TableCell>
+                                                <TableCell>{vrp.familyRelation}: {vrp.familyName}</TableCell>
+                                                <TableCell>{vrp.caste}</TableCell>
+                                                <TableCell>{format(new Date(vrp.dob), 'dd/MM/yyyy')}</TableCell>
+                                                <TableCell>{vrp.age}</TableCell>
+                                                <TableCell>{vrp.gender}</TableCell>
                                                 <TableCell>{vrp.qualification}</TableCell>
+                                                <TableCell>{vrp.pfmsId}</TableCell>
+                                                <TableCell>{vrp.bankName}</TableCell>
+                                                <TableCell>{vrp.branchName}</TableCell>
+                                                <TableCell>{vrp.accountNumber}</TableCell>
+                                                <TableCell>{vrp.ifscCode}</TableCell>
+                                                <TableCell>{vrp.aadhaar}</TableCell>
+                                                <TableCell>{vrp.pan}</TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button variant="outline" size="sm" onClick={() => { /* handle edit */ }}>Edit</Button>
                                                      <AlertDialog>

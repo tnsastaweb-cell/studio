@@ -318,7 +318,7 @@ export default function StaffRegistrationPage() {
                         formData[arrayField] = formData[arrayField].map((item: any) => {
                              let newItem: any = {...item};
                              Object.keys(item).forEach(key => {
-                                 if (key.toLowerCase().includes('date')) {
+                                 if (key.toLowerCase().includes('date') && item[key]) {
                                      newItem[key] = parseISO(item[key]);
                                  }
                              });
@@ -663,10 +663,10 @@ export default function StaffRegistrationPage() {
                                                         )}
                                                     />
                                                       <FormField control={form.control} name="name" render={({ field }) => (
-                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly={!isEditMode} className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                        <FormField control={form.control} name="contactNumber" render={({ field }) => (
-                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly={!isEditMode} className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                    </div>
                                                    <div className="flex justify-end">
