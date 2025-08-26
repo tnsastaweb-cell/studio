@@ -52,19 +52,19 @@ export default function DirectoryPage() {
 
   const mergedUsers = useMemo((): MergedUser[] => {
     // Process registered staff from useUsers
-    const registeredStaff: MergedUser[] = users.map((user: StaffUser) => {
+    const registeredStaff: MergedUser[] = users.map((user: any) => { // Use any to access potential extra fields
       let district = user.district || 'N/A';
       let block = user.block || '';
 
       // Prioritize work history for location if available
       if (user.designation === 'BRP' && user.brpWorkHistory?.length > 0) {
-        const presentStation = user.brpWorkHistory.find(h => h.station === 'present');
+        const presentStation = user.brpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
           block = presentStation.block;
         }
       } else if (user.designation === 'DRP' && user.drpWorkHistory?.length > 0) {
-        const presentStation = user.drpWorkHistory.find(h => h.station === 'present');
+        const presentStation = user.drpWorkHistory.find((h: any) => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
           block = ''; // DRPs don't have blocks
@@ -83,10 +83,10 @@ export default function DirectoryPage() {
       };
     });
 
-    const registeredStaffNames = new Set(users.map(u => u.name));
+    const registeredUserNames = new Set(registeredStaff.map(u => u.name));
 
     const uniqueStaticContacts = whoIsWhoContacts
-      .filter(contact => !registeredStaffNames.has(contact.name))
+      .filter(contact => !registeredUserNames.has(contact.name))
       .map((contact, index) => ({
         ...contact,
         id: `static-${index}`,
@@ -104,8 +104,12 @@ export default function DirectoryPage() {
   }, [mergedUsers]);
 
   const allEmployeeCodes = useMemo(() => {
-      return mergedUsers.filter(u => u.employeeCode && u.employeeCode !== 'N/A').map(u => ({ label: u.employeeCode, value: u.employeeCode })) as {label: string, value: string}[];
+      return mergedUsers
+          .filter(u => u.employeeCode && u.employeeCode !== 'N/A')
+          .map(u => ({ label: u.employeeCode!, value: u.employeeCode! }))
+          .sort((a, b) => a.label.localeCompare(b.label));
   }, [mergedUsers]);
+
 
   const filteredUsers = useMemo(() => {
     return mergedUsers.filter(user => {
@@ -200,7 +204,7 @@ export default function DirectoryPage() {
                                             <p><strong className="text-muted-foreground w-24 inline-block">Role</strong>: {user.designation}</p>
                                             <p><strong className="text-muted-foreground w-24 inline-block">Employee ID</strong>: {user.employeeCode || 'N/A'}</p>
                                             <p><strong className="text-muted-foreground w-24 inline-block">Contact</strong>: {user.mobileNumber}</p>
-                                            {user.district && <p><strong className="text-muted-foreground w-24 inline-block">District</strong>: {user.district}</p>}
+                                            {user.district && user.district !== 'N/A' && <p><strong className="text-muted-foreground w-24 inline-block">District</strong>: {user.district}</p>}
                                             {user.designation === 'BRP' && user.block && <p><strong className="text-muted-foreground w-24 inline-block">Block</strong>: {user.block}</p>}
                                         </div>
                                         <div className="flex-shrink-0">
