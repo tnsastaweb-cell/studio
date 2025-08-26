@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -47,7 +48,7 @@ const guestMenuItems = [
   },
   {
     title: "GALLERY",
-    href: "/gallery/photos",
+    href: "/gallery",
     children: [
       { title: "Photos", href: "/gallery/photos" },
       { title: "Videos", href: "/gallery/videos" },
@@ -138,10 +139,12 @@ const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {ti
                         </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                        {item.children.map((child) => (
-                            <DropdownMenuItem key={child.title} asChild className={cn(pathname === child.href && "bg-accent/80 font-bold")} disabled={child.disabled}>
-                                <Link href={child.href}>{child.title}</Link>
-                            </DropdownMenuItem>
+                        {item.children.map((child, childIndex) => (
+                           <React.Fragment key={child.title}>
+                             <DropdownMenuItem asChild className={cn("focus:bg-accent focus:text-accent-foreground", pathname === child.href && "bg-accent/80 font-bold")} disabled={child.disabled}>
+                                 <Link href={child.href}>{child.title}</Link>
+                             </DropdownMenuItem>
+                            </React.Fragment>
                         ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -149,9 +152,6 @@ const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {ti
                     <Button asChild variant={pathname === item.href ? "secondary" : "ghost"} className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
                         <Link href={item.href}>{item.title}</Link>
                     </Button>
-                    )}
-                    {index < items.length - 1 && (
-                        <div className="h-4 w-px bg-primary/20" />
                     )}
                 </React.Fragment>
             ))}
