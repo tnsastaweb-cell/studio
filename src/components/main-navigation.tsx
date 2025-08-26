@@ -131,6 +131,7 @@ const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {ti
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
             {items.map((item, index) => (
                 <React.Fragment key={item.title}>
+                    {index > 0 && <div className="h-4 w-px bg-foreground/30" />}
                     {item.children ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
