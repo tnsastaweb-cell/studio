@@ -47,6 +47,69 @@ export interface User {
   status: 'active' | 'inactive';
   profilePicture?: string | null;
   theme?: string;
+  
+  // Extended Profile Details
+  recruitmentType?: 'direct' | 'retired';
+  locationType?: 'rural' | 'urban';
+  district?: string;
+  block?: string;
+  panchayat?: string; // LGD Code
+  panchayatName?: string;
+  lgdCode?: string;
+  urbanBodyType?: 'town_panchayat' | 'municipality' | 'corporation';
+  urbanBodyName?: string;
+  fullAddress?: string;
+  pincode?: string;
+  fatherName?: string;
+  motherName?: string;
+  spouseName?: string;
+  religion?: string;
+  caste?: string;
+  age?: number;
+  gender?: string;
+  femaleType?: string;
+  bloodGroup?: string;
+  isDifferentlyAbled?: 'yes' | 'no';
+  differentlyAbledCert?: any;
+  healthIssues?: 'normal' | 'minor' | 'major';
+  healthIssuesDetails?: string;
+  medicalCert?: any;
+  contactNumber2?: string;
+  emailId?: string;
+  eportalEmailId?: string;
+  pfmsId?: string;
+  bankName?: string;
+  branchName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  aadhaar?: string;
+  aadhaarUpload?: any;
+  pan?: string;
+  panUpload?: any;
+  uan?: string;
+
+  // Education & Experience
+  academicDetails?: any[];
+  workExperience?: any[];
+  skills?: any[];
+
+  // Working Details
+  joiningDate?: string;
+  brpWorkHistory?: any[];
+  drpWorkHistory?: any[];
+  workedAsDrpIc?: 'yes' | 'no';
+  drpIcWorkHistory?: any[];
+  
+  // Training & Audit
+  trainingTaken?: 'yes' | 'no';
+  trainingTakenDetails?: any[];
+  trainingGiven?: 'yes' | 'no';
+  trainingGivenDetails?: any[];
+  pilotAudit?: 'yes' | 'no';
+  pilotAuditDetails?: any[];
+  stateOfficeActivities?: 'yes' | 'no';
+  stateOfficeActivitiesDetails?: any[];
+  complaints?: any[];
 }
 
 // A constant array of all available roles.
@@ -73,15 +136,15 @@ export const ROLES: Role[] = [
 
 // A list of mock users for development purposes.
 export const MOCK_USERS: User[] = [
-  { id: 1, name: 'M.Ravichandran', employeeCode: 'TN-729', designation: 'BRP', mobileNumber: '9965537235', dateOfBirth: '1972-06-10', password: 'password123', status: 'active' },
-  { id: 2, name: 'S.Kanagathara', employeeCode: 'TN-767', designation: 'BRP', mobileNumber: '9840639323', dateOfBirth: '1978-05-30', password: 'password123', status: 'active' },
-  { id: 3, name: 'D.Rajendran', employeeCode: 'TN-1022', designation: 'DRP', mobileNumber: '9994814897', dateOfBirth: '1968-10-06', password: 'password123', status: 'active' },
-  { id: 4, name: 'T.Sankar', employeeCode: 'TN-755', designation: 'DRP I/C', mobileNumber: '8220588742', dateOfBirth: '1978-05-13', password: 'password123', status: 'active' },
-  { id: 5, name: 'S.Malarvizhi', employeeCode: 'TN-759', designation: 'SLM', mobileNumber: '7010621372', dateOfBirth: '1986-05-03', password: 'password123', status: 'active' },
-  { id: 6, name: 'P.K.Bhoopalan', employeeCode: 'TN-837', designation: 'BRP', mobileNumber: '9444487005', dateOfBirth: '1977-06-07', password: 'password123', status: 'active' },
-  { id: 497, name: 'Creator User', employeeCode: 'TN-CREATOR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', email: 'creator@sasta.com', password: 'password123', status: 'active' },
-  { id: 498, name: 'Admin User', employeeCode: 'TN-ADMIN', designation: 'ADMIN', mobileNumber: '9999999999', dateOfBirth: '1990-01-01', email: 'admin@sasta.com', password: 'password123', status: 'active'},
-  { id: 499, name: 'Consultant User', employeeCode: 'TN-CONSULTANT', designation: 'CONSULTANT', mobileNumber: '8888888888', dateOfBirth: '1985-01-01', email: 'consultant@sasta.com', password: 'password123', status: 'active'}
+  { id: 1, name: 'M.Ravichandran', employeeCode: 'TN-729', designation: 'BRP', mobileNumber: '9965537235', dateOfBirth: '1972-06-10', password: 'password123', status: 'active', district: 'Ariyalur', block: 'Ariyalur' },
+  { id: 2, name: 'S.Kanagathara', employeeCode: 'TN-767', designation: 'BRP', mobileNumber: '9840639323', dateOfBirth: '1978-05-30', password: 'password123', status: 'active', district: 'Coimbatore' },
+  { id: 3, name: 'D.Rajendran', employeeCode: 'TN-1022', designation: 'DRP', mobileNumber: '9994814897', dateOfBirth: '1968-10-06', password: 'password123', status: 'active', district: 'Chennai' },
+  { id: 4, name: 'T.Sankar', employeeCode: 'TN-755', designation: 'DRP I/C', mobileNumber: '8220588742', dateOfBirth: '1978-05-13', password: 'password123', status: 'active', district: 'Dharmapuri' },
+  { id: 5, name: 'S.Malarvizhi', employeeCode: 'TN-759', designation: 'SLM', mobileNumber: '7010621372', dateOfBirth: '1986-05-03', password: 'password123', status: 'active', district: 'Chennai' },
+  { id: 6, name: 'P.K.Bhoopalan', employeeCode: 'TN-837', designation: 'BRP', mobileNumber: '9444487005', dateOfBirth: '1977-06-07', password: 'password123', status: 'active', district: 'Erode' },
+  { id: 497, name: 'Creator User', employeeCode: 'TN-CREATOR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', email: 'creator@sasta.com', password: 'password123', status: 'active', district: 'Chennai' },
+  { id: 498, name: 'Admin User', employeeCode: 'TN-ADMIN', designation: 'ADMIN', mobileNumber: '9999999999', dateOfBirth: '1990-01-01', email: 'admin@sasta.com', password: 'password123', status: 'active', district: 'Chennai' },
+  { id: 499, name: 'Consultant User', employeeCode: 'TN-CONSULTANT', designation: 'CONSULTANT', mobileNumber: '8888888888', dateOfBirth: '1985-01-01', email: 'consultant@sasta.com', password: 'password123', status: 'active', district: 'Chennai' }
 ];
 
 const USER_STORAGE_KEY = 'sasta-users';

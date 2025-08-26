@@ -23,7 +23,8 @@ import {
   Upload,
   User as UserIcon,
   ChevronsUpDown,
-  Check
+  Check,
+  View,
 } from 'lucide-react';
 
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
@@ -970,6 +971,7 @@ export default function AdminPage() {
                                  <TabsTrigger value="education-experience">Education &amp; Experience</TabsTrigger>
                                  <TabsTrigger value="working-details">Working Details</TabsTrigger>
                                  <TabsTrigger value="training-audit">Training</TabsTrigger>
+                                 <TabsTrigger value="complaints">Complaints</TabsTrigger>
                              </TabsList>
                              <TabsContent value="basic-info" className="flex-grow overflow-y-auto p-4 space-y-4">
                                 <Card>
@@ -1044,6 +1046,18 @@ export default function AdminPage() {
                                         <StaffDetailRow label="UAN No" value={viewingStaff.uan} />
                                     </CardContent>
                                 </Card>
+                            </TabsContent>
+                             <TabsContent value="education-experience" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card><CardHeader><CardTitle>Education & Experience</CardTitle></CardHeader></Card>
+                            </TabsContent>
+                             <TabsContent value="working-details" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card><CardHeader><CardTitle>Working Details</CardTitle></CardHeader></Card>
+                            </TabsContent>
+                             <TabsContent value="training-audit" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card><CardHeader><CardTitle>Training</CardTitle></CardHeader></Card>
+                            </TabsContent>
+                            <TabsContent value="complaints" className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <Card><CardHeader><CardTitle>Complaints</CardTitle></CardHeader></Card>
                             </TabsContent>
                          </Tabs>
                          <DialogFooter className="mt-4 flex-shrink-0">
@@ -1574,7 +1588,66 @@ export default function AdminPage() {
                     <TabsTrigger value="staff-details">Staff Details</TabsTrigger>
                     <TabsTrigger value="vrp-details">VRP</TabsTrigger>
                 </TabsList>
-                <TabsContent value="staff-details">
+                <TabsContent value="staff-details" className="pt-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Staff Details</CardTitle>
+                            <CardDescription>Manage and view registered staff members.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-4 border rounded-lg">
+                                <div className="relative lg:col-span-2">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    <Input placeholder="Search by Name, Contact, Email..." className="pl-10" value={staffFilters.search} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
+                                </div>
+                                <Select value={staffFilters.role} onValueChange={v => setStaffFilters(f => ({ ...f, role: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Roles</SelectItem>
+                                        {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                 <Select value={staffFilters.district} onValueChange={v => setStaffFilters(f => ({ ...f, district: v }))}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="border rounded-lg">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>S.No</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Employee Code</TableHead>
+                                            <TableHead>Designation</TableHead>
+                                            <TableHead>Mobile</TableHead>
+                                            <TableHead>District</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredStaff.map((staff, index) => (
+                                            <TableRow key={staff.id}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell className="font-medium">{staff.name}</TableCell>
+                                                <TableCell>{staff.employeeCode}</TableCell>
+                                                <TableCell>{staff.designation}</TableCell>
+                                                <TableCell>{staff.mobileNumber}</TableCell>
+                                                <TableCell>{staff.district || 'N/A'}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="sm" onClick={() => handleViewStaffDetails(staff)}><View className="h-4 w-4" /></Button>
+                                                    <Button variant="outline" size="sm" onClick={() => handleEditUser(staff)}><Edit className="h-4 w-4"/></Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="vrp-details">
                     <Card>
