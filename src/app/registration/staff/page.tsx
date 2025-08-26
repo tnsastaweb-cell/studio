@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -417,11 +416,11 @@ export default function StaffRegistrationPage() {
 
 
     const handleRoleChange = (value: string) => {
-        setSelectedRole(value);
         if (!isEditMode) {
-             form.reset(); // Reset form when role changes, but not in edit mode
+            setSelectedRole(value);
+            form.reset(); // Reset form when role changes, but not in edit mode
+            form.setValue('designation', value);
         }
-        form.setValue('designation', value);
     };
 
     const handleEmployeeCodeChange = (employeeCode: string) => {
@@ -537,31 +536,33 @@ export default function StaffRegistrationPage() {
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onFinalSubmit)} className="space-y-8">
-                                <FormField
-                                    control={form.control}
-                                    name="designation"
-                                    render={({ field }) => (
-                                        <FormItem className="max-w-md">
-                                            <FormLabel>Role/Designation</FormLabel>
-                                            <Select onValueChange={(value) => {
-                                                field.onChange(value);
-                                                handleRoleChange(value);
-                                            }} value={field.value || ''} disabled={isEditMode}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a role" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {allowedRoles.map(role => (
-                                                        <SelectItem key={role} value={role}>{role}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                {!isEditMode && (
+                                    <FormField
+                                        control={form.control}
+                                        name="designation"
+                                        render={({ field }) => (
+                                            <FormItem className="max-w-md">
+                                                <FormLabel>Role/Designation</FormLabel>
+                                                <Select onValueChange={(value) => {
+                                                    field.onChange(value);
+                                                    handleRoleChange(value);
+                                                }} value={field.value || ''} disabled={isEditMode}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select a role" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {allowedRoles.map(role => (
+                                                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
 
                                 {selectedRole && (
                                     <Tabs defaultValue={visibleTabs[0].value} className="w-full pt-4">
@@ -625,48 +626,18 @@ export default function StaffRegistrationPage() {
                                                         render={({ field }) => (
                                                             <FormItem className="flex flex-col">
                                                                 <FormLabel>Employee Code*</FormLabel>
-                                                                <Popover>
-                                                                    <PopoverTrigger asChild>
-                                                                        <FormControl>
-                                                                            <Button variant="outline" role="combobox" className={cn("justify-between", !field.value && "text-muted-foreground")} disabled={isEditMode}>
-                                                                                {field.value ? users.find(u => u.employeeCode === field.value)?.employeeCode : "Select Employee Code"}
-                                                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                                            </Button>
-                                                                        </FormControl>
-                                                                    </PopoverTrigger>
-                                                                    <PopoverContent className="w-[300px] p-0">
-                                                                        <Command>
-                                                                            <CommandInput placeholder="Search employee code..." />
-                                                                            <CommandEmpty>No employee found.</CommandEmpty>
-                                                                            <CommandGroup>
-                                                                                <CommandList>
-                                                                                    {filteredUsersByRole.map((u) => (
-                                                                                        <CommandItem
-                                                                                            value={u.employeeCode}
-                                                                                            key={u.id}
-                                                                                            onSelect={() => {
-                                                                                                form.setValue("employeeCode", u.employeeCode);
-                                                                                                handleEmployeeCodeChange(u.employeeCode);
-                                                                                            }}
-                                                                                        >
-                                                                                            <Check className={cn("mr-2 h-4 w-4", u.employeeCode === field.value ? "opacity-100" : "opacity-0")} />
-                                                                                            {u.employeeCode}
-                                                                                        </CommandItem>
-                                                                                    ))}
-                                                                                </CommandList>
-                                                                            </CommandGroup>
-                                                                        </Command>
-                                                                    </PopoverContent>
-                                                                </Popover>
+                                                                 <FormControl>
+                                                                    <Input {...field} readOnly={isEditMode} className={cn(isEditMode ? "bg-muted" : "")}/>
+                                                                </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
                                                         )}
                                                     />
                                                       <FormField control={form.control} name="name" render={({ field }) => (
-                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                        <FormField control={form.control} name="contactNumber" render={({ field }) => (
-                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} readOnly className={cn(isEditMode ? "" : "bg-muted")}/></FormControl><FormMessage /></FormItem>
+                                                          <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                                       )} />
                                                    </div>
                                                    <div className="flex justify-end">
