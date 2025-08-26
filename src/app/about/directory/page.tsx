@@ -13,6 +13,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useUsers, User as StaffUser, ROLES } from '@/services/users';
 import { Loader2, Search, User as UserIcon } from 'lucide-react';
 import { uniqueDistricts } from '@/lib/utils';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 
 // Simplified contact type for merging
@@ -42,13 +47,16 @@ export default function DirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [districtFilter, setDistrictFilter] = useState('all');
+  const [employeeCodeFilter, setEmployeeCodeFilter] = useState('');
+  const [openEmployeeCodePopover, setOpenEmployeeCodePopover] = useState(false);
 
- const mergedUsers = useMemo((): MergedUser[] => {
+  const mergedUsers = useMemo((): MergedUser[] => {
     // Process registered staff from useUsers
-    const registeredStaff: MergedUser[] = users.map(user => {
-      let district = user.district;
-      let block = user.block;
+    const registeredStaff: MergedUser[] = users.map((user: StaffUser) => {
+      let district = user.district || 'N/A';
+      let block = user.block || '';
 
+      // Prioritize work history for location if available
       if (user.designation === 'BRP' && user.brpWorkHistory?.length > 0) {
         const presentStation = user.brpWorkHistory.find(h => h.station === 'present');
         if (presentStation) {
@@ -59,9 +67,10 @@ export default function DirectoryPage() {
         const presentStation = user.drpWorkHistory.find(h => h.station === 'present');
         if (presentStation) {
           district = presentStation.district;
+          block = ''; // DRPs don't have blocks
         }
       }
-
+      
       return {
         id: user.id,
         name: user.name,
@@ -73,19 +82,19 @@ export default function DirectoryPage() {
         block,
       };
     });
+
+    const staticContactMap = new Map(whoIsWhoContacts.map((contact, index) => [contact.name, {
+        ...contact,
+        id: `static-${index}`,
+        employeeCode: 'N/A', // Placeholder
+    }]));
+
+    // Filter out registered staff who are already in the static list (by name)
+    const uniqueRegisteredStaff = registeredStaff.filter(staff => !staticContactMap.has(staff.name));
+
+    const combined = [...uniqueRegisteredStaff, ...Array.from(staticContactMap.values())];
     
-    // Process static contacts and add unique ID
-    const staticContacts: MergedUser[] = whoIsWhoContacts.map((contact, index) => ({
-      ...contact,
-      id: `static-${index}`,
-      employeeCode: 'N/A', // Placeholder
-    }));
-    
-    // Combine and remove duplicates, giving preference to registered staff
-    const combined = [...registeredStaff, ...staticContacts];
-    const unique = Array.from(new Map(combined.map(item => [item.name, item])).values());
-    
-    return unique;
+    return combined;
 
   }, [users]);
   
@@ -95,6 +104,10 @@ export default function DirectoryPage() {
       return Array.from(roles).sort();
   }, [mergedUsers]);
 
+  const allEmployeeCodes = useMemo(() => {
+      return mergedUsers.filter(u => u.employeeCode && u.employeeCode !== 'N/A').map(u => ({ label: u.employeeCode, value: u.employeeCode })) as {label: string, value: string}[];
+  }, [mergedUsers]);
+
   const filteredUsers = useMemo(() => {
     return mergedUsers.filter(user => {
       const searchLower = searchTerm.toLowerCase();
@@ -102,10 +115,11 @@ export default function DirectoryPage() {
       const contactMatch = user.mobileNumber.includes(searchTerm);
       const roleMatch = roleFilter === 'all' || user.designation === roleFilter;
       const districtMatch = districtFilter === 'all' || user.district === districtFilter;
+      const employeeCodeMatch = !employeeCodeFilter || user.employeeCode === employeeCodeFilter;
       
-      return (nameMatch || contactMatch) && roleMatch && districtMatch;
+      return (nameMatch || contactMatch) && roleMatch && districtMatch && employeeCodeMatch;
     });
-  }, [mergedUsers, searchTerm, roleFilter, districtFilter]);
+  }, [mergedUsers, searchTerm, roleFilter, districtFilter, employeeCodeFilter]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -121,29 +135,55 @@ export default function DirectoryPage() {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-4 border rounded-lg bg-muted/50">
-                   <div className="relative md:col-span-2">
+                   <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
-                            placeholder="Search by Name or Contact Number..." 
+                            placeholder="Search by Name or Contact..." 
                             className="pl-10"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                    </div>
                    <Select value={roleFilter} onValueChange={setRoleFilter}>
-                       <SelectTrigger><SelectValue placeholder="Filter by Role" /></SelectTrigger>
+                       <SelectTrigger><SelectValue placeholder="All Roles" /></SelectTrigger>
                        <SelectContent>
                            <SelectItem value="all">All Roles</SelectItem>
                            {allRoles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
                        </SelectContent>
                    </Select>
                    <Select value={districtFilter} onValueChange={setDistrictFilter}>
-                       <SelectTrigger><SelectValue placeholder="Filter by District" /></SelectTrigger>
+                       <SelectTrigger><SelectValue placeholder="All Districts" /></SelectTrigger>
                        <SelectContent>
                            <SelectItem value="all">All Districts</SelectItem>
                            {uniqueDistricts.map(district => <SelectItem key={district} value={district}>{district}</SelectItem>)}
                        </SelectContent>
                    </Select>
+                   <Popover open={openEmployeeCodePopover} onOpenChange={setOpenEmployeeCodePopover}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" aria-expanded={openEmployeeCodePopover} className="w-full justify-between font-normal">
+                        {employeeCodeFilter || "All Employee Codes"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search Employee Code..." />
+                        <CommandEmpty>No employee code found.</CommandEmpty>
+                        <CommandList>
+                            <CommandItem value="" onSelect={() => {setEmployeeCodeFilter(""); setOpenEmployeeCodePopover(false);}}>All Employee Codes</CommandItem>
+                            {allEmployeeCodes.map((emp) => (
+                              <CommandItem key={emp.value} value={emp.value} onSelect={(currentValue) => {
+                                  setEmployeeCodeFilter(currentValue === employeeCodeFilter ? "" : currentValue);
+                                  setOpenEmployeeCodePopover(false);
+                                }}>
+                                <Check className={cn("mr-2 h-4 w-4", employeeCodeFilter === emp.value ? "opacity-100" : "opacity-0")} />
+                                {emp.label}
+                              </CommandItem>
+                            ))}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 
                 {loading ? (
@@ -155,7 +195,7 @@ export default function DirectoryPage() {
                         {filteredUsers.length > 0 ? (
                             filteredUsers.map(user => (
                                 <Card key={user.id} className="shadow-md hover:shadow-lg transition-shadow">
-                                    <CardContent className="p-4 flex gap-4">
+                                    <CardContent className="p-4 flex items-center gap-4">
                                         <div className="flex-grow space-y-1 text-sm">
                                             <p><strong className="text-muted-foreground w-24 inline-block">Name</strong>: {user.name}</p>
                                             <p><strong className="text-muted-foreground w-24 inline-block">Role</strong>: {user.designation}</p>
@@ -188,5 +228,7 @@ export default function DirectoryPage() {
     </div>
   );
 }
+
+    
 
     
