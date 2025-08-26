@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { useHlc } from '@/services/hlc';
-import { useUsers } from '@/services/users';
+import { useUsers, User } from '@/services/users';
 import { DISTRICTS } from '@/services/district-offices';
 
 const DISTRICT_CODE_MAP: { [key: string]: string } = {
@@ -40,8 +40,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
-import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -52,6 +52,7 @@ const paraParticularsSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string().min(1, "Sub-category is required."),
   codeNumber: z.string(),
+  description: z.string().max(1000, "Description must be 1000 characters or less.").optional(),
   centralAmount: z.coerce.number().optional(),
   stateAmount: z.coerce.number().optional(),
   othersAmount: z.coerce.number().optional(),
@@ -62,8 +63,8 @@ const paraParticularsSchema = z.object({
 });
 
 const pmaygFormSchema = z.object({
-  // Section A - BRP Details (mostly auto-filled)
-  employeeCode: z.string(),
+  // Section A - BRP Details
+  employeeCode: z.string().min(1, "Employee Code is required."),
   name: z.string(),
   contact: z.string(),
   brpDistrict: z.string(),
@@ -131,18 +132,7 @@ export default function PmaygDataEntryPage() {
     const { toast } = useToast();
     
     const [file, setFile] = useState<File | null>(null);
-
-    const loggedInUser = useMemo(() => {
-        if (!user || !users.length) return null;
-        return users.find(u => u.employeeCode === user.employeeCode);
-    }, [user, users]);
-    
-    const presentStation = useMemo(() => {
-        if (!loggedInUser) return null;
-        if(loggedInUser.designation === 'BRP') return loggedInUser.brpWorkHistory?.find(h => h.station === 'present');
-        if(loggedInUser.designation === 'DRP' || loggedInUser.designation === 'DRP I/C') return loggedInUser.drpWorkHistory?.find(h => h.station === 'present');
-        return null;
-    }, [loggedInUser]);
+    const [isEmployeeCodeOpen, setEmployeeCodeOpen] = useState(false);
 
     const pmayHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
 
@@ -162,20 +152,30 @@ export default function PmaygDataEntryPage() {
         },
     });
 
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove, update } = useFieldArray({
         control: form.control,
         name: "paraParticulars",
     });
     
+    const watchedEmployeeCode = form.watch("employeeCode");
+
     useEffect(() => {
-        if (loggedInUser && presentStation) {
-            form.setValue('employeeCode', loggedInUser.employeeCode);
-            form.setValue('name', loggedInUser.name);
-            form.setValue('contact', loggedInUser.mobileNumber);
-            form.setValue('brpDistrict', presentStation.district || '');
-            form.setValue('brpBlock', presentStation.block || '');
+        if (watchedEmployeeCode) {
+            const selectedUser = users.find(u => u.employeeCode === watchedEmployeeCode);
+            if (selectedUser) {
+                const presentStation = selectedUser.designation === 'BRP' 
+                    ? selectedUser.brpWorkHistory?.find(h => h.station === 'present')
+                    : selectedUser.designation === 'DRP' || selectedUser.designation === 'DRP I/C'
+                    ? selectedUser.drpWorkHistory?.find(h => h.station === 'present')
+                    : null;
+                
+                form.setValue('name', selectedUser.name);
+                form.setValue('contact', selectedUser.mobileNumber);
+                form.setValue('brpDistrict', presentStation?.district || '');
+                form.setValue('brpBlock', (presentStation as any)?.block || '');
+            }
         }
-    }, [loggedInUser, presentStation, form]);
+    }, [watchedEmployeeCode, users, form]);
 
     const watchedDistrict = form.watch("district");
     const watchedBlock = form.watch("block");
@@ -259,6 +259,7 @@ export default function PmaygDataEntryPage() {
             category: '',
             subCategory: '',
             codeNumber: '',
+            description: '',
             centralAmount: 0,
             stateAmount: 0,
             othersAmount: 0,
@@ -268,6 +269,25 @@ export default function PmaygDataEntryPage() {
             recoveryAmount: 0,
         });
     };
+    
+    const clearIssue = (index: number) => {
+        const currentIssue = form.getValues(`paraParticulars.${index}`);
+        update(index, {
+            issueNumber: currentIssue.issueNumber,
+            type: '',
+            category: '',
+            subCategory: '',
+            codeNumber: '',
+            description: '',
+            centralAmount: 0,
+            stateAmount: 0,
+            othersAmount: 0,
+            grievances: 0,
+            hlcRegNo: '',
+            paraStatus: 'PENDING',
+            recoveryAmount: 0,
+        });
+    }
 
     const onSubmit = (data: PmaygFormValues) => {
         console.log(data);
@@ -296,7 +316,49 @@ export default function PmaygDataEntryPage() {
                                 <section>
                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section A: BRP Details</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <FormField control={form.control} name="employeeCode" render={({ field }) => (<FormItem><FormLabel>Employee Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                       <FormField
+                                            control={form.control}
+                                            name="employeeCode"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-col">
+                                                    <FormLabel>Employee Code*</FormLabel>
+                                                    <Popover open={isEmployeeCodeOpen} onOpenChange={setEmployeeCodeOpen}>
+                                                        <PopoverTrigger asChild>
+                                                            <FormControl>
+                                                                <Button variant="outline" role="combobox" className={cn("justify-between", !field.value && "text-muted-foreground")}>
+                                                                    {field.value ? users.find(u => u.employeeCode === field.value)?.employeeCode : "Select Employee"}
+                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                </Button>
+                                                            </FormControl>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-[300px] p-0">
+                                                            <Command>
+                                                                <CommandInput placeholder="Search employee..." />
+                                                                <CommandEmpty>No employee found.</CommandEmpty>
+                                                                <CommandList>
+                                                                    <CommandGroup>
+                                                                        {users.map((u) => (
+                                                                            <CommandItem
+                                                                                value={u.employeeCode}
+                                                                                key={u.id}
+                                                                                onSelect={() => {
+                                                                                    form.setValue("employeeCode", u.employeeCode);
+                                                                                    setEmployeeCodeOpen(false);
+                                                                                }}
+                                                                            >
+                                                                                <Check className={cn("mr-2 h-4 w-4", u.employeeCode === field.value ? "opacity-100" : "opacity-0")} />
+                                                                                {u.employeeCode} - {u.name}
+                                                                            </CommandItem>
+                                                                        ))}
+                                                                    </CommandGroup>
+                                                                </CommandList>
+                                                            </Command>
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                         <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="contact" render={({ field }) => (<FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="brpDistrict" render={({ field }) => (<FormItem><FormLabel>Present District</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
@@ -312,7 +374,7 @@ export default function PmaygDataEntryPage() {
                                          <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="panchayat" render={({ field }) => (<FormItem><FormLabel>Panchayat*</FormLabel><Select onValueChange={field.onChange} value={field.value || ""} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="lgdCode" render={({ field }) => (<FormItem><FormLabel>LGD Code*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
-                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['Pilot - 1', ...Array.from({length: 30}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                         <FormField control={form.control} name="roundNo" render={({ field }) => (<FormItem><FormLabel>Round No.*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Round" /></SelectTrigger></FormControl><SelectContent>{['Pilot - 1', '0', ...Array.from({length: 30}, (_, i) => (i + 1).toString())].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditStartDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit Start Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="auditEndDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Audit End Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                          <FormField control={form.control} name="sgsDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>SGS Date*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn(!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
@@ -395,97 +457,61 @@ export default function PmaygDataEntryPage() {
                                  {/* Section G */}
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between">
-                                        <CardTitle>Section G: Para Particulars</CardTitle>
+                                        <div>
+                                            <CardTitle>Section G: Para Particulars</CardTitle>
+                                            <CardDescription>Add and manage individual issues found during the audit.</CardDescription>
+                                        </div>
                                         <Button type="button" onClick={addIssue}><PlusCircle className="mr-2"/>Add Issue</Button>
                                     </CardHeader>
-                                    <CardContent>
-                                        {fields.length > 0 && (
-                                        <div className="overflow-x-auto">
-                                        <Table>
-                                        <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Issue No.</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Category</TableHead>
-                                            <TableHead>Sub-Category</TableHead>
-                                            <TableHead>Central Amt.</TableHead>
-                                            <TableHead>State Amt.</TableHead>
-                                            <TableHead>Others Amt.</TableHead>
-                                            <TableHead>Grievances</TableHead>
-                                            <TableHead>HLC Reg No.</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Recovery Amt.</TableHead>
-                                            <TableHead>Action</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {fields.map((field, index) => {
-                                                const selectedType = form.watch(`paraParticulars.${index}.type`);
-                                                const selectedCategory = form.watch(`paraParticulars.${index}.category`);
-                                                
-                                                const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
-                                                const subCategories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory).map(d => d.subCategory)));
-                                                
-                                                return (
-                                                <TableRow key={field.id}>
-                                                    <TableCell><Input readOnly {...form.register(`paraParticulars.${index}.issueNumber`)} className="bg-muted w-48"/></TableCell>
-                                                    <TableCell>
-                                                        <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (
-                                                            <Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}>
-                                                                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-                                                                <SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                                                            </Select>
-                                                        )} />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                         <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                            <Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}>
-                                                                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-                                                                <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                                            </Select>
-                                                         )} />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                         <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
-                                                            <Select onValueChange={(value) => {
-                                                                field.onChange(value);
-                                                                const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                            }} value={field.value} disabled={!selectedCategory}>
-                                                                <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
-                                                                <SelectContent>{subCategories.map(sc => <SelectItem key={sc} value={sc}><div className="whitespace-normal">{sc} ({MOCK_PMAYG_DATA.find(d => d.subCategory === sc)?.codeNumber})</div></SelectItem>)}</SelectContent>
-                                                            </Select>
-                                                         )} />
-                                                    </TableCell>
-                                                     <TableCell><Input type="number" {...form.register(`paraParticulars.${index}.centralAmount`)} /></TableCell>
-                                                     <TableCell><Input type="number" {...form.register(`paraParticulars.${index}.stateAmount`)} /></TableCell>
-                                                     <TableCell><Input type="number" {...form.register(`paraParticulars.${index}.othersAmount`)} /></TableCell>
-                                                     <TableCell><Input type="number" {...form.register(`paraParticulars.${index}.grievances`)} /></TableCell>
-                                                     <TableCell>
-                                                         <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
-                                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                                <SelectTrigger className="w-48"><SelectValue placeholder="Select HLC No."/></SelectTrigger>
-                                                                <SelectContent>{pmayHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent>
-                                                            </Select>
-                                                         )} />
-                                                     </TableCell>
-                                                     <TableCell>
-                                                         <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (
-                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                                <SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent>
-                                                            </Select>
-                                                         )} />
-                                                     </TableCell>
-                                                     <TableCell><Input type="number" {...form.register(`paraParticulars.${index}.recoveryAmount`)} /></TableCell>
-                                                     <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button></TableCell>
-                                                </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                        </Table>
-                                        </div>
+                                    <CardContent className="space-y-4">
+                                        {fields.length === 0 && (
+                                            <div className="text-center text-muted-foreground py-8">No issues added yet.</div>
                                         )}
+                                        {fields.map((field, index) => {
+                                            const selectedType = form.watch(`paraParticulars.${index}.type`);
+                                            const selectedCategory = form.watch(`paraParticulars.${index}.category`);
+                                            
+                                            const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
+                                            const subCategories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory).map(d => d.subCategory)));
+                                            
+                                            return (
+                                            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                    )} />
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                    )} />
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.subCategory`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Sub-Category</FormLabel><Select onValueChange={(value) => {
+                                                            field.onChange(value);
+                                                            const code = MOCK_PMAYG_DATA.find(d => d.subCategory === value)?.codeNumber || '';
+                                                            form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                        }} value={field.value} disabled={!selectedCategory}><FormControl><SelectTrigger><SelectValue placeholder="Select Sub-Category"/></SelectTrigger></FormControl><SelectContent>{subCategories.map(sc => <SelectItem key={sc} value={sc}><div className="whitespace-normal">{sc}</div></SelectItem>)}</SelectContent></Select></FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-3"><FormLabel>Description (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.othersAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
+                                                        <FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{pmayHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>
+                                                     )} />
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (
+                                                        <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>
+                                                     )} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.recoveryAmount`} render={({ field }) => (<FormItem><FormLabel>Recovery Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                </div>
+                                                <div className="flex justify-end gap-2 pt-2 border-t">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => clearIssue(index)}>Clear</Button>
+                                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button>
+                                                </div>
+                                            </div>
+                                            );
+                                        })}
                                     </CardContent>
                                 </Card>
                                 
