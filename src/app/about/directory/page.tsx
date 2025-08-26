@@ -83,18 +83,17 @@ export default function DirectoryPage() {
       };
     });
 
-    const staticContactMap = new Map(whoIsWhoContacts.map((contact, index) => [contact.name, {
+    const registeredStaffNames = new Set(users.map(u => u.name));
+
+    const uniqueStaticContacts = whoIsWhoContacts
+      .filter(contact => !registeredStaffNames.has(contact.name))
+      .map((contact, index) => ({
         ...contact,
         id: `static-${index}`,
         employeeCode: 'N/A', // Placeholder
-    }]));
+      }));
 
-    // Filter out registered staff who are already in the static list (by name)
-    const uniqueRegisteredStaff = registeredStaff.filter(staff => !staticContactMap.has(staff.name));
-
-    const combined = [...uniqueRegisteredStaff, ...Array.from(staticContactMap.values())];
-    
-    return combined;
+    return [...registeredStaff, ...uniqueStaticContacts];
 
   }, [users]);
   
@@ -228,7 +227,3 @@ export default function DirectoryPage() {
     </div>
   );
 }
-
-    
-
-    
