@@ -125,6 +125,7 @@ export default function PmaygDataEntryPage() {
     
     const [file, setFile] = useState<File | null>(null);
     const [isEmployeeCodeOpen, setEmployeeCodeOpen] = useState(false);
+    const [currentDistrictCode, setCurrentDistrictCode] = useState('XX');
 
     const pmayHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
 
@@ -194,6 +195,15 @@ export default function PmaygDataEntryPage() {
         return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [watchedBlock]);
     
+     useEffect(() => {
+        const district = form.getValues('district');
+        if (district) {
+            setCurrentDistrictCode(getDistrictCode(district));
+        } else {
+            setCurrentDistrictCode('XX');
+        }
+    }, [watchedDistrict, form]);
+
     useEffect(() => {
         const panchayatLgd = form.watch("panchayat");
         if(panchayatLgd){
