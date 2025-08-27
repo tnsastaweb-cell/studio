@@ -278,9 +278,7 @@ export default function PmaygDataEntryPage() {
         setFile(null);
     };
   
-    if (loading) {
-      return <div>Loading user data...</div>;
-    }
+    if (loading) return <div>Loading user data...</div>;
 
     if (!user) {
         return (
@@ -482,31 +480,33 @@ export default function PmaygDataEntryPage() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormLabel>Sub-Category</FormLabel>
-                                                                <TooltipProvider><Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <Select
-                                                                            onValueChange={(value) => {
-                                                                                const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                                field.onChange(value);
-                                                                                form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                                            }}
-                                                                            value={field.value || ''}
-                                                                            disabled={!selectedCategory}
-                                                                        >
-                                                                            <FormControl>
-                                                                                <SelectTrigger className="truncate">
-                                                                                    <SelectValue placeholder="Select Sub-Category" />
-                                                                                </SelectTrigger>
-                                                                            </FormControl>
-                                                                            <SelectContent>
-                                                                                {subCategories.map(sc => (
-                                                                                    <SelectItem key={sc.codeNumber} value={sc.subCategory}>{sc.subCategory}</SelectItem>
-                                                                                ))}
-                                                                            </SelectContent>
-                                                                        </Select>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent><p>{field.value}</p></TooltipContent>
-                                                                </Tooltip></TooltipProvider>
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Select
+                                                                                onValueChange={(value) => {
+                                                                                    const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
+                                                                                    field.onChange(value);
+                                                                                    form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                                                }}
+                                                                                value={field.value || ''}
+                                                                                disabled={!selectedCategory}
+                                                                            >
+                                                                                <FormControl>
+                                                                                    <SelectTrigger className="truncate">
+                                                                                        <SelectValue placeholder="Select Sub-Category" />
+                                                                                    </SelectTrigger>
+                                                                                </FormControl>
+                                                                                <SelectContent>
+                                                                                    {subCategories.map(sc => (
+                                                                                        <SelectItem key={sc.codeNumber} value={sc.subCategory}>{sc.subCategory}</SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent><p>{field.value}</p></TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
                                                                 <FormMessage />
                                                             </FormItem>
                                                         )}

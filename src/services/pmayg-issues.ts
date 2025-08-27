@@ -20,6 +20,7 @@ export interface PmaygIssue {
 }
 
 const ISSUE_STORAGE_KEY = 'sasta-pmayg-issues';
+const ISSUE_COUNTER_KEY = 'sasta-pmayg-issue-counters';
 
 const getInitialIssues = (): PmaygIssue[] => {
     if (typeof window === 'undefined') return [];
@@ -29,6 +30,26 @@ const getInitialIssues = (): PmaygIssue[] => {
     } catch (error) {
         console.error("Failed to access localStorage for PMAY-G issues:", error);
         return [];
+    }
+};
+
+const getIssueCounters = (): { [districtCode: string]: number } => {
+    if (typeof window === 'undefined') return {};
+    try {
+        const stored = localStorage.getItem(ISSUE_COUNTER_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.error("Failed to access localStorage for issue counters:", error);
+        return {};
+    }
+};
+
+const saveIssueCounters = (counters: { [districtCode: string]: number }) => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(ISSUE_COUNTER_KEY, JSON.stringify(counters));
+    } catch (error) {
+        console.error("Failed to save issue counters to localStorage:", error);
     }
 };
 
@@ -67,14 +88,22 @@ export const usePmaygIssues = () => {
     };
     
     const getNextIssueSerialNumber = useCallback((districtCode: string): number => {
-        const currentIssues = getInitialIssues();
-        const districtIssues = currentIssues.filter(issue => issue.issueNumber.startsWith(`PMAY-${districtCode}-`));
-        return districtIssues.length + 1;
+        const counters = getIssueCounters();
+        const nextSerial = (counters[districtCode] || 0) + 1;
+        return nextSerial;
     }, []);
 
     const addIssue = useCallback((issue: PmaygIssue) => {
         const updatedIssues = [...getInitialIssues(), issue];
         syncIssues(updatedIssues);
+        
+        // Update the counter for the specific district
+        const districtCode = issue.issueNumber.split('-')[1];
+        if (districtCode) {
+            const counters = getIssueCounters();
+            counters[districtCode] = (counters[districtCode] || 0) + 1;
+            saveIssueCounters(counters);
+        }
     }, []);
 
     return { issues, loading, addIssue, getNextIssueSerialNumber };
