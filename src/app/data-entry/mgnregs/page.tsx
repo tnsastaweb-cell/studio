@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -402,7 +403,7 @@ export default function MgnregsDataEntryPage() {
                                                 </div>
                                              </div>
                                         </div>
-                                        <FormField control={form.control} name="skilledSemiSkilledAmount" render={({ field }) => (<FormItem><FormLabel>Skilled/Semi Skilled Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                        <FormField control={form.control} name="skilledSemiSkilledAmount" render={({ field }) => (<FormItem><FormLabel>Skilled/Semi Skilled - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="materialAmount" render={({ field }) => (<FormItem><FormLabel>Material Expenditure Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="totalWorks" render={({ field }) => (<FormItem><FormLabel>Total Works</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="totalAmount" render={({ field }) => (<FormItem><FormLabel>Total Expenditure Amount</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
@@ -443,47 +444,47 @@ export default function MgnregsDataEntryPage() {
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueMgnregsTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                     <Controller
-                                                            control={form.control}
-                                                            name={`paraParticulars.${index}.subCategory`}
-                                                            render={({ field }) => (
-                                                                <FormItem className="lg:col-span-3">
-                                                                    <FormLabel>Sub-Category</FormLabel>
-                                                                    <Select
-                                                                        onValueChange={(value) => {
-                                                                            field.onChange(value);
-                                                                            const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                            form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                                        }}
-                                                                        value={field.value}
-                                                                        disabled={!selectedCategory}
-                                                                    >
-                                                                        <FormControl>
-                                                                            <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
-                                                                                <SelectValue placeholder="Select Sub-Category" />
-                                                                            </SelectTrigger>
-                                                                        </FormControl>
-                                                                        <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                                                            {subCategories.map(sc => (
-                                                                                <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal h-auto py-2">
-                                                                                    {sc.subCategory}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
+                                                    <Controller
+                                                        control={form.control}
+                                                        name={`paraParticulars.${index}.subCategory`}
+                                                        render={({ field }) => (
+                                                            <FormItem className="lg:col-span-3">
+                                                                <FormLabel>Sub-Category</FormLabel>
+                                                                <Select
+                                                                    onValueChange={(value) => {
+                                                                        field.onChange(value);
+                                                                        const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
+                                                                        form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                                    }}
+                                                                    value={field.value}
+                                                                    disabled={!selectedCategory}
+                                                                >
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
+                                                                            <SelectValue placeholder="Select Sub-Category" />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                                                                        {subCategories.map(sc => (
+                                                                            <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal h-auto py-2">
+                                                                                {sc.subCategory}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                    
-                                                     {selectedType === 'GR - Grievances' && (
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                     {selectedType === 'GR - Grievances' ? (
                                                         <>
                                                             <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                             <FormField control={form.control} name={`paraParticulars.${index}.beneficiaries`} render={({ field }) => (<FormItem><FormLabel>No. of Beneficiaries</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                         </>
-                                                     )}
-                                                     {selectedType !== 'GR - Grievances' && (
+                                                     ) : (
                                                         <FormField control={form.control} name={`paraParticulars.${index}.cases`} render={({ field }) => (<FormItem><FormLabel>No. of Cases</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      )}
                                                      <FormField control={form.control} name={`paraParticulars.${index}.amount`} render={({ field }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
@@ -516,3 +517,4 @@ export default function MgnregsDataEntryPage() {
         </div>
     );
 }
+
