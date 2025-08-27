@@ -497,7 +497,7 @@ export default function PmaygDataEntryPage() {
                                                               >
                                                                 <FormControl>
                                                                   <SelectTrigger className="h-auto min-h-16 text-left">
-                                                                     <SelectValue placeholder="Select Sub-Category" className="text-xs" />
+                                                                     <SelectValue placeholder="Select Sub-Category" />
                                                                   </SelectTrigger>
                                                                 </FormControl>
                                                                 <SelectContent className="w-[var(--radix-select-trigger-width)]">
