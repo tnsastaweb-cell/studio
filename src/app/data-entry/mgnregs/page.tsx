@@ -444,11 +444,12 @@ export default function MgnregsDataEntryPage() {
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueMgnregsTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                    <Controller
+                                                     
+                                                      <Controller
                                                         control={form.control}
                                                         name={`paraParticulars.${index}.subCategory`}
                                                         render={({ field }) => (
-                                                            <FormItem className="lg:col-span-3">
+                                                            <FormItem className="lg:col-span-4">
                                                                 <FormLabel>Sub-Category</FormLabel>
                                                                 <Select
                                                                     onValueChange={(value) => {
@@ -456,17 +457,17 @@ export default function MgnregsDataEntryPage() {
                                                                         const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
                                                                         form.setValue(`paraParticulars.${index}.codeNumber`, code);
                                                                     }}
-                                                                    value={field.value}
+                                                                    value={field.value || ''}
                                                                     disabled={!selectedCategory}
                                                                 >
                                                                     <FormControl>
-                                                                        <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
+                                                                        <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
                                                                             <SelectValue placeholder="Select Sub-Category" />
                                                                         </SelectTrigger>
                                                                     </FormControl>
                                                                     <SelectContent className="w-[var(--radix-select-trigger-width)]">
                                                                         {subCategories.map(sc => (
-                                                                            <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal h-auto py-2">
+                                                                            <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal">
                                                                                 {sc.subCategory}
                                                                             </SelectItem>
                                                                         ))}
