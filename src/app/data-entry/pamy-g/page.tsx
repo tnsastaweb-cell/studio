@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -155,25 +156,6 @@ export default function PmaygDataEntryPage() {
     });
 
     const watchedEmployeeCode = form.watch("employeeCode");
-
-    useEffect(() => {
-        if (watchedEmployeeCode) {
-            const selectedUser = users.find(u => u.employeeCode === watchedEmployeeCode);
-            if (selectedUser) {
-                const presentStation = selectedUser.designation === 'BRP' 
-                    ? selectedUser.brpWorkHistory?.find(h => h.station === 'present')
-                    : selectedUser.designation === 'DRP' || selectedUser.designation === 'DRP I/C'
-                    ? selectedUser.drpWorkHistory?.find(h => h.station === 'present')
-                    : null;
-                
-                form.setValue('name', selectedUser.name);
-                form.setValue('contact', selectedUser.mobileNumber);
-                form.setValue('brpDistrict', presentStation?.district || '');
-                form.setValue('brpBlock', (presentStation as any)?.block || '');
-            }
-        }
-    }, [watchedEmployeeCode, users, form]);
-
     const watchedDistrict = form.watch("district");
     const watchedBlock = form.watch("block");
     const watchedPanchayat = form.watch("panchayat");
@@ -192,6 +174,24 @@ export default function PmaygDataEntryPage() {
         if (!watchedBlock) return [];
         return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [watchedBlock]);
+    
+    useEffect(() => {
+        if (watchedEmployeeCode) {
+            const selectedUser = users.find(u => u.employeeCode === watchedEmployeeCode);
+            if (selectedUser) {
+                const presentStation = selectedUser.designation === 'BRP' 
+                    ? selectedUser.brpWorkHistory?.find(h => h.station === 'present')
+                    : selectedUser.designation === 'DRP' || selectedUser.designation === 'DRP I/C'
+                    ? selectedUser.drpWorkHistory?.find(h => h.station === 'present')
+                    : null;
+                
+                form.setValue('name', selectedUser.name);
+                form.setValue('contact', selectedUser.mobileNumber);
+                form.setValue('brpDistrict', presentStation?.district || '');
+                form.setValue('brpBlock', (presentStation as any)?.block || '');
+            }
+        }
+    }, [watchedEmployeeCode, users, form]);
     
     useEffect(() => {
         const panchayatLgd = form.watch("panchayat");
@@ -443,10 +443,10 @@ export default function PmaygDataEntryPage() {
                                             
                                             return (
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                    <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-4">
                                                      <Controller
@@ -467,8 +467,8 @@ export default function PmaygDataEntryPage() {
                                                                     disabled={!selectedCategory}
                                                                 >
                                                                     <FormControl>
-                                                                        <SelectTrigger className="h-auto min-h-10">
-                                                                            <SelectValue placeholder="Select Sub-Category" className="whitespace-normal text-left" />
+                                                                        <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
+                                                                            <SelectValue placeholder="Select Sub-Category" />
                                                                         </SelectTrigger>
                                                                     </FormControl>
                                                                     <SelectContent className="w-[var(--radix-select-trigger-width)]">
@@ -480,9 +480,11 @@ export default function PmaygDataEntryPage() {
                                                                     </SelectContent>
                                                                 </Select>
                                                               </TooltipTrigger>
-                                                              <TooltipContent side="bottom" align="start" className="max-w-md">
-                                                                <p>{field.value}</p>
-                                                              </TooltipContent>
+                                                              {selectedSubCategoryValue && (
+                                                                <TooltipContent side="bottom" align="start" className="max-w-md">
+                                                                    <p>{selectedSubCategoryValue}</p>
+                                                                </TooltipContent>
+                                                              )}
                                                             </Tooltip>
                                                             <FormMessage />
                                                           </FormItem>
@@ -524,4 +526,3 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
-
