@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -13,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useHlc } from '@/services/hlc';
 import { useUsers, User } from '@/services/users';
-import { DISTRICTS_WITH_CODES, DISTRICTS } from '@/services/district-offices';
+import { DISTRICTS_WITH_CODES } from '@/services/district-offices';
 import { usePmaygIssues } from '@/services/pmayg-issues';
 
 
@@ -32,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, Check } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -274,6 +274,7 @@ export default function PmaygDataEntryPage() {
             <Header />
             <MainNavigation />
             <main className="flex-1 container mx-auto px-4 py-8 pb-24">
+                 <TooltipProvider>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                          <Card>
@@ -445,14 +446,17 @@ export default function PmaygDataEntryPage() {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                     
-                                                      <Controller
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                     <Controller
                                                         control={form.control}
                                                         name={`paraParticulars.${index}.subCategory`}
                                                         render={({ field }) => (
-                                                            <FormItem className="lg:col-span-4">
-                                                                <FormLabel>Sub-Category</FormLabel>
+                                                          <FormItem>
+                                                            <FormLabel>Sub-Category</FormLabel>
+                                                            <Tooltip>
+                                                              <TooltipTrigger asChild>
                                                                 <Select
                                                                     onValueChange={(value) => {
                                                                         field.onChange(value);
@@ -463,8 +467,8 @@ export default function PmaygDataEntryPage() {
                                                                     disabled={!selectedCategory}
                                                                 >
                                                                     <FormControl>
-                                                                        <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
-                                                                            <SelectValue placeholder="Select Sub-Category" />
+                                                                        <SelectTrigger className="h-auto min-h-10">
+                                                                            <SelectValue placeholder="Select Sub-Category" className="whitespace-normal text-left" />
                                                                         </SelectTrigger>
                                                                     </FormControl>
                                                                     <SelectContent className="w-[var(--radix-select-trigger-width)]">
@@ -475,10 +479,17 @@ export default function PmaygDataEntryPage() {
                                                                         ))}
                                                                     </SelectContent>
                                                                 </Select>
-                                                                <FormMessage />
-                                                            </FormItem>
+                                                              </TooltipTrigger>
+                                                              <TooltipContent side="bottom" align="start" className="max-w-md">
+                                                                <p>{field.value}</p>
+                                                              </TooltipContent>
+                                                            </Tooltip>
+                                                            <FormMessage />
+                                                          </FormItem>
                                                         )}
                                                     />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -506,9 +517,11 @@ export default function PmaygDataEntryPage() {
                          </Card>
                     </form>
                 </Form>
+                 </TooltipProvider>
             </main>
             <Footer />
             <BottomNavigation />
         </div>
     );
 }
+

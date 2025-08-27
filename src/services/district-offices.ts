@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -161,3 +160,4 @@ export const useDistrictOffices = () => {
 
     return { offices, loading, addOffice, updateOffice, deleteOffice };
 };
+
