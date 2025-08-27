@@ -5,9 +5,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, getYear, isWithinInterval, parseISO } from 'date-fns';
+import { format, getYear, isWithinInterval } from 'date-fns';
 
-import { MOCK_PMAYG_DATA, PmaygData } from '@/services/pmayg';
+import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
@@ -34,7 +34,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Calendar as CalendarIcon, Upload, ChevronsUpDown, Check, PlusCircle, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 
@@ -151,7 +150,7 @@ export default function PmaygDataEntryPage() {
         },
     });
 
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove, update } = useFieldArray({
         control: form.control,
         name: "paraParticulars",
     });
@@ -245,14 +244,8 @@ export default function PmaygDataEntryPage() {
             return;
         }
 
-        const districtInfo = DISTRICTS_WITH_CODES.find(d => d.name === district);
-        if (!districtInfo) {
-            toast({ variant: "destructive", title: "Invalid District", description: "The selected district code could not be found." });
-            return;
-        }
-        
-        const serialNumber = getNextIssueSerialNumber(districtInfo.code);
-        const issueNumber = `PMAY-${districtInfo.code}-ISSUE-${serialNumber}`;
+        const serialNumber = getNextIssueSerialNumber();
+        const issueNumber = `PMAY-G-ISSUE-${serialNumber}`;
 
         append({
             issueNumber: issueNumber,
@@ -278,7 +271,18 @@ export default function PmaygDataEntryPage() {
         setFile(null);
     };
   
-    if (loading) return <div>Loading user data...</div>;
+    if (loading) {
+        return (
+             <div className="flex flex-col min-h-screen">
+                <Header />
+                <MainNavigation />
+                 <main className="flex-1 container mx-auto px-4 py-8 text-center">
+                    <p>Loading...</p>
+                </main>
+                <Footer />
+            </div>
+        )
+    }
 
     if (!user) {
         return (
@@ -480,33 +484,7 @@ export default function PmaygDataEntryPage() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormLabel>Sub-Category</FormLabel>
-                                                                <TooltipProvider>
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger asChild>
-                                                                            <Select
-                                                                                onValueChange={(value) => {
-                                                                                    const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                                    field.onChange(value);
-                                                                                    form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                                                }}
-                                                                                value={field.value || ''}
-                                                                                disabled={!selectedCategory}
-                                                                            >
-                                                                                <FormControl>
-                                                                                    <SelectTrigger className="truncate">
-                                                                                        <SelectValue placeholder="Select Sub-Category" />
-                                                                                    </SelectTrigger>
-                                                                                </FormControl>
-                                                                                <SelectContent>
-                                                                                    {subCategories.map(sc => (
-                                                                                        <SelectItem key={sc.codeNumber} value={sc.subCategory}>{sc.subCategory}</SelectItem>
-                                                                                    ))}
-                                                                                </SelectContent>
-                                                                            </Select>
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent><p>{field.value}</p></TooltipContent>
-                                                                    </Tooltip>
-                                                                </TooltipProvider>
+                                                                <Textarea value={field.value || ''} readOnly className="bg-muted h-32 w-full" />
                                                                 <FormMessage />
                                                             </FormItem>
                                                         )}

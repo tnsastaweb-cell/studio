@@ -20,7 +20,7 @@ export interface PmaygIssue {
 }
 
 const ISSUE_STORAGE_KEY = 'sasta-pmayg-issues';
-const ISSUE_COUNTER_KEY = 'sasta-pmayg-issue-counters';
+const ISSUE_COUNTER_KEY = 'sasta-pmayg-issue-counter';
 
 const getInitialIssues = (): PmaygIssue[] => {
     if (typeof window === 'undefined') return [];
@@ -33,23 +33,23 @@ const getInitialIssues = (): PmaygIssue[] => {
     }
 };
 
-const getIssueCounters = (): { [districtCode: string]: number } => {
-    if (typeof window === 'undefined') return {};
+const getIssueCounter = (): number => {
+    if (typeof window === 'undefined') return 0;
     try {
         const stored = localStorage.getItem(ISSUE_COUNTER_KEY);
-        return stored ? JSON.parse(stored) : {};
+        return stored ? parseInt(stored, 10) : 0;
     } catch (error) {
-        console.error("Failed to access localStorage for issue counters:", error);
-        return {};
+        console.error("Failed to access localStorage for issue counter:", error);
+        return 0;
     }
 };
 
-const saveIssueCounters = (counters: { [districtCode: string]: number }) => {
+const saveIssueCounter = (counter: number) => {
     if (typeof window === 'undefined') return;
     try {
-        localStorage.setItem(ISSUE_COUNTER_KEY, JSON.stringify(counters));
+        localStorage.setItem(ISSUE_COUNTER_KEY, counter.toString());
     } catch (error) {
-        console.error("Failed to save issue counters to localStorage:", error);
+        console.error("Failed to save issue counter to localStorage:", error);
     }
 };
 
@@ -87,23 +87,18 @@ export const usePmaygIssues = () => {
         }
     };
     
-    const getNextIssueSerialNumber = useCallback((districtCode: string): number => {
-        const counters = getIssueCounters();
-        const nextSerial = (counters[districtCode] || 0) + 1;
-        return nextSerial;
+    const getNextIssueSerialNumber = useCallback((): number => {
+        const currentCounter = getIssueCounter();
+        return currentCounter + 1;
     }, []);
 
     const addIssue = useCallback((issue: PmaygIssue) => {
         const updatedIssues = [...getInitialIssues(), issue];
         syncIssues(updatedIssues);
         
-        // Update the counter for the specific district
-        const districtCode = issue.issueNumber.split('-')[1];
-        if (districtCode) {
-            const counters = getIssueCounters();
-            counters[districtCode] = (counters[districtCode] || 0) + 1;
-            saveIssueCounters(counters);
-        }
+        // Update the global counter
+        const currentCounter = getIssueCounter();
+        saveIssueCounter(currentCounter + 1);
     }, []);
 
     return { issues, loading, addIssue, getNextIssueSerialNumber };
