@@ -164,10 +164,10 @@ export default function MgnregsDataEntryPage() {
             pubCommunityLandWorks, pubCommunityLandAmount,
             pubCommunityAssetsWorks, pubCommunityAssetsAmount,
             skilledSemiSkilledAmount, materialAmount
-        ] = watchedVerificationFields;
+        ] = watchedVerificationFields.map(v => Number(v) || 0);
 
-        const totalWorks = (pvtIndividualLandWorks || 0) + (pvtIndividualAssetsWorks || 0) + (pubCommunityLandWorks || 0) + (pubCommunityAssetsWorks || 0);
-        const totalAmount = (pvtIndividualLandAmount || 0) + (pvtIndividualAssetsAmount || 0) + (pubCommunityLandAmount || 0) + (pubCommunityAssetsAmount || 0) + (skilledSemiSkilledAmount || 0) + (materialAmount || 0);
+        const totalWorks = pvtIndividualLandWorks + pvtIndividualAssetsWorks + pubCommunityLandWorks + pubCommunityAssetsWorks;
+        const totalAmount = pvtIndividualLandAmount + pvtIndividualAssetsAmount + pubCommunityLandAmount + pubCommunityAssetsAmount + skilledSemiSkilledAmount + materialAmount;
         
         form.setValue('totalWorks', totalWorks);
         form.setValue('totalAmount', totalAmount);
@@ -459,13 +459,13 @@ export default function MgnregsDataEntryPage() {
                                                                         disabled={!selectedCategory}
                                                                     >
                                                                         <FormControl>
-                                                                            <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
+                                                                            <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
                                                                                 <SelectValue placeholder="Select Sub-Category" />
                                                                             </SelectTrigger>
                                                                         </FormControl>
                                                                         <SelectContent className="w-[var(--radix-select-trigger-width)]">
                                                                             {subCategories.map(sc => (
-                                                                                <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal">
+                                                                                <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal h-auto py-2">
                                                                                     {sc.subCategory}
                                                                                 </SelectItem>
                                                                             ))}
