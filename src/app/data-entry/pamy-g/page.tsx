@@ -36,23 +36,6 @@ import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, C
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-
-const paraParticularsSchema = z.object({
-  issueNumber: z.string(),
-  type: z.string().min(1, "Type is required."),
-  category: z.string().min(1, "Category is required."),
-  subCategory: z.string().min(1, "Sub-category is required."),
-  codeNumber: z.string(),
-  description: z.string().max(1000, "Description must be 1000 characters or less.").optional(),
-  centralAmount: z.coerce.number().optional(),
-  stateAmount: z.coerce.number().optional(),
-  othersAmount: z.coerce.number().optional(),
-  grievances: z.coerce.number().optional(),
-  hlcRegNo: z.string().optional(),
-  paraStatus: z.enum(['PENDING', 'CLOSED']),
-  recoveryAmount: z.coerce.number().optional(),
-});
-
 const pmaygFormSchema = z.object({
   // Section A - BRP Details
   employeeCode: z.string().min(1, "Employee Code is required."),
@@ -107,15 +90,9 @@ const pmaygFormSchema = z.object({
 
   // Section F - Report
   reportFile: z.any().optional(),
-
-  // Section G - Para Particulars
-  paraParticulars: z.array(paraParticularsSchema).optional(),
 });
 
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
-
-const uniqueTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
-
 
 export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
@@ -125,10 +102,7 @@ export default function PmaygDataEntryPage() {
     
     const [file, setFile] = useState<File | null>(null);
     const [isEmployeeCodeOpen, setEmployeeCodeOpen] = useState(false);
-    const [currentDistrictCode, setCurrentDistrictCode] = useState('XX');
-
-    const pmayHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
-
+    
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
         defaultValues: {
@@ -141,7 +115,6 @@ export default function PmaygDataEntryPage() {
             auditYear: '',
             observer: 'no',
             newBeneficiaryDecision: 'no',
-            paraParticulars: [],
             totalHouses: 0, housesVisited: 0, housesNotVisited: 0, firstInstallment: 0,
             secondInstallment: 0, thirdInstallment: 0, fourthInstallment: 0, notCompletedAfterFourth: 0,
             seccCount: 0, seccNonRejected: 0, seccSelected: 0, awaasPlusCount: 0,
@@ -151,11 +124,6 @@ export default function PmaygDataEntryPage() {
         },
     });
 
-    const { fields, append, remove, update } = useFieldArray({
-        control: form.control,
-        name: "paraParticulars",
-    });
-    
     const watchedEmployeeCode = form.watch("employeeCode");
 
     useEffect(() => {
@@ -195,15 +163,6 @@ export default function PmaygDataEntryPage() {
         return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
     }, [watchedBlock]);
     
-     useEffect(() => {
-        const district = form.getValues('district');
-        if (district) {
-            setCurrentDistrictCode(getDistrictCode(district));
-        } else {
-            setCurrentDistrictCode('XX');
-        }
-    }, [watchedDistrict, form]);
-
     useEffect(() => {
         const panchayatLgd = form.watch("panchayat");
         if(panchayatLgd){
@@ -248,54 +207,6 @@ export default function PmaygDataEntryPage() {
         }
     };
     
-    const addIssue = () => {
-        const district = form.getValues('district');
-        if (!district) {
-            toast({ variant: 'destructive', title: "District Required", description: "Please select a district before adding an issue." });
-            return;
-        }
-
-        const districtCode = getDistrictCode(district);
-
-        const serialNumber = (form.getValues('paraParticulars')?.length || 0) + 1;
-        const issueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
-        
-        append({
-            issueNumber,
-            type: '',
-            category: '',
-            subCategory: '',
-            codeNumber: '',
-            description: '',
-            centralAmount: 0,
-            stateAmount: 0,
-            othersAmount: 0,
-            grievances: 0,
-            hlcRegNo: '',
-            paraStatus: 'PENDING',
-            recoveryAmount: 0,
-        });
-    };
-    
-    const clearIssue = (index: number) => {
-        const currentIssue = form.getValues(`paraParticulars.${index}`);
-        update(index, {
-            issueNumber: currentIssue.issueNumber,
-            type: '',
-            category: '',
-            subCategory: '',
-            codeNumber: '',
-            description: '',
-            centralAmount: 0,
-            stateAmount: 0,
-            othersAmount: 0,
-            grievances: 0,
-            hlcRegNo: '',
-            paraStatus: 'PENDING',
-            recoveryAmount: 0,
-        });
-    }
-
     const onSubmit = (data: PmaygFormValues) => {
         console.log(data);
         toast({
@@ -458,92 +369,6 @@ export default function PmaygDataEntryPage() {
                                             <FormItem><FormLabel>Upload Report (PDF format, max 50MB)</FormLabel><FormControl><Input type="file" accept=".pdf" onChange={handleFileChange} /></FormControl><FormMessage /></FormItem>
                                          )} />
                                          {file && <p className="text-sm text-muted-foreground mt-2">Selected: {file.name}</p>}
-                                    </CardContent>
-                                </Card>
-                                
-                                 {/* Section G */}
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between">
-                                        <div>
-                                            <CardTitle>Section G: Para Particulars</CardTitle>
-                                            <CardDescription>Add and manage individual issues found during the audit.</CardDescription>
-                                        </div>
-                                        <Button type="button" onClick={addIssue}><PlusCircle className="mr-2"/>Add Issue</Button>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {fields.length === 0 && (
-                                            <div className="text-center text-muted-foreground py-8">No issues added yet.</div>
-                                        )}
-                                        {fields.map((field, index) => {
-                                            const selectedType = form.watch(`paraParticulars.${index}.type`);
-                                            const selectedCategory = form.watch(`paraParticulars.${index}.category`);
-                                            
-                                            const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
-                                            const subCategories = MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory);
-                                            
-                                            return (
-                                            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                     <div className="lg:col-span-3" />
-                                                    <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                                    <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                                                        <FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent className="w-full md:w-[500px] lg:w-[600px]">{categories.map(c => <SelectItem key={c} value={c} className="whitespace-normal">{c}</SelectItem>)}</SelectContent></Select></FormItem>
-                                                    )} />
-                                                     <Controller
-                                                        control={form.control}
-                                                        name={`paraParticulars.${index}.subCategory`}
-                                                        render={({ field }) => (
-                                                            <FormItem className="lg:col-span-4">
-                                                              <FormLabel>Sub-Category</FormLabel>
-                                                              <Select
-                                                                onValueChange={(value) => {
-                                                                    field.onChange(value);
-                                                                    const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                    form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                                }}
-                                                                value={field.value || ''}
-                                                                disabled={!selectedCategory}
-                                                              >
-                                                                <FormControl>
-                                                                  <SelectTrigger className="h-auto min-h-16 text-left">
-                                                                     <SelectValue placeholder="Select Sub-Category" />
-                                                                  </SelectTrigger>
-                                                                </FormControl>
-                                                                <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                                                    {subCategories.map(sc => (
-                                                                        <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal text-xs">
-                                                                            {sc.subCategory}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                              </Select>
-                                                              <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.description`} render={({ field }) => (<FormItem className="lg:col-span-4"><FormLabel>Description* (Max 1000 chars)</FormLabel><FormControl><Textarea {...field} className="h-24"/></FormControl><FormMessage/></FormItem>)} />
-                                                    <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <FormField control={form.control} name={`paraParticulars.${index}.othersAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
-                                                        <FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{pmayHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>
-                                                     )} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (
-                                                        <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>
-                                                     )} />
-                                                     <FormField control={form.control} name={`paraParticulars.${index}.recoveryAmount`} render={({ field }) => (<FormItem><FormLabel>Recovery Amt.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                </div>
-                                                <div className="flex justify-end gap-2 pt-2 border-t">
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => clearIssue(index)}>Clear</Button>
-                                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button>
-                                                </div>
-                                            </div>
-                                            );
-                                        })}
                                     </CardContent>
                                 </Card>
                                 
