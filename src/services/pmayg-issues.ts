@@ -89,16 +89,14 @@ export const usePmaygIssues = () => {
     
     const getNextIssueSerialNumber = useCallback((): number => {
         const currentCounter = getIssueCounter();
-        return currentCounter + 1;
+        const newCounter = currentCounter + 1;
+        saveIssueCounter(newCounter);
+        return newCounter;
     }, []);
 
     const addIssue = useCallback((issue: PmaygIssue) => {
         const updatedIssues = [...getInitialIssues(), issue];
         syncIssues(updatedIssues);
-        
-        // Update the global counter
-        const currentCounter = getIssueCounter();
-        saveIssueCounter(currentCounter + 1);
     }, []);
 
     return { issues, loading, addIssue, getNextIssueSerialNumber };
