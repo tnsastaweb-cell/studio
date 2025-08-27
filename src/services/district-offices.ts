@@ -3,6 +3,11 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
+export interface DistrictInfo {
+    name: string;
+    code: string;
+}
+
 export interface DistrictOffice {
   id: number;
   district: string;
@@ -17,15 +22,49 @@ export interface DistrictOffice {
   email: string;
 }
 
-export const DISTRICTS = [
-  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri",
-  "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur",
-  "Krishnagiri", "Madurai", "Mayiladuthurai", "Nagapattinam", "Namakkal",
-  "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram", "Ranipet",
-  "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni", "Thoothukudi",
-  "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur",
-  "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"
-].sort();
+export const DISTRICTS_WITH_CODES: DistrictInfo[] = [
+  { name: "Chennai", code: "00" },
+  { name: "Ariyalur", code: "01" },
+  { name: "Chengalpattu", code: "02" },
+  { name: "Coimbatore", code: "03" },
+  { name: "Cuddalore", code: "04" },
+  { name: "Dharmapuri", code: "05" },
+  { name: "Dindigul", code: "06" },
+  { name: "Erode", code: "07" },
+  { name: "Kallakurichi", code: "08" },
+  { name: "Kancheepuram", code: "09" },
+  { name: "Kanniyakumari", code: "10" },
+  { name: "Karur", code: "11" },
+  { name: "Krishnagiri", code: "12" },
+  { name: "Madurai", code: "13" },
+  { name: "Mayiladuthurai", code: "14" },
+  { name: "Nagapattinam", code: "15" },
+  { name: "Namakkal", code: "16" },
+  { name: "Perambalur", code: "17" },
+  { name: "Pudukkottai", code: "18" },
+  { name: "Ramanathapuram", code: "19" },
+  { name: "Ranipet", code: "20" },
+  { name: "Salem", code: "21" },
+  { name: "Sivaganga", code: "22" },
+  { name: "Tenkasi", code: "23" },
+  { name: "Thanjavur", code: "24" },
+  { name: "The Nilgiris", code: "25" },
+  { name: "Theni", code: "26" },
+  { name: "Thoothukudi", code: "27" },
+  { name: "Tiruchirappalli", code: "28" },
+  { name: "Tirunelveli", code: "29" },
+  { name: "Tirupathur", code: "30" },
+  { name: "Tiruppur", code: "31" },
+  { name: 'Tiruvallur', code: '32' },
+  { name: 'Tiruvannamalai', code: '33' },
+  { name: 'Tiruvarur', code: '34' },
+  { name: 'Vellore', code: '35' },
+  { name: 'Viluppuram', code: '36' },
+  { name: 'Virudhunagar', code: '37' },
+];
+
+
+export const DISTRICTS = DISTRICTS_WITH_CODES.map(d => d.name);
 
 
 const MOCK_OFFICES: DistrictOffice[] = [

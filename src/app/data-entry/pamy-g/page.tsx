@@ -11,10 +11,9 @@ import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts } from '@/lib/utils';
 import { useHlc } from '@/services/hlc';
 import { useUsers, User } from '@/services/users';
-import { getDistrictCode } from '@/services/panchayat-data/district-codes';
+import { DISTRICTS_WITH_CODES, DISTRICTS } from '@/services/district-offices';
 import { usePmaygIssues } from '@/services/pmayg-issues';
 
 
@@ -114,6 +113,7 @@ const pmaygFormSchema = z.object({
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
 const uniquePmaygTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
+const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 
 export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
@@ -244,7 +244,7 @@ export default function PmaygDataEntryPage() {
             return;
         }
 
-        const districtCode = getDistrictCode(district);
+        const districtCode = DISTRICTS_WITH_CODES.find(d => d.name === district)?.code || 'XX';
         const serialNumber = getNextIssueSerialNumber(districtCode);
         const newIssueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
 
@@ -435,6 +435,7 @@ export default function PmaygDataEntryPage() {
                                         {fields.map((field, index) => {
                                             const selectedType = form.watch(`paraParticulars.${index}.type`);
                                             const selectedCategory = form.watch(`paraParticulars.${index}.category`);
+                                            const selectedSubCategoryValue = form.watch(`paraParticulars.${index}.subCategory`);
                                             
                                             const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
                                             const subCategories = MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory);

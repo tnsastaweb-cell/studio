@@ -34,7 +34,7 @@ import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { useCalendars } from '@/services/calendars';
-import { DISTRICTS } from '@/services/district-offices';
+import { DISTRICTS, DISTRICTS_WITH_CODES } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
 import { useVRPs, Vrp } from '@/services/vrp';
@@ -162,7 +162,6 @@ const toTitleCase = (str: string) => {
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 const years = ["2025-2026", "2024-2025", "2023-2024"];
 
 export default function AdminPage() {
@@ -239,12 +238,8 @@ export default function AdminPage() {
     const endIndex = startIndex + panchayatsPerPage;
     return filteredPanchayats.slice(startIndex, endIndex);
   }, [panchayatCurrentPage, panchayatsPerPage, filteredPanchayats]);
-
-    const sortedDistricts = useMemo(() => {
-        const chennai = DISTRICTS.find(d => d === "Chennai");
-        const others = DISTRICTS.filter(d => d !== "Chennai").sort((a, b) => a.localeCompare(b));
-        return chennai ? [chennai, ...others] : others;
-    }, []);
+  
+  const uniqueDistricts = useMemo(() => Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort(), []);
 
     const filteredStaff = useMemo(() => {
         return users.filter(u => {
@@ -1172,7 +1167,7 @@ export default function AdminPage() {
                                     <CardHeader>
                                         <CardTitle>District List</CardTitle>
                                         <CardDescription>
-                                            List of all Districts in Tamil Nadu. Total: {sortedDistricts.length}
+                                            List of all Districts in Tamil Nadu. Total: {DISTRICTS_WITH_CODES.length}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -1181,14 +1176,16 @@ export default function AdminPage() {
                                                 <TableHeader>
                                                     <TableRow>
                                                         <TableHead className="w-[80px]">S.No</TableHead>
+                                                        <TableHead>District Code</TableHead>
                                                         <TableHead>District Name</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {sortedDistricts.map((district, index) => (
-                                                        <TableRow key={district}>
-                                                            <TableCell>{district === "Chennai" ? "00" : String(index).padStart(2, '0')}</TableCell>
-                                                            <TableCell>{toTitleCase(district)}</TableCell>
+                                                    {DISTRICTS_WITH_CODES.map((district, index) => (
+                                                        <TableRow key={district.code}>
+                                                            <TableCell>{index + 1}</TableCell>
+                                                            <TableCell>{district.code}</TableCell>
+                                                            <TableCell>{toTitleCase(district.name)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
