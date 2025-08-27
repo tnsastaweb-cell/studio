@@ -34,7 +34,7 @@ import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { MOCK_SCHEMES, Scheme } from '@/services/schemes';
 import { useCalendars } from '@/services/calendars';
-import { DISTRICTS, DISTRICTS_WITH_CODES } from '@/services/district-offices';
+import { DISTRICTS_WITH_CODES } from '@/services/district-offices';
 import { useFeedback, Feedback } from '@/services/feedback';
 import { useUsers, ROLES, User } from '@/services/users';
 import { useVRPs, Vrp } from '@/services/vrp';
@@ -2147,10 +2147,12 @@ export default function AdminPage() {
                                       <FormField control={calendarForm.control} name="district" render={({ field }) => (
                                           <FormItem>
                                               <FormLabel>District</FormLabel>
-                                              <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                                  <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
-                                                  <SelectContent>{DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                              </Select>
+                                                <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
+                                                    <SelectContent>
+                                                        {DISTRICTS_WITH_CODES.map(d => <SelectItem key={d.code} value={d.name}>{d.name}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
                                               <FormMessage />
                                           </FormItem>
                                       )} />

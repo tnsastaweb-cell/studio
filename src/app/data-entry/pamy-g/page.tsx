@@ -437,13 +437,14 @@ export default function PmaygDataEntryPage() {
                                             const selectedType = form.watch(`paraParticulars.${index}.type`);
                                             const selectedCategory = form.watch(`paraParticulars.${index}.category`);
                                             const selectedSubCategoryValue = form.watch(`paraParticulars.${index}.subCategory`);
+                                            const selectedHlcRegNo = form.watch(`paraParticulars.${index}.hlcRegNo`);
                                             
                                             const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
                                             const subCategories = MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory);
                                             
                                             return (
                                             <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
@@ -467,7 +468,7 @@ export default function PmaygDataEntryPage() {
                                                                         disabled={!selectedCategory}
                                                                     >
                                                                         <FormControl>
-                                                                            <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
+                                                                            <SelectTrigger className="h-auto min-h-10 whitespace-normal text-left">
                                                                                 <SelectValue placeholder="Select Sub-Category" />
                                                                             </SelectTrigger>
                                                                         </FormControl>
@@ -481,7 +482,7 @@ export default function PmaygDataEntryPage() {
                                                                     </Select>
                                                                 </TooltipTrigger>
                                                                 {selectedSubCategoryValue && (
-                                                                  <TooltipContent side="bottom" align="start" className="max-w-md">
+                                                                  <TooltipContent side="bottom" align="start" className="max-w-md bg-background text-foreground border-primary">
                                                                       <p>{selectedSubCategoryValue}</p>
                                                                   </TooltipContent>
                                                                 )}
@@ -501,23 +502,20 @@ export default function PmaygDataEntryPage() {
                                                      <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amount Involved (INR)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.otherAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amount Involved (INR)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
-                                                         <FormItem>
-                                                             <FormLabel>HLC Reg No.</FormLabel>
-                                                             <Tooltip>
+                                                      <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
+                                                          <FormItem><FormLabel>HLC Reg No.</FormLabel>
+                                                              <Tooltip>
                                                                  <TooltipTrigger asChild>
                                                                      <Select onValueChange={field.onChange} value={field.value}>
-                                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl>
+                                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl>
                                                                          <SelectContent>{pmaygHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent>
                                                                      </Select>
                                                                  </TooltipTrigger>
-                                                                 <TooltipContent>
-                                                                    <p>{field.value || "Select HLC No."}</p>
-                                                                 </TooltipContent>
-                                                             </Tooltip>
-                                                         </FormItem>
-                                                     )} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
+                                                                 {selectedHlcRegNo && <TooltipContent><p>{selectedHlcRegNo}</p></TooltipContent>}
+                                                              </Tooltip>
+                                                          </FormItem>
+                                                      )} />
+                                                      <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
                                                 </div>
                                                 <div className="flex justify-end gap-2 pt-2 border-t">
                                                     <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button>
@@ -542,4 +540,5 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
+
 

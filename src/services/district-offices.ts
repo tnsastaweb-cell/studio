@@ -11,6 +11,7 @@ export interface DistrictInfo {
 export interface DistrictOffice {
   id: number;
   district: string;
+  code: string;
   buildingName: string;
   address: string;
   pincode: string;
@@ -50,7 +51,7 @@ export const DISTRICTS_WITH_CODES: DistrictInfo[] = [
     { name: "Thanjavur", code: "24" },
     { name: "The Nilgiris", code: "25" },
     { name: "Theni", code: "26" },
-    { name: "Thoothukudi", code: "27" },
+    { name: 'Thoothukudi', code: '27' },
     { name: "Tiruchirappalli", code: "28" },
     { name: "Tirunelveli", code: "29" },
     { name: "Tirupathur", code: "30" },
@@ -71,6 +72,7 @@ const MOCK_OFFICES: DistrictOffice[] = [
     {
         id: 1,
         district: "Chennai",
+        code: "00",
         buildingName: "District Collectorate",
         address: "123, Rajaji Salai, George Town",
         pincode: "600001",
@@ -131,11 +133,13 @@ export const useDistrictOffices = () => {
         }
     };
 
-    const addOffice = useCallback((office: Omit<DistrictOffice, 'id'>) => {
+    const addOffice = useCallback((office: Omit<DistrictOffice, 'id' | 'code'>) => {
         setOffices(prev => {
+            const districtInfo = DISTRICTS_WITH_CODES.find(d => d.name === office.district);
             const newOffice = {
                 ...office,
                 id: (prev[prev.length - 1]?.id ?? 0) + 1,
+                code: districtInfo?.code || 'XX',
             };
             const newOffices = [...prev, newOffice];
             syncOffices(newOffices);
@@ -145,7 +149,9 @@ export const useDistrictOffices = () => {
 
     const updateOffice = useCallback((updatedOffice: DistrictOffice) => {
         setOffices(prev => {
-            const newOffices = prev.map(o => o.id === updatedOffice.id ? updatedOffice : o);
+            const districtInfo = DISTRICTS_WITH_CODES.find(d => d.name === updatedOffice.district);
+            const officeWithCode = { ...updatedOffice, code: districtInfo?.code || 'XX' };
+            const newOffices = prev.map(o => o.id === updatedOffice.id ? officeWithCode : o);
             syncOffices(newOffices);
             return newOffices;
         });
