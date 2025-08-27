@@ -38,6 +38,22 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
 
+const paraParticularsSchema = z.object({
+  issueNumber: z.string(),
+  type: z.string().min(1, "Type is required."),
+  category: z.string().min(1, "Category is required."),
+  subCategory: z.string().min(1, "Sub-category is required."),
+  codeNumber: z.string(),
+  cases: z.coerce.number(),
+  centralAmount: z.coerce.number(),
+  stateAmount: z.coerce.number(),
+  othersAmount: z.coerce.number(),
+  grievances: z.coerce.number(),
+  hlcRegNo: z.string().optional(),
+  paraStatus: z.enum(['PENDING', 'CLOSED']),
+  recoveryAmount: z.coerce.number(),
+});
+
 const pmaygFormSchema = z.object({
   // Section A - BRP Details
   employeeCode: z.string().min(1, "Employee Code is required."),
@@ -93,6 +109,8 @@ const pmaygFormSchema = z.object({
   // Section F - Report
   reportFile: z.any().optional(),
 
+  // Section G - Para Particulars
+  paraParticulars: z.array(paraParticularsSchema).optional(),
 });
 
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
@@ -102,9 +120,14 @@ export default function PmaygDataEntryPage() {
     const { user, loading } = useAuth();
     const { users } = useUsers();
     const { toast } = useToast();
+    const { hlcItems } = useHlc();
+    const { getNextIssueSerialNumber, addIssue: savePmaygIssue, issues: pmaygIssues } = usePmaygIssues();
+
     
     const [file, setFile] = useState<File | null>(null);
     const [isEmployeeCodeOpen, setEmployeeCodeOpen] = useState(false);
+    
+    const pmaygHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'PMAY-G'), [hlcItems]);
     
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
@@ -124,7 +147,13 @@ export default function PmaygDataEntryPage() {
             awaasPlusSelected: 0, totalSelectedMIS: 0, beneficiariesInterviewed: 0,
             notInterviewedButVisited: 0, couldNotIdentify: 0, totalVerifiedField: 0,
             seccInKutcha: 0,
+            paraParticulars: [],
         },
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "paraParticulars",
     });
     
     const watchedEmployeeCode = form.watch("employeeCode");
@@ -208,18 +237,66 @@ export default function PmaygDataEntryPage() {
             form.setValue('reportFile', selectedFile);
         }
     };
+
+    const addIssue = () => {
+        const district = form.getValues("district");
+        if (!district) {
+            toast({ variant: "destructive", title: "District not selected", description: "Please select a district before adding an issue." });
+            return;
+        }
+
+        const districtInfo = DISTRICTS_WITH_CODES.find(d => d.name === district);
+        if (!districtInfo) {
+            toast({ variant: "destructive", title: "Invalid District", description: "The selected district code could not be found." });
+            return;
+        }
+        
+        const serialNumber = getNextIssueSerialNumber(districtInfo.code);
+        const issueNumber = `PMAY-${districtInfo.code}-ISSUE-${serialNumber}`;
+
+        append({
+            issueNumber: issueNumber,
+            type: '', category: '', subCategory: '', codeNumber: '',
+            cases: 0, centralAmount: 0, stateAmount: 0, othersAmount: 0,
+            grievances: 0, hlcRegNo: '', paraStatus: 'PENDING', recoveryAmount: 0,
+        });
+    };
     
     const onSubmit = (data: PmaygFormValues) => {
+        // Save main form data logic here
         console.log(data);
+        // Save para particulars issues
+        if(data.paraParticulars) {
+            data.paraParticulars.forEach(issue => savePmaygIssue(issue));
+        }
+
         toast({
             title: "Form Submitted!",
             description: "PMAY-G data has been successfully recorded.",
         });
         form.reset();
+        setFile(null);
     };
   
     if (loading) {
       return <div>Loading user data...</div>;
+    }
+
+    if (!user) {
+        return (
+             <div className="flex flex-col min-h-screen">
+                <Header />
+                <MainNavigation />
+                 <main className="flex-1 container mx-auto px-4 py-8 text-center">
+                    <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
+                    <p className="mt-4">You must be signed in to view this page.</p>
+                     <Button asChild className="mt-6">
+                        <Link href="/">Back to Home</Link>
+                    </Button>
+                </main>
+                <Footer />
+            </div>
+        )
     }
 
     return (
@@ -374,6 +451,86 @@ export default function PmaygDataEntryPage() {
                                             <FormItem><FormLabel>Upload Report (PDF format, max 50MB)</FormLabel><FormControl><Input type="file" accept=".pdf" onChange={handleFileChange} /></FormControl><FormMessage /></FormItem>
                                          )} />
                                          {file && <p className="text-sm text-muted-foreground mt-2">Selected: {file.name}</p>}
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div><CardTitle>Section G: Para Particulars</CardTitle><CardDescription>Add and manage individual issues found during the audit.</CardDescription></div>
+                                        <Button type="button" onClick={addIssue}><PlusCircle className="mr-2"/>Add Issue</Button>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {fields.length === 0 && (<div className="text-center text-muted-foreground py-8">No issues added yet.</div>)}
+                                        {fields.map((field, index) => {
+                                            const selectedType = form.watch(`paraParticulars.${index}.type`);
+                                            const selectedCategory = form.watch(`paraParticulars.${index}.category`);
+                                            
+                                            const categories = Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
+                                            const subCategories = MOCK_PMAYG_DATA.filter(d => d.type === selectedType && d.category === selectedCategory);
+                                            
+                                            return (
+                                            <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                     <Controller
+                                                        control={form.control}
+                                                        name={`paraParticulars.${index}.subCategory`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>Sub-Category</FormLabel>
+                                                                <TooltipProvider><Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Select
+                                                                            onValueChange={(value) => {
+                                                                                const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
+                                                                                field.onChange(value);
+                                                                                form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                                            }}
+                                                                            value={field.value || ''}
+                                                                            disabled={!selectedCategory}
+                                                                        >
+                                                                            <FormControl>
+                                                                                <SelectTrigger className="truncate">
+                                                                                    <SelectValue placeholder="Select Sub-Category" />
+                                                                                </SelectTrigger>
+                                                                            </FormControl>
+                                                                            <SelectContent>
+                                                                                {subCategories.map(sc => (
+                                                                                    <SelectItem key={sc.codeNumber} value={sc.subCategory}>{sc.subCategory}</SelectItem>
+                                                                                ))}
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>{field.value}</p></TooltipContent>
+                                                                </Tooltip></TooltipProvider>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.cases`} render={({ field }) => (<FormItem><FormLabel>No. of Cases</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.othersAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                     <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (<FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{pmaygHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                    <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
+                                                    <FormField control={form.control} name={`paraParticulars.${index}.recoveryAmount`} render={({ field }) => (<FormItem><FormLabel>Recovery Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                </div>
+                                                <div className="flex justify-end gap-2 pt-2 border-t">
+                                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button>
+                                                </div>
+                                            </div>
+                                            );
+                                        })}
                                     </CardContent>
                                 </Card>
 
