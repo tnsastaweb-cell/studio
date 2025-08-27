@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useHlc } from '@/services/hlc';
 import { useUsers, User } from '@/services/users';
-import { DISTRICTS_WITH_CODES } from '@/services/district-offices';
+import { getDistrictCode } from '@/services/panchayat-data/district-codes';
 import { usePmaygIssues } from '@/services/pmayg-issues';
 
 
@@ -42,13 +42,13 @@ const paraParticularsSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string().min(1, "Sub-category is required."),
   codeNumber: z.string(),
-  cases: z.coerce.number(),
-  centralAmount: z.coerce.number(),
-  stateAmount: z.coerce.number(),
-  otherAmount: z.coerce.number(),
-  grievances: z.coerce.number(),
+  cases: z.coerce.number().default(0),
+  centralAmount: z.coerce.number().default(0),
+  stateAmount: z.coerce.number().default(0),
+  otherAmount: z.coerce.number().default(0),
+  grievances: z.coerce.number().default(0),
   hlcRegNo: z.string().optional(),
-  paraStatus: z.enum(['PENDING', 'CLOSED']),
+  paraStatus: z.enum(['PENDING', 'CLOSED']).default('PENDING'),
 });
 
 
@@ -244,7 +244,7 @@ export default function PmaygDataEntryPage() {
             return;
         }
 
-        const districtCode = DISTRICTS_WITH_CODES.find(d => d.name === district)?.code || 'XX';
+        const districtCode = getDistrictCode(district);
         const serialNumber = getNextIssueSerialNumber(districtCode);
         const newIssueNumber = `PMAY-${districtCode}-ISSUE-${serialNumber}`;
 
@@ -448,49 +448,50 @@ export default function PmaygDataEntryPage() {
                                                     <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.subCategory`, ''); }} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl><SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                     <Controller
-                                                        control={form.control}
-                                                        name={`paraParticulars.${index}.subCategory`}
-                                                        render={({ field }) => (
-                                                          <FormItem>
-                                                            <FormLabel>Sub-Category</FormLabel>
-                                                            <Tooltip>
-                                                              <TooltipTrigger asChild>
-                                                                <Select
-                                                                    onValueChange={(value) => {
-                                                                        field.onChange(value);
-                                                                        const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
-                                                                        form.setValue(`paraParticulars.${index}.codeNumber`, code);
-                                                                    }}
-                                                                    value={field.value || ''}
-                                                                    disabled={!selectedCategory}
-                                                                >
-                                                                    <FormControl>
-                                                                        <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
-                                                                            <SelectValue placeholder="Select Sub-Category" />
-                                                                        </SelectTrigger>
-                                                                    </FormControl>
-                                                                    <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                                                        {subCategories.map(sc => (
-                                                                            <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal">
-                                                                                {sc.subCategory}
-                                                                            </SelectItem>
-                                                                        ))}
-                                                                    </SelectContent>
-                                                                </Select>
-                                                              </TooltipTrigger>
-                                                              {selectedSubCategoryValue && (
-                                                                <TooltipContent side="bottom" align="start" className="max-w-md">
-                                                                    <p>{selectedSubCategoryValue}</p>
-                                                                </TooltipContent>
-                                                              )}
-                                                            </Tooltip>
-                                                            <FormMessage />
-                                                          </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
+                                                 <div className="grid grid-cols-1 gap-4">
+                                                      <Controller
+                                                          control={form.control}
+                                                          name={`paraParticulars.${index}.subCategory`}
+                                                          render={({ field }) => (
+                                                            <FormItem>
+                                                              <FormLabel>Sub-Category</FormLabel>
+                                                              <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Select
+                                                                        onValueChange={(value) => {
+                                                                            field.onChange(value);
+                                                                            const code = subCategories.find(d => d.subCategory === value)?.codeNumber || '';
+                                                                            form.setValue(`paraParticulars.${index}.codeNumber`, code);
+                                                                        }}
+                                                                        value={field.value || ''}
+                                                                        disabled={!selectedCategory}
+                                                                    >
+                                                                        <FormControl>
+                                                                            <SelectTrigger className="h-auto min-h-16 whitespace-normal text-left">
+                                                                                <SelectValue placeholder="Select Sub-Category" />
+                                                                            </SelectTrigger>
+                                                                        </FormControl>
+                                                                        <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                                                                            {subCategories.map(sc => (
+                                                                                <SelectItem key={sc.codeNumber} value={sc.subCategory} className="whitespace-normal">
+                                                                                    {sc.subCategory}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </TooltipTrigger>
+                                                                {selectedSubCategoryValue && (
+                                                                  <TooltipContent side="bottom" align="start" className="max-w-md">
+                                                                      <p>{selectedSubCategoryValue}</p>
+                                                                  </TooltipContent>
+                                                                )}
+                                                              </Tooltip>
+                                                              <FormMessage />
+                                                            </FormItem>
+                                                          )}
+                                                      />
+                                                  </div>
+
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FormField control={form.control} name={`paraParticulars.${index}.codeNumber`} render={({ field }) => (<FormItem><FormLabel>Code No.</FormLabel><FormControl><Input readOnly {...field} className="bg-muted"/></FormControl></FormItem>)} />
                                                 </div>
@@ -500,7 +501,22 @@ export default function PmaygDataEntryPage() {
                                                      <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amount Involved (INR)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.otherAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amount Involved (INR)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                                      <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances*</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                     <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (<FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{pmaygHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                                                     <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (
+                                                         <FormItem>
+                                                             <FormLabel>HLC Reg No.</FormLabel>
+                                                             <Tooltip>
+                                                                 <TooltipTrigger asChild>
+                                                                     <Select onValueChange={field.onChange} value={field.value}>
+                                                                         <FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl>
+                                                                         <SelectContent>{pmaygHlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent>
+                                                                     </Select>
+                                                                 </TooltipTrigger>
+                                                                 <TooltipContent>
+                                                                    <p>{field.value || "Select HLC No."}</p>
+                                                                 </TooltipContent>
+                                                             </Tooltip>
+                                                         </FormItem>
+                                                     )} />
                                                      <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
                                                 </div>
                                                 <div className="flex justify-end gap-2 pt-2 border-t">
@@ -526,3 +542,4 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
+
