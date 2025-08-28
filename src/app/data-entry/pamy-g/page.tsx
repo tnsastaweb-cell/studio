@@ -246,27 +246,27 @@ export default function PmaygDataEntryPage() {
             const year = getYear(watchedSgsDate);
             const fiscalYearStart = new Date(year, 3, 1); // April 1st
             const auditYear = isWithinInterval(watchedSgsDate, { start: fiscalYearStart, end: new Date(year + 1, 2, 31) })
-                ? `${'${year}'}-${'${year + 1}'}`
-                : `${'${year - 1}'}-${'${year}'}`;
+                ? `${year}-${year + 1}`
+                : `${year - 1}-${year}`;
             form.setValue('auditYear', auditYear);
         }
     }, [watchedSgsDate, form]);
     
      // Auto-calculate totals
-    const visited = form.watch("housesVisited");
-    const total = form.watch("totalHouses");
+    const housesVisited = form.watch("housesVisited") || 0;
+    const totalHouses = form.watch("totalHouses") || 0;
     useEffect(() => {
-        form.setValue('housesNotVisited', Math.max(0, Number(total) - Number(visited)));
-    }, [visited, total, form]);
+        form.setValue('housesNotVisited', Math.max(0, Number(totalHouses) - Number(housesVisited)));
+    }, [housesVisited, totalHouses, form]);
 
-    const misSeccSelected = form.watch("misSeccSelected");
-    const misAwaasPlusSelected = form.watch("misAwaasPlusSelected");
+    const misSeccSelected = form.watch("misSeccSelected") || 0;
+    const misAwaasPlusSelected = form.watch("misAwaasPlusSelected") || 0;
     useEffect(() => {
         form.setValue('misTotalSelected', Number(misSeccSelected) + Number(misAwaasPlusSelected));
     }, [misSeccSelected, misAwaasPlusSelected, form]);
     
-    const fieldInterviewed = form.watch("fieldInterviewed");
-    const fieldVisited = form.watch("fieldVisited");
+    const fieldInterviewed = form.watch("fieldInterviewed") || 0;
+    const fieldVisited = form.watch("fieldVisited") || 0;
     useEffect(() => {
         form.setValue('fieldTotalVerified', Number(fieldInterviewed) + Number(fieldVisited));
     }, [fieldInterviewed, fieldVisited, form]);
@@ -292,9 +292,19 @@ export default function PmaygDataEntryPage() {
         }
         const issueNumber = getNextIssueSerialNumber(district);
         append({
-            issueNumber, type: '', category: '', subCategory: '', codeNumber: '', paraStatus: 'PENDING',
-            beneficiaries: 0, centralAmount: 0, stateAmount: 0, otherAmount: 0, grievances: 0,
-            hlcRegNo: '', recoveryAmount: 0
+            issueNumber, 
+            type: '', 
+            category: '', 
+            subCategory: '', 
+            codeNumber: '', 
+            paraStatus: 'PENDING',
+            beneficiaries: 0, 
+            centralAmount: 0, 
+            stateAmount: 0, 
+            otherAmount: 0, 
+            grievances: 0,
+            hlcRegNo: '', 
+            recoveryAmount: 0
         });
     };
 
@@ -317,7 +327,17 @@ export default function PmaygDataEntryPage() {
     };
     
     if (loading) {
-       return <div>Loading...</div>;
+       return (
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <MainNavigation />
+          <main className="flex-1 container mx-auto px-4 py-8 pb-24">
+            Loading...
+          </main>
+          <Footer />
+          <BottomNavigation />
+        </div>
+       )
     }
 
     return (
