@@ -1,5 +1,4 @@
 
-
 export interface PmaygData {
   type: string;
   category: string;
@@ -7,6 +6,7 @@ export interface PmaygData {
   codeNumber: string;
 }
 
+// NOTE: This data is in Tamil.
 export const MOCK_PMAYG_DATA: PmaygData[] = [
     { type: 'முறைகேடு', category: 'கட்டப்படாத வீட்டிற்கு பணம் விடுவிக்கப்பட்டுள்ளது', subCategory: 'வீடு கட்டப்படவில்லை - பயனாளி அல்லாது வேறொருவர் கணக்கிற்கு பணம் விடுவிக்கப்பட்டுள்ளது', codeNumber: '1' },
     { type: 'முறைகேடு', category: 'கட்டப்படாத வீட்டிற்கு பணம் விடுவிக்கப்பட்டுள்ளது', subCategory: 'புதிய வீடு கட்டப்படவில்லை - முன்பு கட்டப்பட்ட பழைய வீட்டிற்கு பணம் விடுவிக்கப்பட்டுள்ளது', codeNumber: '2' },
@@ -134,3 +134,5 @@ export const MOCK_PMAYG_DATA: PmaygData[] = [
     { type: 'முறைகேடு', category: 'மற்ற முறைகேடு', subCategory: 'ஊராட்சித் தலைவர் /ஊராட்சி செயலர் வங்கி கணக்கில் தொகை விடுவிக்கபட்டுள்ளது', codeNumber: '124' },
     { type: 'முறைகேடு', category: 'மற்ற முறைகேடு', subCategory: 'பிரதம மந்திரி ஊரக குடியிருப்பு திட்ட வீடு கட்டுவதற்கு 90 மனித சக்தி நாட்களுக்கான ஊதியம் (மகாத்மா காந்தி தேசிய ஊரக வேலை உறுதித் திட்டத்தின் கீழ்) வழங்குவதில் முறைகேடு', codeNumber: '125' },
 ];
+
+    

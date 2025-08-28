@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Header } from '@/components/header';
@@ -10,7 +11,7 @@ import Link from 'next/link';
 
 const dataEntryItems = [
     { title: "MGNREGS", href: "/data-entry/mgnregs", disabled: false },
-    { title: "PMAY-G", href: "/data-entry/pamy-g", disabled: true },
+    { title: "PMAY-G", href: "/data-entry/pamy-g", disabled: false },
     { title: "NSAP", href: "/data-entry/nsap", disabled: true },
     { title: "NMP", href: "/data-entry/nmp", disabled: true },
     { title: "15th CFC Grant", href: "/data-entry/ffcg", disabled: true },
