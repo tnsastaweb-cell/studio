@@ -92,7 +92,7 @@ export const usePmaygIssues = () => {
              console.error("Failed to save issue counters to localStorage:", error);
         }
 
-        return `PMAY-G-${districtName.toUpperCase()}-ISSUE-${nextSerial}`;
+        return `PMAY-G-${districtName.toUpperCase()}-${nextSerial}`;
     }, []);
 
     const addIssue = useCallback((issueData: Omit<PmaygIssue, 'id'>) => {
@@ -106,5 +106,3 @@ export const usePmaygIssues = () => {
     
     return { issues, loading, addIssue, getNextIssueSerialNumber };
 };
-
-    
