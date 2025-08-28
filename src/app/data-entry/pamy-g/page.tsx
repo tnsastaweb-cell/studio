@@ -5,16 +5,16 @@ import React, { useState, useMemo, useEffect, forwardRef, FC } from 'react';
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, getYear, isWithinInterval } from 'date-fns';
+import { format, getYear, isWithinInterval, parseISO } from 'date-fns';
 
 import { useAuth } from '@/hooks/use-auth';
-import { useUsers } from '@/services/users';
+import { useUsers, User } from '@/services/users';
 import { useToast } from '@/hooks/use-toast';
 import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useHlc } from '@/services/hlc';
 import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { uniqueDistricts } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 import { Header } from '@/components/header';
@@ -94,7 +94,7 @@ const pmaygFormSchema = z.object({
   misSeccCount: z.coerce.number().default(0),
   misSeccNonRejected: z.coerce.number().default(0),
   misSeccSelected: z.coerce.number().default(0),
-  misAwaasPlusCount: zcoerce.number().default(0),
+  misAwaasPlusCount: z.coerce.number().default(0),
   misAwaasPlusSelected: z.coerce.number().default(0),
   misTotalSelected: z.coerce.number().default(0),
   fieldInterviewed: z.coerce.number().default(0),
@@ -113,7 +113,7 @@ const pmaygFormSchema = z.object({
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 type ParaParticularsValues = z.infer<typeof paraParticularsSchema>;
 
-const uniqueMgnregsTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
+const uniquePmaygTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
 
 const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: (index: number) => void; hlcItems: any[] }> = ({ index, control, form, remove, hlcItems }) => {
     const selectedType = useWatch({ control, name: `paraParticulars.${index}.type` });
@@ -123,7 +123,7 @@ const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: 
         if (!selectedType) return [];
         return Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === selectedType).map(d => d.category)));
     }, [selectedType]);
-
+    
     useEffect(() => {
         const categoryData = MOCK_PMAYG_DATA.find(d => d.type === selectedType && d.category === selectedCategoryValue);
         if (categoryData) {
@@ -139,9 +139,9 @@ const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: 
         <div className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted font-bold" /></FormControl></FormItem>)} />
-                <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniqueMgnregsTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                 <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
-                     <FormItem className="col-span-full md:col-span-2">
+                     <FormItem className="lg:col-span-2">
                         <FormLabel>Category</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={!selectedType}>
                             <FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl>
@@ -159,10 +159,10 @@ const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: 
                  )} />
              </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                 <FormField control={form.control} name={`paraParticulars.${index}.beneficiaries`} render={({ field }) => (<FormItem><FormLabel>No. of Beneficiaries</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                  <FormField control={form.control} name={`paraParticulars.${index}.centralAmount`} render={({ field }) => (<FormItem><FormLabel>Central Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                  <FormField control={form.control} name={`paraParticulars.${index}.stateAmount`} render={({ field }) => (<FormItem><FormLabel>State Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                  <FormField control={form.control} name={`paraParticulars.${index}.otherAmount`} render={({ field }) => (<FormItem><FormLabel>Others Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                 <FormField control={form.control} name={`paraParticulars.${index}.beneficiaries`} render={({ field }) => (<FormItem><FormLabel>No. of Beneficiaries</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                  <FormField control={form.control} name={`paraParticulars.${index}.grievances`} render={({ field }) => (<FormItem><FormLabel>No. of Grievances</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                  <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (<FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{hlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                  <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
@@ -246,8 +246,8 @@ export default function PmaygDataEntryPage() {
             const year = getYear(watchedSgsDate);
             const fiscalYearStart = new Date(year, 3, 1); // April 1st
             const auditYear = isWithinInterval(watchedSgsDate, { start: fiscalYearStart, end: new Date(year + 1, 2, 31) })
-                ? `${year}-${year + 1}`
-                : `${year - 1}-${year}`;
+                ? `${'${year}'}-${'${year + 1}'}`
+                : `${'${year - 1}'}-${'${year}'}`;
             form.setValue('auditYear', auditYear);
         }
     }, [watchedSgsDate, form]);
@@ -316,7 +316,9 @@ export default function PmaygDataEntryPage() {
         // form.reset(); 
     };
     
-    if (loading) return <p>Loading...</p>
+    if (loading) {
+       return <div>Loading...</div>;
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -449,5 +451,3 @@ export default function PmaygDataEntryPage() {
         </div>
     );
 }
-
-    
