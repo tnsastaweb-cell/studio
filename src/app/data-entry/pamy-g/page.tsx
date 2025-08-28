@@ -30,7 +30,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
 
@@ -111,9 +111,6 @@ const pmaygFormSchema = z.object({
 });
 
 type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
-type ParaParticularsValues = z.infer<typeof paraParticularsSchema>;
-
-const uniquePmaygTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
 
 const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: (index: number) => void; hlcItems: any[] }> = ({ index, control, form, remove, hlcItems }) => {
     const selectedType = useWatch({ control, name: `paraParticulars.${index}.type` });
@@ -139,12 +136,11 @@ const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: 
         <div className="p-4 border rounded-lg space-y-4 relative bg-slate-50">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <FormField control={form.control} name={`paraParticulars.${index}.issueNumber`} render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} readOnly className="bg-muted font-bold" /></FormControl></FormItem>)} />
-                <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{uniquePmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
+                <Controller control={form.control} name={`paraParticulars.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Type</FormLabel><Select onValueChange={(value) => { field.onChange(value); form.setValue(`paraParticulars.${index}.category`, ''); }} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Type"/></SelectTrigger></FormControl><SelectContent>{MOCK_PMAYG_DATA.map(d => d.type).filter((v,i,a)=>a.indexOf(v)===i).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                 <Controller control={form.control} name={`paraParticulars.${index}.category`} render={({ field }) => (
                      <FormItem className="lg:col-span-2">
                         <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedType}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedType}><FormControl><SelectTrigger><SelectValue placeholder="Select Category"/></SelectTrigger></FormControl>
                             <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                      </FormItem>
@@ -187,9 +183,16 @@ export default function PmaygDataEntryPage() {
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
         defaultValues: {
+            brpEmployeeCode: '', brpName: '', brpContact: '', brpDistrict: '', brpBlock: '',
+            district: '', block: '', panchayat: '', lgdCode: '', roundNo: '',
+            auditYear: '', observer: 'no', observerName: '', coram: 0,
+            totalHouses: 0, housesVisited: 0, housesNotVisited: 0,
+            firstInstallment: 0, secondInstallment: 0, thirdInstallment: 0, fourthInstallment: 0, notCompletedAfterFourth: 0,
+            gsDecision: 'yes', projectDeficiencies: '', specialRemarks: '', auditOutcome: '',
+            misSeccCount: 0, misSeccNonRejected: 0, misSeccSelected: 0, misAwaasPlusCount: 0, misAwaasPlusSelected: 0, misTotalSelected: 0,
+            fieldInterviewed: 0, fieldVisited: 0, fieldCouldNotIdentify: 0, fieldTotalVerified: 0, format3KutchaCount: 0,
+            reportFile: null,
             expenditureYear: '2016-2022',
-            observer: 'no',
-            gsDecision: 'yes',
             paraParticulars: [],
         },
     });
@@ -262,13 +265,13 @@ export default function PmaygDataEntryPage() {
     const misSeccSelected = form.watch("misSeccSelected") || 0;
     const misAwaasPlusSelected = form.watch("misAwaasPlusSelected") || 0;
     useEffect(() => {
-        form.setValue('misTotalSelected', Number(misSeccSelected) + Number(misAwaasPlusSelected));
+        form.setValue('misTotalSelected', (Number(misSeccSelected) || 0) + (Number(misAwaasPlusSelected) || 0));
     }, [misSeccSelected, misAwaasPlusSelected, form]);
     
     const fieldInterviewed = form.watch("fieldInterviewed") || 0;
     const fieldVisited = form.watch("fieldVisited") || 0;
     useEffect(() => {
-        form.setValue('fieldTotalVerified', Number(fieldInterviewed) + Number(fieldVisited));
+        form.setValue('fieldTotalVerified', (Number(fieldInterviewed) || 0) + (Number(fieldVisited) || 0));
     }, [fieldInterviewed, fieldVisited, form]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -292,7 +295,7 @@ export default function PmaygDataEntryPage() {
         }
         const issueNumber = getNextIssueSerialNumber(district);
         append({
-            issueNumber, 
+            issueNumber: issueNumber, 
             type: '', 
             category: '', 
             subCategory: '', 
