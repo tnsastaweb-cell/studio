@@ -224,7 +224,6 @@ export default function AdminPage() {
   const { calendars, addCalendar, deleteCalendar } = useCalendars();
   const { addItem: addGalleryItem } = useGallery();
   const { libraryItems, addLibraryItem, deleteLibraryItem } = useLibrary();
-  const { activityLogs, clearMonthlyActivity, logActivity } = useActivity();
 
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -2520,6 +2519,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-
-    
