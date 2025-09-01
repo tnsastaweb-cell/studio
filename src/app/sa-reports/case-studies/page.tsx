@@ -8,10 +8,11 @@ import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
+import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
+
 import { uniqueDistricts } from '@/lib/utils';
 import { useCaseStudies } from '@/services/case-studies';
-import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
-import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, Trash2, Mic, Upload, Eye, Edit, Delete } from 'lucide-react';
 import Image from 'next/image';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 const caseStudySchema = z.object({
   caseStudyNo: z.string(),
@@ -55,7 +58,8 @@ const caseStudySchema = z.object({
   centralAmount: z.coerce.number().optional(),
   stateAmount: z.coerce.number().optional(),
   otherAmount: z.coerce.number().optional(),
-
+  
+  pastedTableData: z.string().optional(),
   tableRows: z.coerce.number().min(0).optional(),
   tableCols: z.coerce.number().min(0).optional(),
   tableData: z.array(z.array(z.string())).optional(),
@@ -73,41 +77,20 @@ export default function CaseStudiesPage() {
     const { toast } = useToast();
     const { users } = useUsers();
     const { getNextCaseStudyNumber, addCaseStudy } = useCaseStudies();
-    const { issues: pmaygIssues } = usePmaygIssues();
+    const { issues: pmaygIssues, addIssue: savePmaygIssue } = usePmaygIssues();
+
 
     const [caseStudyNo, setCaseStudyNo] = useState('');
-    const [tableStructure, setTableStructure] = useState<{ rows: number, cols: number} | null>(null);
 
     const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
     const form = useForm<CaseStudyFormValues>({
         resolver: zodResolver(caseStudySchema),
         defaultValues: {
-            caseStudyNo: '',
-            scheme: MOCK_SCHEMES[0].name,
-            district: '',
-            block: '',
-            panchayat: '',
-            lgdCode: '',
-            employeeCode: '',
-            brpName: '',
-            paraNo: '',
-            issueNo: '',
-            issueType: '',
-            issueCategory: '',
-            subCategory: '',
-            issueCode: '',
-            beneficiaries: 0,
-            description: '',
-            amount: 0,
-            centralAmount: 0,
-            stateAmount: 0,
-            otherAmount: 0,
-            tableRows: 0,
-            tableCols: 0,
-            tableData: [],
-            photoLayout: '',
-            photos: [],
+            caseStudyNo: '', scheme: MOCK_SCHEMES[0].name, district: '', block: '', panchayat: '', lgdCode: '',
+            employeeCode: '', brpName: '', paraNo: '', issueNo: '', issueType: '', issueCategory: '', subCategory: '', issueCode: '',
+            beneficiaries: 0, description: '', amount: 0, centralAmount: 0, stateAmount: 0, otherAmount: 0,
+            tableRows: 0, tableCols: 0, tableData: [], pastedTableData: '', photoLayout: '', photos: [],
         },
     });
     
@@ -119,8 +102,7 @@ export default function CaseStudiesPage() {
     const watchedPanchayat = form.watch("panchayat");
     const watchedEmployeeCode = form.watch("employeeCode");
     const watchedIssueNo = form.watch("issueNo");
-    const watchedTableRows = form.watch("tableRows");
-    const watchedTableCols = form.watch("tableCols");
+    const watchedTableData = form.watch("tableData");
     const watchedPhotoLayout = form.watch("photoLayout");
 
     const blocks = useMemo(() => {
@@ -149,8 +131,9 @@ export default function CaseStudiesPage() {
     
     useEffect(() => {
         if (watchedDistrict) {
-            setCaseStudyNo(getNextCaseStudyNumber(watchedDistrict));
-            form.setValue('caseStudyNo', getNextCaseStudyNumber(watchedDistrict));
+            const newCaseStudyNo = getNextCaseStudyNumber(watchedDistrict);
+            setCaseStudyNo(newCaseStudyNo);
+            form.setValue('caseStudyNo', newCaseStudyNo);
         } else {
              setCaseStudyNo('');
              form.setValue('caseStudyNo', '');
@@ -158,7 +141,7 @@ export default function CaseStudiesPage() {
     }, [watchedDistrict, getNextCaseStudyNumber, form]);
     
     useEffect(() => {
-      let issueData;
+      let issueData: any;
       if (watchedScheme === 'MGNREGS') {
         issueData = MOCK_MGNREGS_DATA.find(d => d.codeNumber === watchedIssueNo);
       } else if (watchedScheme === 'PMAY-G') {
@@ -170,6 +153,13 @@ export default function CaseStudiesPage() {
         form.setValue('issueCategory', issueData.category);
         form.setValue('subCategory', issueData.subCategory);
         form.setValue('issueCode', issueData.codeNumber);
+        if(watchedScheme === 'MGNREGS') form.setValue('amount', issueData.amount || 0);
+        if(watchedScheme === 'PMAY-G') {
+            form.setValue('centralAmount', issueData.centralAmount || 0);
+            form.setValue('stateAmount', issueData.stateAmount || 0);
+            form.setValue('otherAmount', issueData.otherAmount || 0);
+        }
+
       } else {
         form.setValue('issueType', '');
         form.setValue('issueCategory', '');
@@ -179,14 +169,20 @@ export default function CaseStudiesPage() {
 
     }, [watchedIssueNo, watchedScheme, pmaygIssues, form]);
 
-
-    const handleTableGeneration = () => {
-        const rows = watchedTableRows || 0;
-        const cols = watchedTableCols || 0;
-        if (rows > 0 && cols > 0) {
-            setTableStructure({ rows, cols });
-            form.setValue('tableData', Array(rows).fill(Array(cols).fill('')));
+    const handleParseTable = () => {
+        const textData = form.getValues('pastedTableData') || '';
+        const rows = textData.split('\n').filter(row => row.trim() !== '');
+        if (rows.length === 0) {
+            form.setValue('tableData', []);
+            form.setValue('tableRows', 0);
+            form.setValue('tableCols', 0);
+            return;
         }
+        const parsedData = rows.map(row => row.split('\t'));
+        form.setValue('tableData', parsedData);
+        form.setValue('tableRows', parsedData.length);
+        form.setValue('tableCols', parsedData[0]?.length || 0);
+         toast({ title: "Table Parsed", description: `Created a table with ${parsedData.length} rows and ${parsedData[0]?.length || 0} columns.`});
     };
     
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -202,16 +198,30 @@ export default function CaseStudiesPage() {
         reader.onloadend = () => {
             const currentPhotos = form.getValues('photos') || [];
             currentPhotos[index].dataUrl = reader.result as string;
-            form.setValue('photos', currentPhotos);
+            form.setValue('photos', [...currentPhotos]);
         };
         reader.readAsDataURL(file);
     };
+    
+    useEffect(() => {
+        const count = parseInt(watchedPhotoLayout?.split('-')[1] || '0', 10);
+        const currentCount = photoFields.length;
+        if(count > currentCount) {
+            for(let i = currentCount; i < count; i++) {
+                appendPhoto({ dataUrl: '', description: '' });
+            }
+        } else if (count < currentCount) {
+            for(let i = currentCount - 1; i >= count; i--) {
+                removePhoto(i);
+            }
+        }
+    }, [watchedPhotoLayout, appendPhoto, removePhoto, photoFields.length]);
+
 
     const onSubmit = (data: CaseStudyFormValues) => {
         addCaseStudy(data);
         toast({ title: "Success!", description: `Case Study ${data.caseStudyNo} has been saved.` });
         form.reset();
-        setTableStructure(null);
     };
 
     return (
@@ -221,7 +231,7 @@ export default function CaseStudiesPage() {
             <main className="flex-1 container mx-auto px-4 py-8 pb-24">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <Tabs defaultValue={MOCK_SCHEMES[0].id} onValueChange={(val) => form.setValue('scheme', val)}>
+                        <Tabs defaultValue={MOCK_SCHEMES[0].name} onValueChange={(val) => form.setValue('scheme', val)}>
                             <TabsList>
                                {MOCK_SCHEMES.map(s => <TabsTrigger key={s.id} value={s.name}>{s.name}</TabsTrigger>)}
                             </TabsList>
@@ -279,31 +289,30 @@ export default function CaseStudiesPage() {
                                 </Card>
 
                                 <Card>
-                                    <CardHeader><CardTitle>Section 5: Table Auto-Generator</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle>Section 5: Data Table</CardTitle></CardHeader>
                                     <CardContent className="space-y-4">
-                                        <p className="text-sm text-muted-foreground">Define the structure for your data table. This is ideal for presenting financial details or lists of beneficiaries.</p>
-                                        <div className="flex gap-4 items-end">
-                                            <FormField control={form.control} name="tableRows" render={({ field }) => (<FormItem><FormLabel>No. of Rows</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                            <FormField control={form.control} name="tableCols" render={({ field }) => (<FormItem><FormLabel>No. of Columns</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                            <Button type="button" onClick={handleTableGeneration}>Generate Table</Button>
-                                        </div>
-                                         {tableStructure && (
-                                            <div className="overflow-x-auto border rounded-lg p-2">
-                                                 <table className="w-full">
-                                                    <tbody>
-                                                        {Array.from({ length: tableStructure.rows }).map((_, rowIndex) => (
-                                                            <tr key={rowIndex}>
-                                                                {Array.from({ length: tableStructure.cols }).map((_, colIndex) => (
-                                                                    <td key={colIndex} className="p-1">
-                                                                        <FormField control={form.control} name={`tableData.${rowIndex}.${colIndex}`} render={({ field }) => (
-                                                                            <Input {...field} className={cn("text-sm", colIndex > 0 ? "text-right" : "text-left")} />
-                                                                        )} />
-                                                                    </td>
-                                                                ))}
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                 </table>
+                                        <p className="text-sm text-muted-foreground">Paste your table data from Excel or Word into the text area below. Data should be separated by tabs for columns and new lines for rows.</p>
+                                        <FormField control={form.control} name="pastedTableData" render={({ field }) => (
+                                            <FormItem><FormLabel>Paste Table Data Here</FormLabel><FormControl><Textarea className="h-40 font-mono" {...field} /></FormControl></FormItem>
+                                        )} />
+                                        <Button type="button" onClick={handleParseTable}>Parse Table from Text</Button>
+
+                                         {watchedTableData && watchedTableData.length > 0 && (
+                                            <div className="space-y-2 pt-4">
+                                                <h4 className="font-semibold">Parsed Table Preview:</h4>
+                                                <div className="border rounded-lg overflow-x-auto">
+                                                    <Table>
+                                                        <TableBody>
+                                                            {watchedTableData.map((row, rowIndex) => (
+                                                                <TableRow key={rowIndex}>
+                                                                    {row.map((cell, colIndex) => (
+                                                                        <TableCell key={colIndex} className="font-normal border p-2 whitespace-nowrap">{cell}</TableCell>
+                                                                    ))}
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
                                             </div>
                                          )}
                                     </CardContent>
@@ -314,12 +323,7 @@ export default function CaseStudiesPage() {
                                     <CardContent className="space-y-6">
                                         <FormField control={form.control} name="photoLayout" render={({ field }) => (
                                             <FormItem><FormLabel>Photo Layout</FormLabel>
-                                            <Select onValueChange={(val) => {
-                                                field.onChange(val);
-                                                const count = parseInt(val.split('-')[1] || '0', 10);
-                                                removePhoto(); // Clear existing
-                                                for(let i=0; i<count; i++) appendPhoto({ dataUrl: '', description: '' });
-                                            }} value={field.value}>
+                                            <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl>
                                                 <SelectContent>
                                                     <SelectItem value="a4-1">A4 Full (1 photo)</SelectItem>
@@ -349,12 +353,12 @@ export default function CaseStudiesPage() {
                                                         <FormItem><FormLabel className="sr-only">Upload</FormLabel><FormControl>
                                                             <Input type="file" accept="image/*" onChange={(e) => {
                                                                 handlePhotoUpload(e, index);
-                                                                field.onChange(e.target.files?.[0])
+                                                                field.onChange(e.target.files?.[0]?.name);
                                                             }}/>
                                                         </FormControl></FormItem>
                                                     )} />
                                                      <FormField control={form.control} name={`photos.${index}.description`} render={({ field }) => (
-                                                        <FormItem><FormLabel className="sr-only">Description</FormLabel><FormControl><Textarea placeholder={`Description for photo ${index+1}...`} className="h-20" maxLength={200} /></FormControl></FormItem>
+                                                        <FormItem><FormLabel className="sr-only">Description</FormLabel><FormControl><Textarea placeholder={`Description for photo ${index+1}...`} className="h-20" maxLength={200} {...field} /></FormControl></FormItem>
                                                      )} />
                                                 </div>
                                             ))}
@@ -378,4 +382,3 @@ export default function CaseStudiesPage() {
         </div>
     );
 }
-
