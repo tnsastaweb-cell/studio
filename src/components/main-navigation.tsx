@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from "react";
@@ -118,7 +119,8 @@ const signedInMenuItems = [
       title: "REPORTS", 
       href: "#",
       children: [
-        { title: "WEEKLY REPORTS", href: "#", disabled: true },
+        { title: "HIGH FM PARA DETAILS", href: "#", disabled: true },
+        { title: "CASE STUDIES", href: "/sa-reports/case-studies", disabled: false },
         { title: "OTHERS", href: "#", disabled: true },
       ]
     },
