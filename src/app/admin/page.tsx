@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, differenceInYears, differenceInMonths, startOfMonth, endOfMonth, getDaysInMonth } from 'date-fns';
+import { format, differenceInYears, differenceInMonths, startOfMonth, endOfMonth, getDaysInMonth, getMonth, getYear, setMonth, setYear } from 'date-fns';
 import * as XLSX from 'xlsx';
 import {
   Calendar as CalendarIcon,
@@ -166,7 +166,12 @@ const toTitleCase = (str: string) => {
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-const years = ["2025-2026", "2024-2025", "2023-2024"];
+const reportYears = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+const reportMonths = Array.from({ length: 12 }, (_, i) => ({
+  value: i,
+  label: format(new Date(0, i), 'MMMM'),
+}));
+
 
 export default function AdminPage() {
   const { users, addUser, updateUser, deleteUser } = useUsers();
@@ -174,7 +179,7 @@ export default function AdminPage() {
   const { feedbacks, deleteFeedback } = useFeedback();
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
   const { hlcItems, deleteHlc } = useHlc();
-  const router = useRouter();
+  const { activityLogs, clearMonthlyActivity, logActivity } = useActivity();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
@@ -232,6 +237,8 @@ export default function AdminPage() {
     district: 'all',
     role: 'all',
   });
+  const [marsSelectedDate, setMarsSelectedDate] = useState(new Date());
+
 
   const filteredPanchayats = useMemo(() => {
     return MOCK_PANCHAYATS.filter(
@@ -671,9 +678,8 @@ export default function AdminPage() {
       return searchMatch && districtMatch && roleMatch;
     });
 
-    const now = new Date();
-    const startDate = startOfMonth(now);
-    const endDate = endOfMonth(now);
+    const startDate = startOfMonth(marsSelectedDate);
+    const endDate = endOfMonth(marsSelectedDate);
 
     return filteredReportUsers.map(u => {
       const userLogs = activityLogs.filter(log =>
@@ -682,7 +688,7 @@ export default function AdminPage() {
         new Date(log.timestamp) <= endDate
       );
 
-      const dailyCounts = Array(getDaysInMonth(now)).fill(0);
+      const dailyCounts = Array(getDaysInMonth(marsSelectedDate)).fill(0);
       userLogs.forEach(log => {
         const day = new Date(log.timestamp).getDate();
         dailyCounts[day - 1] += 1;
@@ -696,7 +702,7 @@ export default function AdminPage() {
         total,
       };
     });
-  }, [users, activityLogs, marsFilters]);
+  }, [users, activityLogs, marsFilters, marsSelectedDate]);
 
   const handleDownloadExcel = () => {
     const dataForSheet = marsReportData.map((u, index) => {
@@ -718,7 +724,7 @@ export default function AdminPage() {
     const worksheet = XLSX.utils.json_to_sheet(dataForSheet);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "S-MARS Report");
-    XLSX.writeFile(workbook, `S-MARS-Report-${format(new Date(), 'yyyy-MM')}.xlsx`);
+    XLSX.writeFile(workbook, `S-MARS-Report-${format(marsSelectedDate, 'yyyy-MM')}.xlsx`);
   };
 
   const handleClearData = () => {
@@ -1608,9 +1614,9 @@ export default function AdminPage() {
                                           <TableHead colSpan={3} className="text-center border-r">Family Details</TableHead>
                                           <TableHead colSpan={7} className="text-center border-r">Personal Details</TableHead>
                                           <TableHead colSpan={11} className="text-center border-r">Personal Info</TableHead>
-                                          <TableHead colSpan={3} className="text-center border-r">Education & Experience</TableHead>
+                                          <TableHead colSpan={3} className="text-center border-r">Education &amp; Experience</TableHead>
                                           <TableHead colSpan={4} className="text-center border-r">Working Details</TableHead>
-                                          <TableHead colSpan={8} className="text-center border-r">Training & Pilot Audit</TableHead>
+                                          <TableHead colSpan={8} className="text-center border-r">Training &amp; Pilot Audit</TableHead>
                                           <TableHead className="text-center">Actions</TableHead>
                                         </TableRow>
                                         <TableRow>
@@ -1650,7 +1656,7 @@ export default function AdminPage() {
                                             <TableHead>Aadhaar</TableHead>
                                             <TableHead>PAN</TableHead>
                                             <TableHead>UAN</TableHead>
-                                            {/* Edu & Exp */}
+                                            {/* Edu &amp; Exp */}
                                             <TableHead>Qualification</TableHead>
                                             <TableHead>Experience</TableHead>
                                             <TableHead>Skills</TableHead>
@@ -1728,7 +1734,7 @@ export default function AdminPage() {
                                                 <TableCell>{staff.aadhaar}</TableCell>
                                                 <TableCell>{staff.pan}</TableCell>
                                                 <TableCell>{staff.uan}</TableCell>
-                                                {/* Edu & Exp */}
+                                                {/* Edu &amp; Exp */}
                                                 <TableCell>{lastCourse}</TableCell>
                                                 <TableCell>{totalExperience}</TableCell>
                                                 <TableCell>{skills}</TableCell>
@@ -2030,6 +2036,18 @@ export default function AdminPage() {
                                 <SelectItem value="DRP I/C">DRP I/C</SelectItem>
                             </SelectContent>
                         </Select>
+                         <Select value={getYear(marsSelectedDate).toString()} onValueChange={v => setMarsSelectedDate(setYear(marsSelectedDate, parseInt(v)))}>
+                            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {reportYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                            </SelectContent>
+                         </Select>
+                          <Select value={getMonth(marsSelectedDate).toString()} onValueChange={v => setMarsSelectedDate(setMonth(marsSelectedDate, parseInt(v)))}>
+                            <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {reportMonths.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}
+                            </SelectContent>
+                         </Select>
                         <div className="flex-grow" />
                         <div className="flex gap-2">
                              <Button onClick={handleDownloadExcel}><Download className="mr-2" /> Download as Excel</Button>
@@ -2062,7 +2080,7 @@ export default function AdminPage() {
                                     <TableHead>NAME</TableHead>
                                     <TableHead>EMPLOYEE CODE</TableHead>
                                     <TableHead>CONTACT</TableHead>
-                                    {Array.from({ length: getDaysInMonth(new Date()) }, (_, i) => i + 1).map(day => (
+                                    {Array.from({ length: getDaysInMonth(marsSelectedDate) }, (_, i) => i + 1).map(day => (
                                         <TableHead key={day} className="text-center">{String(day).padStart(2, '0')}</TableHead>
                                     ))}
                                     <TableHead className="text-right">MONTHLY TOTAL</TableHead>
@@ -2320,7 +2338,7 @@ export default function AdminPage() {
                                               <FormLabel>Year</FormLabel>
                                               <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                                   <FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl>
-                                                  <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                                                  <SelectContent>{reportYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                                               </Select>
                                               <FormMessage />
                                           </FormItem>
@@ -2503,3 +2521,5 @@ export default function AdminPage() {
   );
 }
 
+
+    
