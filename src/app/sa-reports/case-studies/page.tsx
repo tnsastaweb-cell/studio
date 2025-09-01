@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { uniqueDistricts } from '@/lib/utils';
 import { useCaseStudies } from '@/services/case-studies';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, Trash2, Mic, Upload, Eye, Edit, Delete } from 'lucide-react';
 import Image from 'next/image';
-import { uniqueDistricts } from '@/lib/utils';
+
 
 const caseStudySchema = z.object({
   caseStudyNo: z.string(),
@@ -340,5 +341,5 @@ export default function CaseStudiesPage() {
             <BottomNavigation />
         </div>
     );
-}
 
+    
