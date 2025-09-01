@@ -119,7 +119,7 @@ const signedInMenuItems = [
       title: "REPORTS", 
       href: "#",
       children: [
-        { title: "HIGH FM PARA DETAILS", href: "#", disabled: true },
+        { title: "HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details", disabled: false },
         { title: "CASE STUDIES", href: "/sa-reports/case-studies", disabled: false },
         { title: "OTHERS", href: "#", disabled: true },
       ]

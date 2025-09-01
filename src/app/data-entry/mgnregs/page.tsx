@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -16,6 +17,7 @@ import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { MOCK_MGNREGS_DATA, MgnregsData } from '@/services/mgnregs';
 import { useHlc } from '@/services/hlc';
 import { useActivity } from '@/services/activity';
+import { useMgnregs } from '@/services/mgnregs-data';
 import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -52,7 +54,7 @@ const paraParticularsSchema = z.object({
 });
 
 
-const mgnregsFormSchema = z.object({
+export const mgnregsFormSchema = z.object({
   // Section A - BRP Details
   brpEmployeeCode: z.string().min(1, "Employee Code is required."),
   brpName: z.string(),
@@ -115,7 +117,7 @@ const mgnregsFormSchema = z.object({
   paraParticulars: z.array(paraParticularsSchema).optional(),
 });
 
-type MgnregsFormValues = z.infer<typeof mgnregsFormSchema>;
+export type MgnregsFormValues = z.infer<typeof mgnregsFormSchema>;
 
 const uniqueMgnregsTypes = Array.from(new Set(MOCK_MGNREGS_DATA.map(d => d.type)));
 
@@ -126,6 +128,7 @@ export default function MgnregsDataEntryPage() {
     const { toast } = useToast();
     const { hlcItems } = useHlc();
     const { logActivity } = useActivity();
+    const { addMgnregsEntry } = useMgnregs();
 
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
     const [isDrpEmployeeCodeOpen, setDrpEmployeeCodeOpen] = useState(false);
@@ -353,7 +356,7 @@ export default function MgnregsDataEntryPage() {
     };
 
     const onSubmit = (data: MgnregsFormValues) => {
-        console.log(data);
+        addMgnregsEntry(data);
         if (user) {
             logActivity(user.employeeCode);
         }
@@ -633,6 +636,7 @@ export default function MgnregsDataEntryPage() {
         </div>
     );
 }
+
 
 
 
