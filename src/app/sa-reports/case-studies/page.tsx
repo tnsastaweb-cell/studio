@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, FC } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
@@ -76,8 +76,26 @@ export default function CaseStudiesPage() {
         defaultValues: {
             caseStudyNo: '',
             scheme: MOCK_SCHEMES[0].name,
-            photos: [],
+            district: '',
+            block: '',
+            panchayat: '',
+            lgdCode: '',
+            employeeCode: '',
+            brpName: '',
+            paraNo: '',
+            issueNo: '',
+            issueType: '',
+            issueCategory: '',
+            subCategory: '',
+            issueCode: '',
+            beneficiaries: 0,
+            descriptionEnglish: '',
+            descriptionTamil: '',
+            tableRows: 0,
+            tableCols: 0,
             tableData: [],
+            photoLayout: '',
+            photos: [],
         },
     });
     
@@ -305,7 +323,7 @@ export default function CaseStudiesPage() {
                                                 <div key={item.id} className="border p-4 rounded-lg space-y-2">
                                                     <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center">
                                                          {form.watch(`photos.${index}.dataUrl`) ? (
-                                                            <Image src={form.watch(`photos.${index}.dataUrl`)} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
+                                                            <Image src={form.watch(`photos.${index}.dataUrl`) as string} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
                                                          ) : (
                                                             <p className="text-muted-foreground text-sm">Photo {index+1}</p>
                                                          )}
