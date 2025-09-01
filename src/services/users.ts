@@ -142,9 +142,7 @@ export const MOCK_USERS: User[] = [
   { id: 4, name: 'T.Sankar', employeeCode: 'TN-755', designation: 'DRP I/C', mobileNumber: '8220588742', dateOfBirth: '1978-05-13', password: 'password123', status: 'active', district: 'Dharmapuri' },
   { id: 5, name: 'S.Malarvizhi', employeeCode: 'TN-759', designation: 'SLM', mobileNumber: '7010621372', dateOfBirth: '1986-05-03', password: 'password123', status: 'active', district: 'Chennai' },
   { id: 6, name: 'P.K.Bhoopalan', employeeCode: 'TN-837', designation: 'BRP', mobileNumber: '9444487005', dateOfBirth: '1977-06-07', password: 'password123', status: 'active', district: 'Erode' },
-  { id: 497, name: 'Creator User', employeeCode: 'TN-CREATOR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', email: 'creator@sasta.com', password: 'password123', status: 'active', district: 'Chennai' },
-  { id: 498, name: 'Admin User', employeeCode: 'TN-ADMIN', designation: 'ADMIN', mobileNumber: '9999999999', dateOfBirth: '1990-01-01', email: 'admin@sasta.com', password: 'password123', status: 'active', district: 'Chennai' },
-  { id: 499, name: 'Consultant User', employeeCode: 'TN-CONSULTANT', designation: 'CONSULTANT', mobileNumber: '8888888888', dateOfBirth: '1985-01-01', email: 'consultant@sasta.com', password: 'password123', status: 'active', district: 'Chennai' }
+  { id: 497, name: 'Creator User', employeeCode: 'TN-CREATOR', designation: 'CREATOR', mobileNumber: '9944892005', dateOfBirth: '1986-03-31', email: 'creator@sasta.com', password: 'password123', status: 'active', district: 'Chennai' }
 ];
 
 const USER_STORAGE_KEY = 'sasta-users';

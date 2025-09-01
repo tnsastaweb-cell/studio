@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (storedUser) {
             const parsedUser: User = JSON.parse(storedUser);
             // Validate the stored user against the current user list from useUsers
-            const foundUser = users.find(u => u.id === parsedUser.id && u.password === parsedUser.password);
+            const foundUser = users.find(u => u.id === parsedUser.id && u.password === parsedUser.password && u.status === 'active');
             setUser(foundUser || null);
         } else {
           setUser(null);
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (u) => u.employeeCode === employeeCode && u.password === password
     );
 
-    if (foundUser) {
+    if (foundUser && foundUser.status === 'active') {
       setUser(foundUser);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(foundUser));
       window.dispatchEvent(new StorageEvent('storage', { key: LOCAL_STORAGE_KEY, newValue: JSON.stringify(foundUser) }));

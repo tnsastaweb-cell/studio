@@ -28,6 +28,8 @@ import {
   View,
   X,
   Download,
+  Power,
+  PowerOff,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -355,8 +357,27 @@ export default function AdminPage() {
   };
   
     const handleEditUser = (user: User) => {
-        router.push(`/registration/staff?edit=${user.employeeCode}`);
+        setEditingUser(user);
+        userForm.reset({
+            name: user.name,
+            employeeCode: user.employeeCode,
+            designation: user.designation,
+            mobileNumber: user.mobileNumber,
+            dateOfBirth: new Date(user.dateOfBirth),
+            email: user.email || '',
+            password: user.password,
+        });
+        setIsFormOpen(true);
     };
+
+    const handleToggleStatus = (user: User) => {
+        const newStatus = user.status === 'active' ? 'inactive' : 'active';
+        updateUser({ ...user, status: newStatus });
+        toast({
+            title: `User ${newStatus === 'active' ? 'Activated' : 'Deactivated'}`,
+            description: `${user.name}'s account is now ${newStatus}.`,
+        });
+    }
 
   const handleAddNewUser = () => {
     setEditingUser(null);
@@ -861,7 +882,7 @@ export default function AdminPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Designation</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a designation" />
@@ -1121,19 +1142,26 @@ export default function AdminPage() {
                           <TableCell>{format(new Date(user.dateOfBirth), 'dd/MM/yyyy')}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.password}</TableCell>
-                          <TableCell>
-                            <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
-                              {user.status}
-                            </Badge>
+                           <TableCell>
+                            <Button 
+                                variant={user.status === 'active' ? 'outline' : 'secondary'} 
+                                size="sm" 
+                                className="w-24"
+                                onClick={() => handleToggleStatus(user)}
+                            >
+                                {user.status === 'active' ? 
+                                    <><Check className="mr-2 h-4 w-4 text-green-500"/> Active</> : 
+                                    <><X className="mr-2 h-4 w-4 text-red-500"/> Inactive</>}
+                            </Button>
                           </TableCell>
                           <TableCell className="text-right space-x-2">
                             <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                              Edit
+                              <Edit className="h-4 w-4" />
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>
-                                  Delete
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
@@ -1781,7 +1809,7 @@ export default function AdminPage() {
                                                 <TableCell>{staff.stateOfficeActivitiesDetails?.[0]?.workParticulars || 'N/A'}</TableCell>
                                                 {/* Actions */}
                                                  <TableCell className="space-x-2">
-                                                    <Button variant="outline" size="sm" onClick={() => handleEditUser(staff)}>
+                                                    <Button variant="outline" size="sm" onClick={() => router.push(`/registration/staff?edit=${staff.employeeCode}`)}>
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                     <AlertDialog>
