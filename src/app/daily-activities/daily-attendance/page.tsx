@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, FC } from 'react';
@@ -20,9 +19,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DISTRICTS } from '@/services/district-offices';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Printer, Check, X, Circle } from 'lucide-react';
+import { Printer, Check, X, Circle, HelpCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 
 const reportYears = Array.from({ length: 11 }, (_, i) => (2025 + i).toString());
 
@@ -32,11 +39,13 @@ const reportMonths = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 type AttendanceStatus = 'Present' | 'Absent' | 'Leave';
+interface AttendanceDay {
+    status: AttendanceStatus;
+    reason?: string;
+    letterMailed?: boolean;
+}
 interface AttendanceRecord {
-    [date: string]: {
-        status: AttendanceStatus;
-        reason?: string;
-    }
+    [date: string]: AttendanceDay;
 }
 interface StaffAttendance {
     [employeeCode: string]: AttendanceRecord;
@@ -48,14 +57,18 @@ export default function DailyAttendancePage() {
     const { holidays } = useHolidays();
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+    const [attendance, setAttendance] = useState<StaffAttendance>({});
 
     const staffForDistrict = useMemo(() => {
         if (!selectedDistrict) return [];
         return users.filter(u => {
             if (!['BRP', 'DRP', 'DRP I/C'].includes(u.designation)) return false;
+            // More robust check for present station across both BRP and DRP histories
             const presentStation = u.designation === 'BRP' 
                 ? u.brpWorkHistory?.find(h => h.station === 'present')
-                : u.drpWorkHistory?.find(h => h.station === 'present');
+                : (u.designation === 'DRP' || u.designation === 'DRP I/C') 
+                ? u.drpWorkHistory?.find(h => h.station === 'present')
+                : null;
             return presentStation?.district === selectedDistrict;
         });
     }, [users, selectedDistrict]);
@@ -71,6 +84,25 @@ export default function DailyAttendancePage() {
         holidays.forEach(h => map.set(h.date, h.name));
         return map;
     }, [holidays]);
+
+    const handleAttendanceChange = (employeeCode: string, date: Date, newStatus: AttendanceStatus | null, reason?: string, letterMailed?: boolean) => {
+        const dateKey = format(date, 'yyyy-MM-dd');
+        setAttendance(prev => {
+            const newAttendance = { ...prev };
+            if (!newAttendance[employeeCode]) newAttendance[employeeCode] = {};
+            
+            if (newStatus) {
+                newAttendance[employeeCode][dateKey] = {
+                    status: newStatus,
+                    reason: reason || prev[employeeCode]?.[dateKey]?.reason || '',
+                    letterMailed: letterMailed !== undefined ? letterMailed : prev[employeeCode]?.[dateKey]?.letterMailed || false,
+                };
+            } else {
+                 delete newAttendance[employeeCode][dateKey]; // Revert to default/weekend/holiday
+            }
+            return newAttendance;
+        });
+    };
 
     const canAccessPage = user && ['DRP', 'DRP I/C', 'ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
@@ -128,16 +160,16 @@ export default function DailyAttendancePage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="sticky left-0 bg-background z-10">Sl. No</TableHead>
-                                <TableHead className="sticky left-12 bg-background z-10">Name</TableHead>
-                                <TableHead>Role</TableHead>
+                                <TableHead className="sticky left-12 bg-background z-10 whitespace-nowrap">Name</TableHead>
+                                <TableHead className="whitespace-nowrap">Role</TableHead>
                                 {monthDays.map(day => {
                                     const holiday = holidaysMap.get(format(day, 'yyyy-MM-dd'));
                                     return (
-                                        <TableHead key={day.toString()} className={cn("text-center min-w-[60px]", (isWeekend(day) || holiday) && "bg-muted text-destructive")}>
+                                        <TableHead key={day.toString()} className={cn("text-center min-w-[70px]", (isWeekend(day) || holiday) && "bg-muted text-destructive")}>
                                             <div className="flex flex-col items-center">
                                                 <span>{format(day, 'E', { locale: enUS }).substring(0,2)}</span>
                                                 <span>{format(day, 'dd')}</span>
-                                                {holiday && <span className="text-xs font-normal whitespace-nowrap">{holiday}</span>}
+                                                {holiday && <span className="text-xs font-normal whitespace-nowrap overflow-hidden text-ellipsis">{holiday}</span>}
                                             </div>
                                         </TableHead>
                                     )
@@ -154,20 +186,61 @@ export default function DailyAttendancePage() {
                                 staffForDistrict.map((staff, index) => (
                                     <TableRow key={staff.id}>
                                         <TableCell className="sticky left-0 bg-background z-10">{index + 1}</TableCell>
-                                        <TableCell className="sticky left-12 bg-background z-10 font-medium">{staff.name}</TableCell>
+                                        <TableCell className="sticky left-12 bg-background z-10 font-medium whitespace-nowrap">{staff.name}</TableCell>
                                         <TableCell>{staff.designation}</TableCell>
                                         {monthDays.map(day => {
-                                            // Placeholder logic for attendance status
-                                            const status: AttendanceStatus | null = isWeekend(day) || holidaysMap.has(format(day, 'yyyy-MM-dd')) ? null : (Math.random() > 0.1 ? 'Present' : (Math.random() > 0.5 ? 'Absent' : 'Leave'));
+                                            const dateKey = format(day, 'yyyy-MM-dd');
+                                            const currentAttendance = attendance[staff.employeeCode]?.[dateKey];
+                                            const isHoliday = holidaysMap.has(dateKey);
+                                            const isSun = getDay(day) === 0;
+
                                             return (
-                                                <TableCell key={day.toString()} className={cn("text-center", isWeekend(day) && "bg-muted/30")}>
-                                                    {status === 'Present' && <Check className="h-5 w-5 text-green-500 mx-auto" />}
-                                                    {status === 'Absent' && <X className="h-5 w-5 text-red-500 mx-auto" />}
-                                                    {status === 'Leave' && <Circle className="h-5 w-5 text-orange-500 mx-auto" />}
+                                                <TableCell key={day.toString()} className={cn("text-center", (isSun || isHoliday) && "bg-muted/30")}>
+                                                     <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <div className="flex flex-col items-center justify-center cursor-pointer p-2 min-h-[60px]">
+                                                                {currentAttendance?.status === 'Present' && <Check className="h-5 w-5 text-green-500 mx-auto" />}
+                                                                {currentAttendance?.status === 'Absent' && <X className="h-5 w-5 text-red-500 mx-auto" />}
+                                                                {currentAttendance?.status === 'Leave' && <Circle className="h-5 w-5 text-orange-500 mx-auto" />}
+                                                                {(!currentAttendance?.status && !isHoliday && !isSun) && <HelpCircle className="h-5 w-5 text-muted-foreground/50 mx-auto" />}
+
+                                                                {(currentAttendance?.status === 'Absent' || currentAttendance?.status === 'Leave') && (
+                                                                     <div className="flex items-center space-x-1 mt-1">
+                                                                        <Checkbox 
+                                                                            id={`letter-${staff.id}-${dateKey}`} 
+                                                                            checked={currentAttendance.letterMailed}
+                                                                            onCheckedChange={(checked) => handleAttendanceChange(staff.employeeCode, day, currentAttendance.status, currentAttendance.reason, !!checked)}
+                                                                        />
+                                                                        <label htmlFor={`letter-${staff.id}-${dateKey}`} className="text-xs font-light text-muted-foreground">Letter</label>
+                                                                     </div>
+                                                                )}
+                                                            </div>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-64 space-y-4">
+                                                             <h4 className="font-medium text-sm">Update Status for {format(day, 'PPP')}</h4>
+                                                             <RadioGroup 
+                                                                defaultValue={currentAttendance?.status} 
+                                                                onValueChange={(val: AttendanceStatus) => handleAttendanceChange(staff.employeeCode, day, val, currentAttendance?.reason)}
+                                                             >
+                                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Present" id="p" /><Label htmlFor="p">Present</Label></div>
+                                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Absent" id="a" /><Label htmlFor="a">Absent</Label></div>
+                                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Leave" id="l" /><Label htmlFor="l">Leave</Label></div>
+                                                             </RadioGroup>
+                                                             {(currentAttendance?.status === 'Absent' || currentAttendance?.status === 'Leave') && (
+                                                                <Textarea 
+                                                                    placeholder="Reason for absence/leave..."
+                                                                    defaultValue={currentAttendance?.reason}
+                                                                    onBlur={(e) => handleAttendanceChange(staff.employeeCode, day, currentAttendance.status, e.target.value)}
+                                                                />
+                                                             )}
+                                                        </PopoverContent>
+                                                    </Popover>
                                                 </TableCell>
                                             )
                                         })}
-                                        <TableCell className="text-center font-bold">{/* Placeholder for total */}</TableCell>
+                                        <TableCell className="text-center font-bold">
+                                             {Object.values(attendance[staff.employeeCode] || {}).filter(a => a.status === 'Present').length}
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             )}
@@ -181,5 +254,3 @@ export default function DailyAttendancePage() {
       <BottomNavigation />
     </div>
   );
-}
-
