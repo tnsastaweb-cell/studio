@@ -235,7 +235,7 @@ export default function CaseStudiesPage() {
                             <TabsList>
                                {MOCK_SCHEMES.map(s => <TabsTrigger key={s.id} value={s.name}>{s.name}</TabsTrigger>)}
                             </TabsList>
-                             <TabsContent value="MGNREGS" className="space-y-6">
+                             <TabsContent value={watchedScheme} className="space-y-6">
                                 <Card>
                                     <CardHeader><CardTitle>Section 1: Basic Case Info</CardTitle></CardHeader>
                                     <CardContent><FormField control={form.control} name="caseStudyNo" render={({ field }) => (
@@ -301,17 +301,17 @@ export default function CaseStudiesPage() {
                                             <div className="space-y-2 pt-4">
                                                 <h4 className="font-semibold">Parsed Table Preview:</h4>
                                                 <div className="border rounded-lg overflow-x-auto">
-                                                    <Table>
-                                                        <TableBody>
+                                                    <table className="w-full text-sm table-auto">
+                                                        <tbody>
                                                             {watchedTableData.map((row, rowIndex) => (
-                                                                <TableRow key={rowIndex}>
+                                                                <tr key={rowIndex}>
                                                                     {row.map((cell, colIndex) => (
-                                                                        <TableCell key={colIndex} className="font-normal border p-2 whitespace-nowrap">{cell}</TableCell>
+                                                                        <td key={colIndex} className="font-normal border p-2 whitespace-normal break-words">{cell}</td>
                                                                     ))}
-                                                                </TableRow>
+                                                                </tr>
                                                             ))}
-                                                        </TableBody>
-                                                    </Table>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                          )}
