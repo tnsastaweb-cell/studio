@@ -9,7 +9,7 @@ import { BarChart3, LayoutDashboard, FileText, Zap } from "lucide-react";
 const menuItems = [
     { title: "AT A GLANCE", icon: <BarChart3 className="h-8 w-8 text-primary" />, href: "#" },
     { title: "DASHBOARD", icon: <LayoutDashboard className="h-8 w-8 text-primary" />, href: "/dashboard" },
-    { title: "MIS REPORTS", icon: <FileText className="h-8 w-8 text-primary" />, href: "#" },
+    { title: "MIS REPORTS", icon: <FileText className="h-8 w-8 text-primary" />, href: "/sa-reports/mis-reports" },
     { title: "QUICK ACCESS", icon: <Zap className="h-8 w-8 text-primary" />, href: "#" },
 ];
 
