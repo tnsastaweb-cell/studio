@@ -14,6 +14,7 @@ import { useVRPs, Vrp } from '@/services/vrp';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { MOCK_MGNREGS_DATA, MgnregsData } from '@/services/mgnregs';
 import { useHlc } from '@/services/hlc';
+import { useActivity } from '@/services/activity';
 import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -117,6 +118,7 @@ export default function MgnregsDataEntryPage() {
     const { vrps } = useVRPs();
     const { toast } = useToast();
     const { hlcItems } = useHlc();
+    const { logActivity } = useActivity();
 
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
@@ -263,6 +265,9 @@ export default function MgnregsDataEntryPage() {
         } else {
             setFile(selectedFile);
             form.setValue('reportFile', selectedFile);
+            if (user) {
+              logActivity(user.employeeCode);
+            }
         }
     };
     
@@ -282,6 +287,9 @@ export default function MgnregsDataEntryPage() {
 
     const onSubmit = (data: MgnregsFormValues) => {
         console.log(data);
+        if (user) {
+            logActivity(user.employeeCode);
+        }
         toast({
             title: "Form Submitted!",
             description: "MGNREGS data has been successfully recorded.",
