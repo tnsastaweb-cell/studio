@@ -166,7 +166,7 @@ const toTitleCase = (str: string) => {
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-const reportYears = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+const reportYears = Array.from({ length: 11 }, (_, i) => (2025 + i).toString());
 const reportMonths = Array.from({ length: 12 }, (_, i) => ({
   value: i,
   label: format(new Date(0, i), 'MMMM'),
@@ -179,7 +179,7 @@ export default function AdminPage() {
   const { feedbacks, deleteFeedback } = useFeedback();
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
   const { hlcItems, deleteHlc } = useHlc();
-  const { activityLogs, clearMonthlyActivity, logActivity } = useActivity();
+  const { activityLogs, clearMonthlyActivity } = useActivity();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
