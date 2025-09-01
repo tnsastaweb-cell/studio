@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -75,7 +75,13 @@ const mgnregsFormSchema = z.object({
   observerName: z.string().optional(),
   coram: z.coerce.number().max(999, "Must be max 3 digits"),
 
-  // Section C - VRP Details
+  // Section C - DRP / DRP I/C & VRP Details
+  drpRole: z.enum(['DRP', 'DRP I/C']).optional(),
+  drpEmployeeCode: z.string().optional(),
+  drpName: z.string().optional(),
+  drpContact: z.string().optional(),
+  drpDistrict: z.string().optional(),
+
   vrpSearchType: z.enum(['employeeCode', 'contactNumber']).optional(),
   vrpSearchValue: z.string().optional(),
   vrpEmployeeCode: z.string().optional(),
@@ -122,6 +128,7 @@ export default function MgnregsDataEntryPage() {
     const { logActivity } = useActivity();
 
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
+    const [isDrpEmployeeCodeOpen, setDrpEmployeeCodeOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
 
     const mgnregsHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'MGNREGS'), [hlcItems]);
@@ -147,6 +154,11 @@ export default function MgnregsDataEntryPage() {
             observer: 'no',
             observerName: "",
             coram: 0,
+            drpRole: undefined,
+            drpEmployeeCode: "",
+            drpName: "",
+            drpContact: "",
+            drpDistrict: "",
             vrpSearchType: undefined,
             vrpSearchValue: "",
             vrpEmployeeCode: "",
@@ -178,6 +190,9 @@ export default function MgnregsDataEntryPage() {
     const watchedPanchayat = form.watch("panchayat");
     const watchedSgsDate = form.watch("sgsDate");
 
+    const watchedDrpRole = form.watch('drpRole');
+    const watchedDrpCode = form.watch('drpEmployeeCode');
+
     const watchedVerificationFields = form.watch([
         "pvtIndividualLandWorks", "pvtIndividualLandAmount",
         "pvtIndividualAssetsWorks", "pvtIndividualAssetsAmount",
@@ -207,6 +222,11 @@ export default function MgnregsDataEntryPage() {
         return users.filter(u => targetRoles.includes(u.designation));
     }, [users]);
     
+     const drpList = useMemo(() => {
+        if (!watchedDrpRole) return [];
+        return users.filter(u => u.designation === watchedDrpRole);
+    }, [users, watchedDrpRole]);
+    
     useEffect(() => {
         if (watchedBrpCode) {
             const selectedUser = users.find(u => u.employeeCode === watchedBrpCode);
@@ -220,6 +240,27 @@ export default function MgnregsDataEntryPage() {
             }
         }
     }, [watchedBrpCode, users, form]);
+    
+    useEffect(() => {
+        if (watchedDrpCode) {
+            const selectedUser = users.find(u => u.employeeCode === watchedDrpCode);
+            if (selectedUser) {
+                 const presentStation = selectedUser.drpWorkHistory?.find(h => h.station === 'present');
+                 form.setValue('drpName', selectedUser.name);
+                 form.setValue('drpContact', selectedUser.mobileNumber);
+                 form.setValue('drpDistrict', presentStation?.district || selectedUser.district || '');
+            }
+        } else {
+            form.setValue('drpName', '');
+            form.setValue('drpContact', '');
+            form.setValue('drpDistrict', '');
+        }
+    }, [watchedDrpCode, users, form]);
+
+    useEffect(() => {
+        form.setValue('drpEmployeeCode', '');
+    }, [watchedDrpRole, form]);
+
     
     const watchedVrpSearchType = form.watch("vrpSearchType");
     const watchedVrpSearchValue = form.watch("vrpSearchValue");
@@ -391,21 +432,59 @@ export default function MgnregsDataEntryPage() {
                                 
                                 {/* Section C */}
                                 <section>
-                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section C: VRP Details</h3>
-                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                                         <FormField control={form.control} name="vrpSearchType" render={({ field }) => (
-                                             <FormItem><FormLabel>Search VRP by</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Select method..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="employeeCode">Employee Code</SelectItem><SelectItem value="contactNumber">Contact Number</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                         )} />
-                                         <FormField control={form.control} name="vrpSearchValue" render={({ field }) => (<FormItem><FormLabel>Search Value</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                     </div>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-                                        <FormField control={form.control} name="vrpEmployeeCode" render={({ field }) => (<FormItem><FormLabel>VRP Employee Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="vrpName" render={({ field }) => (<FormItem><FormLabel>VRP Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="vrpContactNumber" render={({ field }) => (<FormItem><FormLabel>VRP Contact</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="vrpDistrict" render={({ field }) => (<FormItem><FormLabel>VRP District</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="vrpBlock" render={({ field }) => (<FormItem><FormLabel>VRP Block</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="vrpPanchayat" render={({ field }) => (<FormItem><FormLabel>VRP Panchayat</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                     </div>
+                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section C: DRP / DRP I/C & VRP DETAILS</h3>
+                                    <div className="space-y-6">
+                                        <div className="p-4 border rounded-md space-y-4">
+                                            <h4 className="font-semibold text-muted-foreground">DRP/DRP I/C Details</h4>
+                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+                                                <FormField control={form.control} name="drpRole" render={({ field }) => (
+                                                     <FormItem><FormLabel>Role</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger></FormControl><SelectContent><SelectItem value="DRP">DRP</SelectItem><SelectItem value="DRP I/C">DRP I/C</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                                )} />
+                                                 <FormField control={form.control} name="drpEmployeeCode" render={({ field }) => (
+                                                    <FormItem className="flex flex-col"><FormLabel>Employee Code</FormLabel>
+                                                        <Popover open={isDrpEmployeeCodeOpen} onOpenChange={setDrpEmployeeCodeOpen}>
+                                                            <PopoverTrigger asChild>
+                                                                <FormControl><Button variant="outline" role="combobox" className={cn("justify-between w-full", !field.value && "text-muted-foreground")} disabled={!watchedDrpRole}>
+                                                                    {field.value ? drpList.find(u => u.employeeCode === field.value)?.employeeCode : "Select Employee"}
+                                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                </Button></FormControl>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-[300px] p-0">
+                                                                <Command><CommandInput placeholder="Search DRP..." /><CommandEmpty>No DRP found.</CommandEmpty>
+                                                                    <CommandList><CommandGroup>
+                                                                        {drpList.map((u) => (<CommandItem value={u.employeeCode} key={u.id} onSelect={() => { form.setValue("drpEmployeeCode", u.employeeCode); setDrpEmployeeCodeOpen(false);}}>
+                                                                            <Check className={cn("mr-2 h-4 w-4", u.employeeCode === field.value ? "opacity-100" : "opacity-0")} />
+                                                                            {u.employeeCode} - {u.name}
+                                                                        </CommandItem>))}
+                                                                    </CommandGroup></CommandList>
+                                                                </Command>
+                                                            </PopoverContent>
+                                                        </Popover><FormMessage />
+                                                    </FormItem>
+                                                )} />
+                                                <FormField control={form.control} name="drpName" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="drpContact" render={({ field }) => (<FormItem><FormLabel>Contact</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="drpDistrict" render={({ field }) => (<FormItem><FormLabel>Present District</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                             </div>
+                                        </div>
+                                         <div className="p-4 border rounded-md space-y-4">
+                                              <h4 className="font-semibold text-muted-foreground">VRP Details</h4>
+                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                                                 <FormField control={form.control} name="vrpSearchType" render={({ field }) => (
+                                                     <FormItem><FormLabel>Search VRP by</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Select method..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="employeeCode">Employee Code</SelectItem><SelectItem value="contactNumber">Contact Number</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                                 )} />
+                                                 <FormField control={form.control} name="vrpSearchValue" render={({ field }) => (<FormItem><FormLabel>Search Value</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                             </div>
+                                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+                                                <FormField control={form.control} name="vrpEmployeeCode" render={({ field }) => (<FormItem><FormLabel>VRP Employee Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="vrpName" render={({ field }) => (<FormItem><FormLabel>VRP Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="vrpContactNumber" render={({ field }) => (<FormItem><FormLabel>VRP Contact</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="vrpDistrict" render={({ field }) => (<FormItem><FormLabel>VRP District</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="vrpBlock" render={({ field }) => (<FormItem><FormLabel>VRP Block</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="vrpPanchayat" render={({ field }) => (<FormItem><FormLabel>VRP Panchayat</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                             </div>
+                                         </div>
+                                    </div>
                                 </section>
                                  {/* Section D */}
                                 <section>
@@ -554,6 +633,7 @@ export default function MgnregsDataEntryPage() {
         </div>
     );
 }
+
 
 
 
