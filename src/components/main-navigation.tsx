@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from "react";
@@ -111,7 +110,7 @@ const signedInMenuItems = [
       href: "#",
       children: [
         { title: "DAILY ATTENDENCE", href: "/daily-activities/daily-attendance" },
-        { title: "TOUR DAIRY", href: "/daily-activities/tour-diary" },
+        { title: "TOUR DIARY", href: "/daily-activities/tour-diary" },
         { title: "MOVEMENT REGISTER", href: "#", disabled: true },
       ]
     },

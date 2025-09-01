@@ -6,6 +6,9 @@ import { useState, useCallback, useEffect } from 'react';
 export interface TourDiaryEntry {
     id: number;
     employeeCode: string;
+    name: string;
+    role: string;
+    district: string;
     date: string; // YYYY-MM-DD
     departurePlace: string;
     campPlace: string;
@@ -100,4 +103,3 @@ export const useTourDiary = () => {
     
     return { entries, loading, addEntry, updateEntry, deleteEntry };
 };
-
