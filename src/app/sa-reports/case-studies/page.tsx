@@ -13,6 +13,7 @@ import { useCaseStudies } from '@/services/case-studies';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { cn } from '@/lib/utils';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -341,5 +342,4 @@ export default function CaseStudiesPage() {
             <BottomNavigation />
         </div>
     );
-
-    
+}
