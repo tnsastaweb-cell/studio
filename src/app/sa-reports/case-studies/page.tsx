@@ -8,11 +8,11 @@ import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { useCaseStudies } from '@/services/case-studies';
 import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 
-import { uniqueDistricts } from '@/lib/utils';
-import { useCaseStudies } from '@/services/case-studies';
+import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -77,8 +77,7 @@ export default function CaseStudiesPage() {
     const { toast } = useToast();
     const { users } = useUsers();
     const { getNextCaseStudyNumber, addCaseStudy } = useCaseStudies();
-    const { issues: pmaygIssues, addIssue: savePmaygIssue } = usePmaygIssues();
-
+    const { issues: pmaygIssues } = usePmaygIssues();
 
     const [caseStudyNo, setCaseStudyNo] = useState('');
 
@@ -306,7 +305,7 @@ export default function CaseStudiesPage() {
                                                             {watchedTableData.map((row, rowIndex) => (
                                                                 <tr key={rowIndex}>
                                                                     {row.map((cell, colIndex) => (
-                                                                        <td key={colIndex} className="font-normal border p-2 whitespace-normal break-words">{cell}</td>
+                                                                        <td key={colIndex} className="font-normal border p-2 text-center whitespace-normal break-words">{cell}</td>
                                                                     ))}
                                                                 </tr>
                                                             ))}
@@ -372,7 +371,6 @@ export default function CaseStudiesPage() {
                                     <Button type="submit">Submit Case Study</Button>
                                 </div>
                              </TabsContent>
-                             {/* Other schemes will be built out here */}
                         </Tabs>
                     </form>
                 </Form>
