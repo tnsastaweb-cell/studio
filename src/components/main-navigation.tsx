@@ -58,9 +58,9 @@ const guestMenuItems = [
   },
   {
     title: "SA REPORTS",
-    href: "#",
+    href: "/sa-reports/mis-reports",
     children: [
-        { title: "MIS Report", href: "#", disabled: true },
+        { title: "MIS Report", href: "/sa-reports/mis-reports", disabled: false },
         { title: "Consolidated Reports", href: "#", disabled: true },
         { title: "Reports in MGNREGS website", href: "#", disabled: true },
         { title: "Reports in MSJE website", href: "#", disabled: true },
