@@ -45,6 +45,7 @@ import { useLibrary, libraryCategories, LibraryItem, LibraryCategory } from '@/s
 import { useGrievances, Grievance, GrievanceStatus, GRIEVANCE_STATUSES } from '@/services/grievances';
 import { useHlc, HlcItem } from '@/services/hlc';
 import { useActivity, ActivityLog } from '@/services/activity';
+import { useHolidays, Holiday } from '@/services/holidays';
 
 
 import { cn } from '@/lib/utils';
@@ -161,6 +162,13 @@ const grievanceReplySchema = z.object({
 });
 type GrievanceReplyValues = z.infer<typeof grievanceReplySchema>;
 
+const holidayFormSchema = z.object({
+    date: z.date({ required_error: "Date is required" }),
+    name: z.string().min(3, "Holiday name is required"),
+});
+type HolidayFormValues = z.infer<typeof holidayFormSchema>;
+
+
 const toTitleCase = (str: string) => {
   if (!str) return '';
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
@@ -180,6 +188,7 @@ export default function AdminPage() {
   const { grievances, addReply, updateGrievanceStatus, deleteGrievance } = useGrievances();
   const { hlcItems, deleteHlc } = useHlc();
   const { activityLogs, clearMonthlyActivity } = useActivity();
+  const { holidays, addHoliday, deleteHoliday } = useHolidays();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isReplyFormOpen, setIsReplyFormOpen] = useState(false);
@@ -733,6 +742,25 @@ export default function AdminPage() {
         description: "The activity logs for the current month have been cleared."
     });
   };
+
+   // Holiday Management Logic
+    const holidayForm = useForm<HolidayFormValues>({
+        resolver: zodResolver(holidayFormSchema),
+    });
+
+    const onHolidaySubmit = (values: HolidayFormValues) => {
+        addHoliday({
+            ...values,
+            date: format(values.date, 'yyyy-MM-dd')
+        });
+        toast({ title: 'Holiday Added', description: `${values.name} has been added.` });
+        holidayForm.reset();
+    }
+
+    const handleDeleteHoliday = (id: number) => {
+        deleteHoliday(id);
+        toast({ title: 'Holiday Removed' });
+    }
 
   if (loading) {
     return (
@@ -2110,11 +2138,12 @@ export default function AdminPage() {
         </TabsContent>
           <TabsContent value="settings">
             <Tabs defaultValue="logo-upload" className="w-full">
-               <TabsList className="grid w-full grid-cols-4">
+               <TabsList className="grid w-full grid-cols-5">
                  <TabsTrigger value="logo-upload">Logo Upload</TabsTrigger>
                  <TabsTrigger value="gallery-upload">Gallery Upload</TabsTrigger>
                  <TabsTrigger value="calendar-upload">Calendar Upload</TabsTrigger>
                  <TabsTrigger value="library-upload">Library Upload</TabsTrigger>
+                 <TabsTrigger value="holiday-management">Holiday Management</TabsTrigger>
               </TabsList>
               <TabsContent value="logo-upload">
                 <Card>
@@ -2510,6 +2539,65 @@ export default function AdminPage() {
                       </CardContent>
                   </Card>
               </TabsContent>
+               <TabsContent value="holiday-management">
+                <Card>
+                    <CardHeader><CardTitle>Holiday Management</CardTitle><CardDescription>Add or remove government holidays for attendance calculation.</CardDescription></CardHeader>
+                    <CardContent className="space-y-6">
+                        <Form {...holidayForm}>
+                             <form onSubmit={holidayForm.handleSubmit(onHolidaySubmit)} className="flex items-end gap-4">
+                                <FormField control={holidayForm.control} name="date" render={({ field }) => (
+                                    <FormItem className="flex flex-col"><FormLabel>Date</FormLabel>
+                                        <Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-[240px] pl-3 text-left font-normal',!field.value && 'text-muted-foreground')}>
+                                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent>
+                                        </Popover><FormMessage />
+                                    </FormItem>
+                                 )} />
+                                <FormField control={holidayForm.control} name="name" render={({ field }) => (
+                                    <FormItem className="flex-grow"><FormLabel>Holiday Name</FormLabel><FormControl><Input placeholder="e.g., Pongal" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <Button type="submit">Add Holiday</Button>
+                             </form>
+                        </Form>
+                        <div className="border rounded-lg max-h-96 overflow-y-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {holidays.map(h => (
+                                        <TableRow key={h.id}>
+                                            <TableCell>{format(new Date(h.date), "dd MMMM yyyy")}</TableCell>
+                                            <TableCell>{h.name}</TableCell>
+                                            <TableCell className="text-right">
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm" disabled={!canAccessAdminPanel}>Delete</Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>This will permanently remove the holiday.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteHoliday(h.id)}>Continue</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+               </TabsContent>
             </Tabs>
           </TabsContent>
         </Tabs>
