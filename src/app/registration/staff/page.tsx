@@ -56,6 +56,7 @@ const staffFormSchema = z.object({
   employeeCode: z.string().min(1, "Employee Code is required."),
   name: z.string().min(1, "Name is required."),
   contactNumber: z.string().min(1, "Contact Number is required."),
+  renewalDate: z.date({ required_error: "Renewal Date of Joining is required." }),
 
   // Location Details
   locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
@@ -233,6 +234,7 @@ export default function StaffRegistrationPage() {
           employeeCode: '',
           name: '',
           contactNumber: '',
+          renewalDate: undefined,
           photo: undefined,
           locationType: undefined,
           district: '',
@@ -300,7 +302,7 @@ export default function StaffRegistrationPage() {
                 setIsEditMode(true);
                 setSelectedRole(userToEdit.designation);
 
-                const dateFieldsToConvert = ['dateOfBirth', 'joiningDate'];
+                const dateFieldsToConvert = ['dateOfBirth', 'joiningDate', 'renewalDate'];
                 const arrayDateFields = {
                     'academicDetails': ['fromYear', 'toYear'],
                     'workExperience': ['fromDate', 'toDate'],
@@ -482,11 +484,13 @@ export default function StaffRegistrationPage() {
     const onFinalSubmit = (data: StaffFormValues) => {
         console.log("Final Submit:", data);
 
-        const finalData = { ...data };
+        const finalData:any = { ...data };
         // Convert date objects back to strings before saving
-        finalData.dateOfBirth = format(data.dateOfBirth, 'yyyy-MM-dd');
-        finalData.joiningDate = format(data.joiningDate, 'yyyy-MM-dd');
-        // TODO: Handle file uploads and convert other dates in arrays
+        dateFieldsToConvert.forEach(field => {
+            if (finalData[field]) {
+                finalData[field] = format(finalData[field], 'yyyy-MM-dd');
+            }
+        });
 
         if (isEditMode && editingUser) {
             updateUserService({ ...editingUser, ...finalData });
@@ -652,6 +656,7 @@ export default function StaffRegistrationPage() {
                                                        <FormField control={form.control} name="contactNumber" render={({ field }) => (
                                                           <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                                       )} />
+                                                       <FormField control={form.control} name="renewalDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Renewal Date of Joining*</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                                                    </div>
                                                    <div className="flex justify-end">
                                                        <Button type="button" onClick={form.handleSubmit(onSubmit)}>Save</Button>
@@ -1237,5 +1242,8 @@ export default function StaffRegistrationPage() {
         </div>
     );
 }
+
+    
+
 
     

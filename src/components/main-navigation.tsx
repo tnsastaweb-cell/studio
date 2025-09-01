@@ -110,7 +110,8 @@ const signedInMenuItems = [
       title: "DAILY ACTIVITES", 
       href: "#",
       children: [
-        { title: "DAILY ATTENDENCE", href: "#", disabled: true },
+        { title: "DAILY ATTENDENCE", href: "/daily-activities/daily-attendance" },
+        { title: "DUTY CERTIFICATE", href: "/daily-activities/duty-certificate" },
         { title: "TOUR DAIRY", href: "#", disabled: true },
         { title: "MOVEMENT REGISTER", href: "#", disabled: true },
       ]
@@ -176,3 +177,5 @@ export function MainNavigation() {
     </nav>
   );
 }
+
+    
