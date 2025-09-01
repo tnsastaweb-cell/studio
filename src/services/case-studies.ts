@@ -118,6 +118,11 @@ export const useCaseStudies = () => {
         const updatedStudies = [...getInitialCaseStudies(), newStudy];
         syncCaseStudies(updatedStudies);
     }, []);
+    
+    const deleteCaseStudy = useCallback((studyId: number) => {
+        const updatedStudies = getInitialCaseStudies().filter(study => study.id !== studyId);
+        syncCaseStudies(updatedStudies);
+    }, []);
 
-    return { caseStudies, loading, addCaseStudy, getNextCaseStudyNumber };
+    return { caseStudies, loading, addCaseStudy, deleteCaseStudy, getNextCaseStudyNumber };
 };

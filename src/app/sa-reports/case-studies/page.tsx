@@ -1,13 +1,13 @@
 
 'use client';
 
-import React, { useState, useMemo, FC } from 'react';
+import React, { useState, useMemo, useEffect, FC } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
-import { usePanchayats, uniqueDistricts } from '@/lib/utils';
+import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useCaseStudies } from '@/services/case-studies';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, Trash2, Mic, Upload, Eye, Edit, Delete } from 'lucide-react';
 import Image from 'next/image';
+import { uniqueDistricts } from '@/lib/utils';
 
 const caseStudySchema = z.object({
   caseStudyNo: z.string(),
@@ -61,7 +62,6 @@ export default function CaseStudiesPage() {
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
     const { users } = useUsers();
-    const { panchayats } = usePanchayats();
     const { getNextCaseStudyNumber, addCaseStudy } = useCaseStudies();
 
     const [caseStudyNo, setCaseStudyNo] = useState('');
@@ -94,20 +94,20 @@ export default function CaseStudiesPage() {
 
     const blocks = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict, panchayats]);
+        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return panchayats.filter(p => p.block === watchedBlock).sort((a,b) => a.name.localeCompare(b.name));
-    }, [watchedBlock, panchayats]);
+        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a,b) => a.name.localeCompare(b.name));
+    }, [watchedBlock]);
 
     useEffect(() => {
         if (watchedPanchayat) {
-            const lgdCode = panchayats.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
+            const lgdCode = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
             form.setValue('lgdCode', lgdCode);
         }
-    }, [watchedPanchayat, panchayats, form]);
+    }, [watchedPanchayat, form]);
 
     useEffect(() => {
         if (watchedEmployeeCode) {

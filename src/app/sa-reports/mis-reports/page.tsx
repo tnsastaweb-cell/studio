@@ -14,52 +14,52 @@ import { Button } from '@/components/ui/button';
 
 const mgnregsReports = {
     "R.6.1.A - SOCIAL AUDIT REPORTS": [
-        "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT",
-        "R.6.1.A.2 INDIVIDUAL ISSUES LISTING",
-        "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)",
-        "R.6.1.A.4 ISSUES REPORTED (BY BRP)",
-        "R.6.1.A.5 ISSUES REPORTED (BY ROUND)"
+        { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "#" },
+        { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "#" },
+        { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
+        { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
+        { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
     ],
     "R.6.1.B - SOCIAL AUDIT FINDINGS STATUS": [
-        "R.6.1.B.1 FM - Financial Misappropriation",
-        "R.6.1.B.2 FD - Financial Deviation",
-        "R.6.1.B.3 PV - Process Violation",
-        "R.6.1.B.4 GR – Grievances"
+        { title: "R.6.1.B.1 FM - Financial Misappropriation", href: "#" },
+        { title: "R.6.1.B.2 FD - Financial Deviation", href: "#" },
+        { title: "R.6.1.B.3 PV - Process Violation", href: "#" },
+        { title: "R.6.1.B.4 GR – Grievances", href: "#" }
     ],
     "R.6.1.C - ANNUAL REPORTS": [
-        "R.6.1.C.1 PERIODICAL REPORT",
-        "R.6.1.C.2 CASE STUDIES"
+        { title: "R.6.1.C.1 PERIODICAL REPORT", href: "#" },
+        { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/view-case-studies" }
     ],
     "R.6.1.D - URGENT REPORTS": [
-        "R.6.1.D.1 HIGH FM PARA DETAILS",
-        "R.6.1.D.2 OTHER REPORTS"
+        { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "#" },
+        { title: "R.6.1.D.2 OTHER REPORTS", href: "#" }
     ]
 };
 
 const pmaygReports = {
     "R.6.2.A - SOCIAL AUDIT REPORTS": [
-        "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT",
-        "R.6.2.A.2 INDIVIDUAL ISSUES LISTING",
-        "R.6.2.A.3 ISSUES REPORTED (BY CATEGORY)",
-        "R.6.2.A.4 ISSUES REPORTED (BY BRP)",
-        "R.6.2.A.5 ISSUES REPORTED (BY ROUND)"
+        { title: "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "#" },
+        { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "#" },
+        { title: "R.6.2.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
+        { title: "R.6.2.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
+        { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
     ],
     "R.6.2.B - SOCIAL AUDIT FINDINGS STATUS": [
-        "R.6.2.B.1 FM - முறைகேடு",
-        "R.6.2.B.2 FD - செயல்முறை மீறல்",
-        "R.6.2.B.3 PV - குறை"
+        { title: "R.6.2.B.1 FM - முறைகேடு", href: "#" },
+        { title: "R.6.2.B.2 FD - செயல்முறை மீறல்", href: "#" },
+        { title: "R.6.2.B.3 PV - குறை", href: "#" }
     ],
     "R.6.2.C - ANNUAL REPORTS": [
-        "R.6.2.C.1 PERIODICAL REPORT",
-        "R.6.2.C.2 CASE STUDIES"
+        { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#" },
+        { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/view-case-studies" }
     ],
     "R.6.2.D - URGENT REPORTS": [
-        "R.6.2.D.1 HIGH FM PARA DETAILS",
-        "R.6.2.D.2 OTHER REPORTS"
+        { title: "R.6.2.D.1 HIGH FM PARA DETAILS", href: "#" },
+        { title: "R.6.2.D.2 OTHER REPORTS", href: "#" }
     ]
 };
 
-const ReportCard = ({ title, reports }: { title: string; reports: string[] }) => (
+const ReportCard = ({ title, reports }: { title: string; reports: {title: string, href: string}[] }) => (
     <Card>
         <CardHeader>
             <CardTitle className="text-lg text-primary">{title}</CardTitle>
@@ -67,9 +67,9 @@ const ReportCard = ({ title, reports }: { title: string; reports: string[] }) =>
         <CardContent>
             <ul className="space-y-2">
                 {reports.map((report) => (
-                    <li key={report}>
-                        <Button variant="link" className="p-0 h-auto text-left whitespace-normal font-normal text-foreground/90">
-                           <Link href="#">{report}</Link>
+                    <li key={report.title}>
+                        <Button variant="link" className="p-0 h-auto text-left whitespace-normal font-normal text-foreground/90" asChild>
+                           <Link href={report.href}>{report.title}</Link>
                         </Button>
                     </li>
                 ))}
