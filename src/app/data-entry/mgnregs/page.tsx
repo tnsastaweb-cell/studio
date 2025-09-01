@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -128,9 +129,32 @@ export default function MgnregsDataEntryPage() {
     const form = useForm<MgnregsFormValues>({
         resolver: zodResolver(mgnregsFormSchema),
         defaultValues: {
+            brpEmployeeCode: "",
+            brpName: "",
+            brpContact: "",
+            brpDistrict: "",
+            brpBlock: "",
+            district: "",
+            block: "",
+            panchayat: "",
+            lgdCode: "",
+            roundNo: "",
+            auditStartDate: undefined,
+            auditEndDate: undefined,
+            sgsDate: undefined,
             expenditureYear: '2022-2023',
+            auditYear: "",
             observer: 'no',
-            paraParticulars: [],
+            observerName: "",
+            coram: 0,
+            vrpSearchType: undefined,
+            vrpSearchValue: "",
+            vrpEmployeeCode: "",
+            vrpName: "",
+            vrpContactNumber: "",
+            vrpDistrict: "",
+            vrpBlock: "",
+            vrpPanchayat: "",
             pvtIndividualLandWorks: 0, pvtIndividualLandAmount: 0,
             pvtIndividualAssetsWorks: 0, pvtIndividualAssetsAmount: 0,
             pubCommunityLandWorks: 0, pubCommunityLandAmount: 0,
@@ -138,6 +162,8 @@ export default function MgnregsDataEntryPage() {
             skilledSemiSkilledAmount: 0, materialAmount: 0,
             totalWorks: 0, totalAmount: 0,
             worksVerified: 0, householdsWorked: 0, householdsVerified: 0,
+            reportFile: null,
+            paraParticulars: [],
         },
     });
 
@@ -526,4 +552,5 @@ export default function MgnregsDataEntryPage() {
         </div>
     );
 }
+
 
