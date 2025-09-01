@@ -11,6 +11,7 @@ import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { uniqueDistricts } from '@/lib/utils';
 import { useCaseStudies } from '@/services/case-studies';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
+import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -29,7 +30,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlusCircle, Trash2, Mic, Upload, Eye, Edit, Delete } from 'lucide-react';
 import Image from 'next/image';
 
-
 const caseStudySchema = z.object({
   caseStudyNo: z.string(),
   scheme: z.string().min(1),
@@ -46,8 +46,16 @@ const caseStudySchema = z.object({
   subCategory: z.string().optional(),
   issueCode: z.string().optional(),
   beneficiaries: z.coerce.number().optional(),
-  descriptionEnglish: z.string().optional(),
-  descriptionTamil: z.string().optional(),
+  description: z.string().optional(),
+  
+  // MGNREGS amount
+  amount: z.coerce.number().optional(),
+
+  // PMAY-G amounts
+  centralAmount: z.coerce.number().optional(),
+  stateAmount: z.coerce.number().optional(),
+  otherAmount: z.coerce.number().optional(),
+
   tableRows: z.coerce.number().min(0).optional(),
   tableCols: z.coerce.number().min(0).optional(),
   tableData: z.array(z.array(z.string())).optional(),
@@ -65,6 +73,7 @@ export default function CaseStudiesPage() {
     const { toast } = useToast();
     const { users } = useUsers();
     const { getNextCaseStudyNumber, addCaseStudy } = useCaseStudies();
+    const { issues: pmaygIssues } = usePmaygIssues();
 
     const [caseStudyNo, setCaseStudyNo] = useState('');
     const [tableStructure, setTableStructure] = useState<{ rows: number, cols: number} | null>(null);
@@ -89,8 +98,11 @@ export default function CaseStudiesPage() {
             subCategory: '',
             issueCode: '',
             beneficiaries: 0,
-            descriptionEnglish: '',
-            descriptionTamil: '',
+            description: '',
+            amount: 0,
+            centralAmount: 0,
+            stateAmount: 0,
+            otherAmount: 0,
             tableRows: 0,
             tableCols: 0,
             tableData: [],
@@ -106,8 +118,7 @@ export default function CaseStudiesPage() {
     const watchedBlock = form.watch("block");
     const watchedPanchayat = form.watch("panchayat");
     const watchedEmployeeCode = form.watch("employeeCode");
-    const watchedIssueType = form.watch("issueType");
-    const watchedIssueCategory = form.watch("issueCategory");
+    const watchedIssueNo = form.watch("issueNo");
     const watchedTableRows = form.watch("tableRows");
     const watchedTableCols = form.watch("tableCols");
     const watchedPhotoLayout = form.watch("photoLayout");
@@ -146,21 +157,27 @@ export default function CaseStudiesPage() {
         }
     }, [watchedDistrict, getNextCaseStudyNumber, form]);
     
-    const issueTypes = useMemo(() => Array.from(new Set(MOCK_MGNREGS_DATA.map(d => d.type))), []);
-    const issueCategories = useMemo(() => {
-        if (!watchedIssueType) return [];
-        return Array.from(new Set(MOCK_MGNREGS_DATA.filter(d => d.type === watchedIssueType).map(d => d.category)));
-    }, [watchedIssueType]);
-    const subCategories = useMemo(() => {
-        if (!watchedIssueCategory) return [];
-        return MOCK_MGNREGS_DATA.filter(d => d.type === watchedIssueType && d.category === watchedIssueCategory);
-    }, [watchedIssueCategory, watchedIssueType]);
-    
-     useEffect(() => {
-        const subCategory = form.watch('subCategory');
-        const code = subCategories.find(s => s.subCategory === subCategory)?.codeNumber || '';
-        form.setValue('issueCode', code);
-    }, [form.watch('subCategory'), subCategories, form]);
+    useEffect(() => {
+      let issueData;
+      if (watchedScheme === 'MGNREGS') {
+        issueData = MOCK_MGNREGS_DATA.find(d => d.codeNumber === watchedIssueNo);
+      } else if (watchedScheme === 'PMAY-G') {
+        issueData = pmaygIssues.find(i => i.issueNumber === watchedIssueNo);
+      }
+
+      if (issueData) {
+        form.setValue('issueType', issueData.type);
+        form.setValue('issueCategory', issueData.category);
+        form.setValue('subCategory', issueData.subCategory);
+        form.setValue('issueCode', issueData.codeNumber);
+      } else {
+        form.setValue('issueType', '');
+        form.setValue('issueCategory', '');
+        form.setValue('subCategory', '');
+        form.setValue('issueCode', '');
+      }
+
+    }, [watchedIssueNo, watchedScheme, pmaygIssues, form]);
 
 
     const handleTableGeneration = () => {
@@ -176,7 +193,7 @@ export default function CaseStudiesPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
             toast({ variant: 'destructive', title: "File too large", description: "Photo must be 5MB or smaller." });
             return;
         }
@@ -234,28 +251,27 @@ export default function CaseStudiesPage() {
                                          <FormField control={form.control} name="paraNo" render={({ field }) => (<FormItem><FormLabel>Para No.</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                                          <FormField control={form.control} name="issueNo" render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                                          
-                                         <FormField control={form.control} name="issueType" render={({ field }) => (<FormItem><FormLabel>Issue Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Issue Type" /></SelectTrigger></FormControl><SelectContent>{issueTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                         <FormField control={form.control} name="issueCategory" render={({ field }) => (<FormItem><FormLabel>Issue Category</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedIssueType}><FormControl><SelectTrigger><SelectValue placeholder="Select Issue Category" /></SelectTrigger></FormControl><SelectContent>{issueCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                                          <FormField control={form.control} name="subCategory" render={({ field }) => (
-                                            <FormItem className="lg:col-span-2"><FormLabel>Sub Category</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchedIssueCategory}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Select Sub Category" /></SelectTrigger></FormControl>
-                                                <SelectContent>{subCategories.map(sc => <SelectItem key={sc.codeNumber} value={sc.subCategory}>{sc.subCategory}</SelectItem>)}</SelectContent>
-                                            </Select></FormItem>
-                                          )} />
+                                         <FormField control={form.control} name="issueType" render={({ field }) => (<FormItem><FormLabel>Issue Type</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                         <FormField control={form.control} name="issueCategory" render={({ field }) => (<FormItem><FormLabel>Issue Category</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
+                                         <FormField control={form.control} name="subCategory" render={({ field }) => (<FormItem className="lg:col-span-2"><FormLabel>Sub Category</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                          <FormField control={form.control} name="issueCode" render={({ field }) => (<FormItem><FormLabel>Issue Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                          <FormField control={form.control} name="beneficiaries" render={({ field }) => (<FormItem><FormLabel>No. of Beneficiaries</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                         {watchedScheme === 'MGNREGS' && <FormField control={form.control} name="amount" render={({ field }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />}
+                                        {watchedScheme === 'PMAY-G' && (
+                                            <>
+                                                <FormField control={form.control} name="centralAmount" render={({ field }) => (<FormItem><FormLabel>Central Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="stateAmount" render={({ field }) => (<FormItem><FormLabel>State Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                                <FormField control={form.control} name="otherAmount" render={({ field }) => (<FormItem><FormLabel>Others Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                            </>
+                                        )}
                                      </CardContent>
                                 </Card>
 
                                 <Card>
                                     <CardHeader><CardTitle>Section 4: Description</CardTitle></CardHeader>
-                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <FormField control={form.control} name="descriptionEnglish" render={({ field }) => (
-                                            <FormItem><FormLabel>Description (English)</FormLabel><FormControl><Textarea className="h-40" {...field} /></FormControl></FormItem>
-                                        )} />
-                                        <FormField control={form.control} name="descriptionTamil" render={({ field }) => (
-                                            <FormItem><FormLabel>Description (Tamil)</FormLabel>
+                                    <CardContent>
+                                        <FormField control={form.control} name="description" render={({ field }) => (
+                                            <FormItem><FormLabel>Description (Supports Tamil and English)</FormLabel>
                                                 <div className="relative"><FormControl><Textarea className="h-40 pr-10" {...field} /></FormControl><Button type="button" variant="ghost" size="icon" className="absolute bottom-2 right-2 text-muted-foreground"><Mic className="h-4 w-4"/></Button></div>
                                             </FormItem>
                                         )} />
@@ -265,6 +281,7 @@ export default function CaseStudiesPage() {
                                 <Card>
                                     <CardHeader><CardTitle>Section 5: Table Auto-Generator</CardTitle></CardHeader>
                                     <CardContent className="space-y-4">
+                                        <p className="text-sm text-muted-foreground">Define the structure for your data table. This is ideal for presenting financial details or lists of beneficiaries.</p>
                                         <div className="flex gap-4 items-end">
                                             <FormField control={form.control} name="tableRows" render={({ field }) => (<FormItem><FormLabel>No. of Rows</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                             <FormField control={form.control} name="tableCols" render={({ field }) => (<FormItem><FormLabel>No. of Columns</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
@@ -361,3 +378,4 @@ export default function CaseStudiesPage() {
         </div>
     );
 }
+

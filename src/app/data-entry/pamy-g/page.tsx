@@ -36,6 +36,7 @@ import Link from 'next/link';
 
 // Schemas
 const paraParticularsSchema = z.object({
+  id: z.number(), // Added for unique identification
   issueNumber: z.string(),
   type: z.string().min(1, "Type is required."),
   category: z.string().min(1, "Category is required."),
@@ -294,6 +295,7 @@ export default function PmaygDataEntryPage() {
         }
         const issueNumber = getNextIssueSerialNumber(district);
         append({
+            id: Date.now(), // Add a temporary unique ID
             issueNumber, 
             type: '', 
             category: '', 
