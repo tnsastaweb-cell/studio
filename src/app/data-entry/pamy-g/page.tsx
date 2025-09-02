@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useMemo, useEffect, FC } from 'react';
@@ -15,6 +14,7 @@ import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useHlc } from '@/services/hlc';
 import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
+import { usePmayg } from '@/services/pmayg-data';
 import { uniqueDistricts } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ const paraParticularsSchema = z.object({
   recoveryAmount: z.coerce.number().default(0),
 });
 
-const pmaygFormSchema = z.object({
+export const pmaygFormSchema = z.object({
   // Section A - BRP Details
   brpEmployeeCode: z.string().min(1, "Employee Code is required."),
   brpName: z.string(),
@@ -111,7 +111,7 @@ const pmaygFormSchema = z.object({
   paraParticulars: z.array(paraParticularsSchema).optional(),
 });
 
-type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
+export type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
 const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: (index: number) => void; hlcItems: any[] }> = ({ index, control, form, remove, hlcItems }) => {
     const selectedType = useWatch({ control, name: `paraParticulars.${index}.type` });
@@ -180,6 +180,7 @@ export default function PmaygDataEntryPage() {
     const { toast } = useToast();
     const { hlcItems } = useHlc();
     const { getNextIssueSerialNumber, addIssue: saveIssue } = usePmaygIssues();
+    const { addPmaygEntry } = usePmayg();
     const [file, setFile] = useState<File | null>(null);
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
 
@@ -323,6 +324,7 @@ export default function PmaygDataEntryPage() {
                 saveIssue(issue as Omit<PmaygIssue, 'id'>);
             });
         }
+        addPmaygEntry(data);
         console.log("Form Data:", data);
         toast({
             title: "Form Submitted!",

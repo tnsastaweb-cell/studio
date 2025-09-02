@@ -85,4 +85,4 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
     ...CHENGALPATTU_PANCHAYATS,
     ...RANIPET_PANCHAYATS,
     ...TIRUPATHUR_PANCHAYATS,
-];
+].map(p => ({ ...p, name: p.name.toUpperCase(), district: p.district.toUpperCase(), block: p.block.toUpperCase() }));
