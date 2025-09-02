@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 
 const mgnregsReports = {
     "R.6.1.A - SOCIAL AUDIT REPORTS": [
-        { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "#" },
+        { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/grama-panchayat-report" },
         { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "#" },
         { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
         { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
