@@ -42,7 +42,7 @@ const pmaygReports = {
         { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/pmayg-individual-issues-listing" },
         { title: "R.6.2.A.3 ISSUES REPORTED (BY CATEGORY)", href: "/sa-reports/pmayg-issues-by-category", disabled: false },
         { title: "R.6.2.A.4 ISSUES REPORTED (BY BRP)", href: "/sa-reports/pmayg-issues-by-brp", disabled: false },
-        { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "#", disabled: true }
+        { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "/sa-reports/pmayg-issues-by-round", disabled: false }
     ],
     "R.6.2.B - SOCIAL AUDIT FINDINGS STATUS": [
         { title: "R.6.2.B.1 FM - முறைகேடு", href: "#", disabled: true },
