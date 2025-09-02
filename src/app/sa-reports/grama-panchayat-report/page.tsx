@@ -42,6 +42,83 @@ const InfoRow: FC<{label: string, value: React.ReactNode | undefined | null}> = 
     </div>
 );
 
+const PmaygReportViewer = ({ entry }: { entry: PmaygEntry }) => {
+    const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
+     const { issues: pmaygIssues } = usePmaygIssues();
+
+     const filteredIssues = useMemo(() => {
+        return pmaygIssues.filter(issue => issue.panchayat === entry.panchayat);
+     }, [pmaygIssues, entry.panchayat]);
+
+    return (
+        <div className="bg-white p-8 rounded-lg shadow-md print-content font-sans text-black">
+             <style>{`
+                @media print {
+                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+              `}</style>
+            <h2 className="text-center text-xl font-bold mb-4">R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT (PMAY-G)</h2>
+
+            <SectionCard title="Section A: BRP Details" id="brp-details-pmayg">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <InfoRow label="BRP Name" value={entry.brpName} />
+                    <InfoRow label="Employee Code" value={entry.brpEmployeeCode} />
+                    <InfoRow label="District" value={entry.brpDistrict} />
+                    <InfoRow label="Block" value={entry.brpBlock} />
+                </div>
+            </SectionCard>
+            
+            <SectionCard title="Section B: Basic Details" id="basic-details-pmayg">
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <InfoRow label="District" value={entry.district} />
+                    <InfoRow label="Block" value={entry.block} />
+                    <InfoRow label="Panchayat" value={panchayatName} />
+                    <InfoRow label="LGD Code" value={entry.lgdCode} />
+                    <InfoRow label="Round No" value={entry.roundNo} />
+                    <InfoRow label="Audit Start Date" value={entry.auditStartDate ? format(new Date(entry.auditStartDate), 'dd/MM/yyyy') : 'N/A'} />
+                    <InfoRow label="Audit End Date" value={entry.auditEndDate ? format(new Date(entry.auditEndDate), 'dd/MM/yyyy') : 'N/A'} />
+                    <InfoRow label="SGS Date" value={entry.sgsDate ? format(new Date(entry.sgsDate), 'dd/MM/yyyy') : 'N/A'} />
+                 </div>
+            </SectionCard>
+
+            <SectionCard title="Section C: Verification Details" id="verification-details-pmayg">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <InfoRow label="Total Houses" value={entry.totalHouses} />
+                    <InfoRow label="1st Installments" value={entry.firstInstallment} />
+                    <InfoRow label="2nd Installments" value={entry.secondInstallment} />
+                    <InfoRow label="3rd Installments" value={entry.thirdInstallment} />
+                    <InfoRow label="4th Installments" value={entry.fourthInstallment} />
+                    <InfoRow label="Not Completed After 4th" value={entry.notCompletedAfterFourth} />
+                </div>
+            </SectionCard>
+
+            <SectionCard title="Section G: Para Particulars" id="para-particulars-pmayg">
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Issue No.</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Sub-Category</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredIssues.map((issue, index) => (
+                             <TableRow key={index}>
+                                <TableCell>{issue.issueNumber}</TableCell>
+                                <TableCell>{issue.type}</TableCell>
+                                <TableCell>{issue.subCategory}</TableCell>
+                                <TableCell>{issue.paraStatus}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                 </Table>
+            </SectionCard>
+        </div>
+    );
+};
+
+
 const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
     const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
 
@@ -236,44 +313,62 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
 
 export default function GramaPanchayatSocialAuditReport() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
+    const { entries: pmaygEntries, loading: pmaygLoading } = usePmayg();
     const printRef = useRef(null);
 
-    const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
-    const [selectedBlock, setSelectedBlock] = useState<string>('all');
-    const [selectedPanchayat, setSelectedPanchayat] = useState<string>('all');
-    const [selectedSgsDate, setSelectedSgsDate] = useState<string>('all');
+    const [filters, setFilters] = useState({
+        district: 'all',
+        block: 'all',
+        panchayat: 'all',
+        sgsDate: 'all'
+    });
     
-    const [selectedReportEntry, setSelectedReportEntry] = useState<MgnregsEntry | null>(null);
+    const [selectedReport, setSelectedReport] = useState<MgnregsEntry | PmaygEntry | null>(null);
+    const [activeScheme, setActiveScheme] = useState('MGNREGS');
+
 
     const blocksForDistrict = useMemo(() => {
-        if (selectedDistrict === 'all') return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === selectedDistrict).map(p => p.block))).sort();
-    }, [selectedDistrict]);
+        if (filters.district === 'all') return [];
+        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === filters.district).map(p => p.block))).sort();
+    }, [filters.district]);
 
     const panchayatsForBlock = useMemo(() => {
-        if (selectedBlock === 'all') return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === selectedBlock).sort((a,b) => a.name.localeCompare(b.name));
-    }, [selectedBlock]);
+        if (filters.block === 'all') return [];
+        return MOCK_PANCHAYATS.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
+    }, [filters.block]);
 
     const sgsDatesForPanchayat = useMemo(() => {
-        if (selectedPanchayat === 'all') return [];
-        return mgnregsEntries.filter((e: any) => e.panchayat === selectedPanchayat).map((e: any) => e.sgsDate);
-    }, [selectedPanchayat, mgnregsEntries]);
+        if (filters.panchayat === 'all') return [];
+        const entries = activeScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
+        return entries.filter((e) => e.panchayat === filters.panchayat).map((e) => e.sgsDate);
+    }, [filters.panchayat, activeScheme, mgnregsEntries, pmaygEntries]);
 
     const handleGetReport = () => {
-        const entry = mgnregsEntries.find((e: any) => 
-            e.panchayat === selectedPanchayat && 
-            e.sgsDate.toString() === selectedSgsDate
+        const entries = activeScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
+        const entry = entries.find((e) => 
+            e.panchayat === filters.panchayat && 
+            e.sgsDate.toString() === filters.sgsDate
         );
-        setSelectedReportEntry(entry || null);
+        setSelectedReport(entry || null);
     };
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
-        documentTitle: `MGNREGS_Social_Audit_Report_${selectedReportEntry?.district}`
+        documentTitle: `Social_Audit_Report_${selectedReport?.district}`
     });
     
-    const loading = mgnregsLoading;
+    const loading = mgnregsLoading || pmaygLoading;
+
+    const resetFilters = () => {
+        setFilters({ district: 'all', block: 'all', panchayat: 'all', sgsDate: 'all' });
+        setSelectedReport(null);
+    }
+    
+    const handleSchemeChange = (scheme: string) => {
+        setActiveScheme(scheme);
+        resetFilters();
+    }
+
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -284,75 +379,97 @@ export default function GramaPanchayatSocialAuditReport() {
                     <CardHeader>
                         <div className="flex justify-between items-center">
                             <div>
-                                <CardTitle>R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT</CardTitle>
-                                <CardDescription>Select filters to view a specific MGNREGS report.</CardDescription>
+                               <CardTitle>Grama Panchayat Social Audit Report</CardTitle>
+                                <CardDescription>Select a scheme and filters to view a specific report.</CardDescription>
                             </div>
-                             <Button onClick={handlePrint} disabled={!selectedReportEntry}>
+                             <Button onClick={handlePrint} disabled={!selectedReport}>
                                 <Printer className="mr-2" /> Print Report
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end my-6">
-                            <div className="space-y-2">
-                                <label>District</label>
-                                <Select value={selectedDistrict} onValueChange={v => { setSelectedDistrict(v); setSelectedBlock('all'); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Districts</SelectItem>
-                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <label>Block</label>
-                                <Select value={selectedBlock} onValueChange={v => { setSelectedBlock(v); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedDistrict === 'all'}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Blocks</SelectItem>
-                                        {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <label>Panchayat</label>
-                                <Select value={selectedPanchayat} onValueChange={v => { setSelectedPanchayat(v); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedBlock === 'all'}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Panchayats</SelectItem>
-                                        {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <label>SGS Date</label>
-                                <Select value={selectedSgsDate} onValueChange={v => {setSelectedSgsDate(v); setSelectedReportEntry(null); }} disabled={selectedPanchayat === 'all'}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Select Date</SelectItem>
-                                        {sgsDatesForPanchayat.map((d: any) => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button onClick={handleGetReport} disabled={selectedSgsDate === 'all'}>Get Report</Button>
-                        </div>
-                        
-                        <div className="pt-4">
-                            {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
-                            
-                            {!loading && selectedReportEntry && (
-                                <div ref={printRef}>
-                                    <MgnregsReportViewer entry={selectedReportEntry as MgnregsEntry} />
+                         <Tabs defaultValue="MGNREGS" onValueChange={handleSchemeChange} className="w-full">
+                            <TabsList>
+                                <TabsTrigger value="MGNREGS">R.6.1.A.1 (MGNREGS)</TabsTrigger>
+                                <TabsTrigger value="PMAY-G">R.6.2.A.1 (PMAY-G)</TabsTrigger>
+                            </TabsList>
+                             <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end my-6">
+                                <div className="space-y-2">
+                                    <label>District</label>
+                                    <Select value={filters.district} onValueChange={v => setFilters(f => ({ ...f, district: v, block: 'all', panchayat: 'all', sgsDate: 'all' }))}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Districts</SelectItem>
+                                            {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            )}
-                            
-                            {!loading && !selectedReportEntry && (
-                                 <div className="text-center p-16 text-muted-foreground">
-                                    <FileText className="mx-auto h-12 w-12 mb-4" />
-                                    <p>Please select your filters and click "Get Report" to view the social audit details.</p>
-                                 </div>
-                            )}
-                        </div>
+                                <div className="space-y-2">
+                                    <label>Block</label>
+                                    <Select value={filters.block} onValueChange={v => setFilters(f => ({...f, block: v, panchayat: 'all', sgsDate: 'all'}))} disabled={filters.district === 'all'}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Blocks</SelectItem>
+                                            {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label>Panchayat</label>
+                                    <Select value={filters.panchayat} onValueChange={v => setFilters(f => ({...f, panchayat: v, sgsDate: 'all'}))} disabled={filters.block === 'all'}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Panchayats</SelectItem>
+                                            {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label>SGS Date</label>
+                                    <Select value={filters.sgsDate} onValueChange={v => setFilters(f => ({...f, sgsDate: v}))} disabled={filters.panchayat === 'all'}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Select Date</SelectItem>
+                                            {sgsDatesForPanchayat.map((d: any) => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button onClick={handleGetReport} disabled={filters.sgsDate === 'all'}>Get Report</Button>
+                            </div>
+
+                            <TabsContent value="MGNREGS">
+                                <div className="pt-4">
+                                    {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
+                                    {!loading && selectedReport && activeScheme === 'MGNREGS' && (
+                                        <div ref={printRef}>
+                                            <MgnregsReportViewer entry={selectedReport as MgnregsEntry} />
+                                        </div>
+                                    )}
+                                    {!loading && !selectedReport && activeScheme === 'MGNREGS' && (
+                                         <div className="text-center p-16 text-muted-foreground">
+                                            <FileText className="mx-auto h-12 w-12 mb-4" />
+                                            <p>Please select your filters and click "Get Report" to view the social audit details.</p>
+                                         </div>
+                                    )}
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="PMAY-G">
+                                 <div className="pt-4">
+                                    {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
+                                    {!loading && selectedReport && activeScheme === 'PMAY-G' && (
+                                        <div ref={printRef}>
+                                            <PmaygReportViewer entry={selectedReport as PmaygEntry} />
+                                        </div>
+                                    )}
+                                    {!loading && !selectedReport && activeScheme === 'PMAY-G' && (
+                                         <div className="text-center p-16 text-muted-foreground">
+                                            <FileText className="mx-auto h-12 w-12 mb-4" />
+                                            <p>Please select your filters and click "Get Report" to view the social audit details.</p>
+                                         </div>
+                                    )}
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </CardContent>
                 </Card>
             </main>
