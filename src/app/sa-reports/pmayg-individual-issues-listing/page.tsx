@@ -18,9 +18,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
-const years = ["2023-2024", "2022-2023", "2021-2022", "all"];
-const statuses = ["PENDING", "CLOSED", "all"];
-const pmaygTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
+const years = ["all", "2016-2022"];
+const statuses = ["all", "PENDING", "CLOSED"];
+const pmaygTypes = ["all", ...Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)))];
 
 const PmaygReportTable = ({ data, loading }: { data: any[], loading: boolean }) => {
     return (
@@ -126,28 +126,28 @@ export default function PmaygIndividualIssuesListingPage() {
     
     const categoriesForType = useMemo(() => {
         if (filters.type === 'all') return [];
-        return Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === filters.type).map(d => d.category)));
+        return ["all", ...Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === filters.type).map(d => d.category)))];
     }, [filters.type]);
 
     const subCategoriesForCategory = useMemo(() => {
         if (filters.category === 'all') return [];
-        return Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === filters.type && d.category === filters.category).map(d => d.subCategory)));
+        return ["all", ...Array.from(new Set(MOCK_PMAYG_DATA.filter(d => d.type === filters.type && d.category === filters.category).map(d => d.subCategory)))];
     }, [filters.category, filters.type]);
     
     const codesForSubCategory = useMemo(() => {
         if (filters.subCategory === 'all') return [];
-        return MOCK_PMAYG_DATA.filter(d => d.type === filters.type && d.category === filters.category && d.subCategory === filters.subCategory);
+        return ["all", ...MOCK_PMAYG_DATA.filter(d => d.type === filters.type && d.category === filters.category && d.subCategory === filters.subCategory).map(c => c.codeNumber)];
     }, [filters.subCategory, filters.category, filters.type]);
 
 
     const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
         setFilters(prev => {
             const newFilters = {...prev, [filterName]: value};
-            if(filterName === 'district') newFilters.block = 'all';
-            if(filterName === 'block') newFilters.panchayat = 'all';
-            if(filterName === 'type') newFilters.category = 'all';
-            if(filterName === 'category') newFilters.subCategory = 'all';
-            if(filterName === 'subCategory') newFilters.codeNumber = 'all';
+            if(filterName === 'district') {newFilters.block = 'all'; newFilters.panchayat = 'all';}
+            if(filterName === 'block') {newFilters.panchayat = 'all';}
+            if(filterName === 'type') {newFilters.category = 'all'; newFilters.subCategory = 'all'; newFilters.codeNumber = 'all';}
+            if(filterName === 'category') {newFilters.subCategory = 'all'; newFilters.codeNumber = 'all';}
+            if(filterName === 'subCategory') {newFilters.codeNumber = 'all';}
             return newFilters;
         });
     }
@@ -164,15 +164,15 @@ export default function PmaygIndividualIssuesListingPage() {
                     </CardHeader>
                     <CardContent>
                          <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end mt-4">
-                            <Select value={filters.auditYear} onValueChange={(v) => handleFilterChange('auditYear', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.auditYear} onValueChange={(v) => handleFilterChange('auditYear', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.filter(y => y !== 'all').map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.district} onValueChange={(v) => handleFilterChange('district', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Districts</SelectItem>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{toTitleCase(d)}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.block} onValueChange={(v) => handleFilterChange('block', v)} disabled={filters.district === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Blocks</SelectItem>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.panchayat} onValueChange={(v) => handleFilterChange('panchayat', v)} disabled={filters.block === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Panchayats</SelectItem>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.status} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{statuses.filter(s => s !== 'all').map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
-                            <Select value={filters.type} onValueChange={(v) => handleFilterChange('type', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{pmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
-                            <Select value={filters.category} onValueChange={(v) => handleFilterChange('category', v)} disabled={filters.type === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{categoriesForType.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-                            <Select value={filters.subCategory} onValueChange={(v) => handleFilterChange('subCategory', v)} disabled={filters.category === 'all'}><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Sub-Categories</SelectItem>{subCategoriesForCategory.map(sc => <SelectItem key={sc} value={sc} className="whitespace-normal">{sc}</SelectItem>)}</SelectContent></Select>
-                            <Select value={filters.codeNumber} onValueChange={(v) => handleFilterChange('codeNumber', v)} disabled={filters.subCategory === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Codes</SelectItem>{codesForSubCategory.map(c => <SelectItem key={c.codeNumber} value={c.codeNumber}>{c.codeNumber}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.type} onValueChange={(v) => handleFilterChange('type', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{pmaygTypes.filter(t => t !== 'all').map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.category} onValueChange={(v) => handleFilterChange('category', v)} disabled={filters.type === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{categoriesForType.filter(c => c !== 'all').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.subCategory} onValueChange={(v) => handleFilterChange('subCategory', v)} disabled={filters.category === 'all'}><SelectTrigger className="h-auto min-h-10 whitespace-normal text-left"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Sub-Categories</SelectItem>{subCategoriesForCategory.filter(sc => sc !== 'all').map(sc => <SelectItem key={sc} value={sc} className="whitespace-normal">{sc}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.codeNumber} onValueChange={(v) => handleFilterChange('codeNumber', v)} disabled={filters.subCategory === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Codes</SelectItem>{codesForSubCategory.filter(c => c !== 'all').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
                             <div className="flex gap-2 lg:col-start-5">
                                 <Button onClick={handleGetReport} className="w-full">Get Report</Button>
                                 <Button variant="outline" onClick={resetFilters}><RefreshCw className="h-4 w-4" /></Button>
