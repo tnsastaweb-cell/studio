@@ -14,8 +14,8 @@ import { Button } from '@/components/ui/button';
 
 const mgnregsReports = {
     "R.6.1.A - SOCIAL AUDIT REPORTS": [
-        { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/grama-panchayat-report" },
-        { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/individual-issues-listing" },
+        { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/mgnregs-grama-panchayat-report" },
+        { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/mgnregs-individual-issues-listing" },
         { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
         { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
         { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
@@ -38,8 +38,8 @@ const mgnregsReports = {
 
 const pmaygReports = {
     "R.6.2.A - SOCIAL AUDIT REPORTS": [
-        { title: "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/grama-panchayat-report" },
-        { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/individual-issues-listing" },
+        { title: "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/pmayg-grama-panchayat-report" },
+        { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/pmayg-individual-issues-listing" },
         { title: "R.6.2.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
         { title: "R.6.2.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
         { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
@@ -92,14 +92,14 @@ export default function MisReportsPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Tabs defaultValue={MOCK_SCHEMES[0].id} className="w-full">
+                <Tabs defaultValue={MOCK_SCHEMES[0].name} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
                         {MOCK_SCHEMES.map(scheme => (
-                           <TabsTrigger key={scheme.id} value={scheme.id}>{scheme.name}</TabsTrigger>
+                           <TabsTrigger key={scheme.id} value={scheme.name}>{scheme.name}</TabsTrigger>
                         ))}
                     </TabsList>
                     
-                    <TabsContent value={MOCK_SCHEMES[0].id} className="pt-6">
+                    <TabsContent value={MOCK_SCHEMES[0].name} className="pt-6">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {Object.entries(mgnregsReports).map(([title, reports]) => (
                                 <ReportCard key={title} title={title} reports={reports} />
@@ -107,7 +107,7 @@ export default function MisReportsPage() {
                        </div>
                     </TabsContent>
 
-                    <TabsContent value={MOCK_SCHEMES[1].id} className="pt-6">
+                    <TabsContent value={MOCK_SCHEMES[1].name} className="pt-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              {Object.entries(pmaygReports).map(([title, reports]) => (
                                 <ReportCard key={title} title={title} reports={reports} />
