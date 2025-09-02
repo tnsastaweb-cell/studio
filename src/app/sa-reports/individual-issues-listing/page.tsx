@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, FC } from 'react';
 import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
 import { usePmayg, PmaygEntry } from '@/services/pmayg-data';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
@@ -23,16 +23,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
-const years = ["2023-2024", "2022-2023", "2021-2022"];
-const statuses = ["PENDING", "CLOSED"];
+const years = ["2023-2024", "2022-2023", "2021-2022", "all"];
+const statuses = ["PENDING", "CLOSED", "all"];
 
 const mgnregsTypes = Array.from(new Set(MOCK_MGNREGS_DATA.map(d => d.type)));
 const pmaygTypes = Array.from(new Set(MOCK_PMAYG_DATA.map(d => d.type)));
 
 
-const ReportTable = ({ data, scheme }: { data: any[], scheme: string }) => {
+const ReportTable = ({ data, scheme, loading }: { data: any[], scheme: string, loading: boolean }) => {
     return (
-        <div className="border rounded-lg mt-4">
+        <div className="border rounded-lg mt-4 overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -57,8 +57,10 @@ const ReportTable = ({ data, scheme }: { data: any[], scheme: string }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.length === 0 ? (
-                        <TableRow><TableCell colSpan={scheme === 'MGNREGS' ? 11 : 13} className="text-center">No issues found.</TableCell></TableRow>
+                    {loading ? (
+                         <TableRow><TableCell colSpan={scheme === 'MGNREGS' ? 11 : 13} className="text-center h-24"><Loader2 className="mx-auto animate-spin" /></TableCell></TableRow>
+                    ) : data.length === 0 ? (
+                        <TableRow><TableCell colSpan={scheme === 'MGNREGS' ? 11 : 13} className="text-center h-24">No issues found for the selected filters.</TableCell></TableRow>
                     ) : (
                         data.map((item, index) => (
                             <TableRow key={index}>
@@ -92,34 +94,21 @@ const ReportTable = ({ data, scheme }: { data: any[], scheme: string }) => {
 export default function IndividualIssuesListingPage() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
     const { entries: pmaygEntries, loading: pmaygLoading } = usePmayg();
-
+    const [currentScheme, setCurrentScheme] = useState('MGNREGS');
+    
     const [filters, setFilters] = useState({
-        auditYear: 'all',
-        district: 'all',
-        block: 'all',
-        panchayat: 'all',
-        status: 'all',
-        type: 'all',
-        category: 'all',
-        subCategory: 'all'
+        auditYear: 'all', district: 'all', block: 'all', panchayat: 'all',
+        status: 'all', type: 'all', category: 'all', subCategory: 'all'
     });
 
     const [filteredReportData, setFilteredReportData] = useState<any[]>([]);
+     const [isReportGenerated, setIsReportGenerated] = useState(false);
 
-    const flattenedMgnregs = useMemo(() => {
-        return mgnregsEntries.flatMap(entry =>
-            (entry.paraParticulars || []).map(para => ({ ...entry, para }))
-        );
-    }, [mgnregsEntries]);
-
-    const flattenedPmayg = useMemo(() => {
-        return pmaygEntries.flatMap(entry =>
-            (entry.paraParticulars || []).map(para => ({ ...entry, para }))
-        );
-    }, [pmaygEntries]);
+    const flattenedMgnregs = useMemo(() => mgnregsEntries.flatMap(entry => (entry.paraParticulars || []).map(para => ({ ...entry, para }))), [mgnregsEntries]);
+    const flattenedPmayg = useMemo(() => pmaygEntries.flatMap(entry => (entry.paraParticulars || []).map(para => ({ ...entry, para }))), [pmaygEntries]);
     
-    const handleGetReport = (scheme: 'MGNREGS' | 'PMAY-G') => {
-        const sourceData = scheme === 'MGNREGS' ? flattenedMgnregs : flattenedPmayg;
+    const handleGetReport = () => {
+        const sourceData = currentScheme === 'MGNREGS' ? flattenedMgnregs : flattenedPmayg;
         
         const result = sourceData.filter(item => {
             return (filters.auditYear === 'all' || item.auditYear === filters.auditYear) &&
@@ -133,7 +122,17 @@ export default function IndividualIssuesListingPage() {
         });
 
         setFilteredReportData(result);
+        setIsReportGenerated(true);
     };
+    
+    const resetFilters = () => {
+        setFilters({
+            auditYear: 'all', district: 'all', block: 'all', panchayat: 'all',
+            status: 'all', type: 'all', category: 'all', subCategory: 'all'
+        });
+        setFilteredReportData([]);
+        setIsReportGenerated(false);
+    }
 
     const blocksForDistrict = useMemo(() => {
         if (filters.district === 'all') return [];
@@ -145,17 +144,38 @@ export default function IndividualIssuesListingPage() {
         return MOCK_PANCHAYATS.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
     }, [filters.block]);
     
-    const categoriesForType = (scheme: 'MGNREGS' | 'PMAY-G') => {
+    const categoriesForType = useMemo(() => {
         if (filters.type === 'all') return [];
-        const source = scheme === 'MGNREGS' ? MOCK_MGNREGS_DATA : MOCK_PMAYG_DATA;
+        const source = currentScheme === 'MGNREGS' ? MOCK_MGNREGS_DATA : MOCK_PMAYG_DATA;
         return Array.from(new Set(source.filter(d => d.type === filters.type).map(d => d.category)));
-    };
+    }, [filters.type, currentScheme]);
 
-    const subCategoriesForCategory = (scheme: 'MGNREGS' | 'PMAY-G') => {
+    const subCategoriesForCategory = useMemo(() => {
         if (filters.category === 'all') return [];
-        const source = scheme === 'MGNREGS' ? MOCK_MGNREGS_DATA : MOCK_PMAYG_DATA;
+        const source = currentScheme === 'MGNREGS' ? MOCK_MGNREGS_DATA : MOCK_PMAYG_DATA;
         return source.filter(d => d.type === filters.type && d.category === filters.category).map(d => d.subCategory);
-    };
+    }, [filters.category, filters.type, currentScheme]);
+
+    const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
+        setFilters(prev => {
+            const newFilters = {...prev, [filterName]: value};
+            if(filterName === 'district') {
+                newFilters.block = 'all';
+                newFilters.panchayat = 'all';
+            }
+            if(filterName === 'block') {
+                newFilters.panchayat = 'all';
+            }
+             if(filterName === 'type') {
+                newFilters.category = 'all';
+                newFilters.subCategory = 'all';
+            }
+             if(filterName === 'category') {
+                newFilters.subCategory = 'all';
+            }
+            return newFilters;
+        });
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -168,44 +188,31 @@ export default function IndividualIssuesListingPage() {
                         <CardDescription>Filter and view individual issues reported for different schemes.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="MGNREGS" onValueChange={() => { setFilteredReportData([]); form.reset() }}>
+                        <Tabs defaultValue="MGNREGS" onValueChange={(val) => { setCurrentScheme(val); resetFilters(); }}>
                             <TabsList>
                                 <TabsTrigger value="MGNREGS">MGNREGS</TabsTrigger>
                                 <TabsTrigger value="PMAY-G">PMAY-G</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="MGNREGS" className="pt-4">
-                                <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                                    <Select value={filters.auditYear} onValueChange={(v) => setFilters(f => ({ ...f, auditYear: v }))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.district} onValueChange={(v) => setFilters(f => ({ ...f, district: v, block: 'all', panchayat: 'all' }))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Districts</SelectItem>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{toTitleCase(d)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.block} onValueChange={(v) => setFilters(f => ({ ...f, block: v, panchayat: 'all' }))} disabled={filters.district === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Blocks</SelectItem>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.panchayat} onValueChange={(v) => setFilters(f => ({ ...f, panchayat: v }))} disabled={filters.block === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Panchayats</SelectItem>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.status} onValueChange={(v) => setFilters(f => ({...f, status: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.type} onValueChange={(v) => setFilters(f => ({...f, type: v, category: 'all', subCategory: 'all'}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{mgnregsTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.category} onValueChange={(v) => setFilters(f => ({...f, category: v, subCategory: 'all'}))} disabled={filters.type === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{categoriesForType('MGNREGS').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.subCategory} onValueChange={(v) => setFilters(f => ({...f, subCategory: v}))} disabled={filters.category === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Sub-Categories</SelectItem>{subCategoriesForCategory('MGNREGS').map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}</SelectContent></Select>
-                                    <div className="flex gap-2">
-                                        <Button onClick={() => handleGetReport('MGNREGS')} className="w-full">Get Report</Button>
-                                        <Button variant="outline" onClick={() => { setFilters({ ...filters, auditYear: 'all', district: 'all', block: 'all', panchayat: 'all', status: 'all', type: 'all', category: 'all', subCategory: 'all' }); setFilteredReportData([]); }}><RefreshCw /></Button>
-                                    </div>
+                            <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end mt-4">
+                                <Select value={filters.auditYear} onValueChange={(v) => handleFilterChange('auditYear', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.district} onValueChange={(v) => handleFilterChange('district', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Districts</SelectItem>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{toTitleCase(d)}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.block} onValueChange={(v) => handleFilterChange('block', v)} disabled={filters.district === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Blocks</SelectItem>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.panchayat} onValueChange={(v) => handleFilterChange('panchayat', v)} disabled={filters.block === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Panchayats</SelectItem>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.status} onValueChange={(v) => handleFilterChange('status', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{statuses.filter(s => s !== 'all').map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.type} onValueChange={(v) => handleFilterChange('type', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{(currentScheme === 'MGNREGS' ? mgnregsTypes : pmaygTypes).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.category} onValueChange={(v) => handleFilterChange('category', v)} disabled={filters.type === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{categoriesForType.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                                <Select value={filters.subCategory} onValueChange={(v) => handleFilterChange('subCategory', v)} disabled={filters.category === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Sub-Categories</SelectItem>{subCategoriesForCategory.map(sc => <SelectItem key={sc} value={sc} className="whitespace-normal">{sc}</SelectItem>)}</SelectContent></Select>
+                                <div className="flex gap-2 lg:col-start-4">
+                                    <Button onClick={handleGetReport} className="w-full">Get Report</Button>
+                                    <Button variant="outline" onClick={resetFilters}><RefreshCw className="h-4 w-4" /></Button>
                                 </div>
-                                <ReportTable data={filteredReportData} scheme="MGNREGS"/>
+                            </div>
+
+                            <TabsContent value="MGNREGS">
+                                {isReportGenerated && <ReportTable data={filteredReportData} scheme="MGNREGS" loading={mgnregsLoading} />}
                             </TabsContent>
-                             <TabsContent value="PMAY-G" className="pt-4">
-                                <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                                    <Select value={filters.auditYear} onValueChange={(v) => setFilters(f => ({ ...f, auditYear: v }))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.district} onValueChange={(v) => setFilters(f => ({ ...f, district: v, block: 'all', panchayat: 'all' }))}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Districts</SelectItem>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{toTitleCase(d)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.block} onValueChange={(v) => setFilters(f => ({ ...f, block: v, panchayat: 'all' }))} disabled={filters.district === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Blocks</SelectItem>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.panchayat} onValueChange={(v) => setFilters(f => ({ ...f, panchayat: v }))} disabled={filters.block === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Panchayats</SelectItem>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.status} onValueChange={(v) => setFilters(f => ({...f, status: v}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.type} onValueChange={(v) => setFilters(f => ({...f, type: v, category: 'all', subCategory: 'all'}))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{pmaygTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.category} onValueChange={(v) => setFilters(f => ({...f, category: v, subCategory: 'all'}))} disabled={filters.type === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{categoriesForType('PMAY-G').map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
-                                    <Select value={filters.subCategory} onValueChange={(v) => setFilters(f => ({...f, subCategory: v}))} disabled={filters.category === 'all'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Sub-Categories</SelectItem>{subCategoriesForCategory('PMAY-G').map(sc => <SelectItem key={sc} value={sc}>{sc}</SelectItem>)}</SelectContent></Select>
-                                    <div className="flex gap-2">
-                                        <Button onClick={() => handleGetReport('PMAY-G')} className="w-full">Get Report</Button>
-                                        <Button variant="outline" onClick={() => { setFilters({ ...filters, auditYear: 'all', district: 'all', block: 'all', panchayat: 'all', status: 'all', type: 'all', category: 'all', subCategory: 'all' }); setFilteredReportData([]); }}><RefreshCw /></Button>
-                                    </div>
-                                </div>
-                                <ReportTable data={filteredReportData} scheme="PMAY-G"/>
+                            <TabsContent value="PMAY-G">
+                                 {isReportGenerated && <ReportTable data={filteredReportData} scheme="PMAY-G" loading={pmaygLoading} />}
                             </TabsContent>
                         </Tabs>
                     </CardContent>
@@ -216,6 +223,3 @@ export default function IndividualIssuesListingPage() {
         </div>
     );
 }
-
-// Dummy form to prevent error on tabs change
-const form = { reset: () => {} };
