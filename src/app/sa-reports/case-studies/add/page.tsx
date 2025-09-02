@@ -281,7 +281,7 @@ export default function AddCaseStudyPage() {
                          </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>Section 1: Basic Case Info</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>🧾 Section 1: Basic Case Info</CardTitle></CardHeader>
                             <CardContent>
                                 <FormField control={form.control} name="caseStudyNo" render={({ field }) => (
                                     <FormItem><FormLabel>Case Study No</FormLabel><FormControl><Input {...field} readOnly className="bg-muted w-1/3" /></FormControl></FormItem>
@@ -290,7 +290,7 @@ export default function AddCaseStudyPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>Section 2: Location</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>🗺️ Section 2: Location</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
@@ -300,7 +300,7 @@ export default function AddCaseStudyPage() {
                         </Card>
 
                         <Card>
-                                <CardHeader><CardTitle>Section 3: Issue Details</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>🧑 Section 3: Issue Details</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         <FormField control={form.control} name="issueNo" render={({ field }) => (<FormItem><FormLabel>Issue No.</FormLabel><FormControl><Input {...field} onBlur={handleIssueBlur} /></FormControl></FormItem>)} />
@@ -331,7 +331,7 @@ export default function AddCaseStudyPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>Section 4: Description</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>📝 Section 4: Description</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="descriptionEnglish" render={({ field }) => (
                                     <FormItem><FormLabel>Description (English)</FormLabel>
@@ -347,9 +347,9 @@ export default function AddCaseStudyPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>Section 5: Data Table</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>Data Table</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
-                                <p className="text-sm text-muted-foreground">Paste your table data from Excel or Word into the text area below. Data should be separated by tabs for columns and new lines for rows.</p>
+                                <p className="text-sm text-muted-foreground">Paste your table data from Excel or Word into the text area below. Columns should be separated by tabs, and rows by new lines.</p>
                                 <FormField control={form.control} name="pastedTableData" render={({ field }) => (
                                     <FormItem><FormLabel>Paste Table Data Here</FormLabel><FormControl><Textarea className="h-40 font-mono" {...field} /></FormControl></FormItem>
                                 )} />
@@ -377,7 +377,7 @@ export default function AddCaseStudyPage() {
                         </Card>
                         
                         <Card>
-                            <CardHeader><CardTitle>Section 6: Photo Upload</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>🖼️ Section 6: Photo Upload</CardTitle></CardHeader>
                             <CardContent className="space-y-6">
                                 <FormField control={form.control} name="photoLayout" render={({ field }) => (
                                     <FormItem><FormLabel>Photo Layout</FormLabel>

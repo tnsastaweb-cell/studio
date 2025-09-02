@@ -13,7 +13,7 @@ import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ChevronLeft, ChevronRight, Loader2, Edit, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Edit, Trash2, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableRow, TableHeader, TableHead } from '@/components/ui/table';
@@ -157,7 +157,7 @@ export default function ViewCaseStudiesPage() {
                     <CardHeader>
                         <CardTitle>Case Study Reports</CardTitle>
                          <CardDescription>
-                            Viewing case study {currentIndex + 1} of {caseStudies.length}.
+                            Viewing case study {caseStudies.length > 0 ? currentIndex + 1 : 0} of {caseStudies.length}.
                          </CardDescription>
                     </CardHeader>
                     <CardContent>
