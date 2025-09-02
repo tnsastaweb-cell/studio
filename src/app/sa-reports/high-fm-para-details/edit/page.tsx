@@ -24,7 +24,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Upload, Eye, Delete, ChevronsUpDown, Check } from 'lucide-react';
+import { Trash2, Upload, Eye, Delete, ChevronsUpDown, Check, Loader2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 const officialSchema = z.object({
@@ -82,7 +83,7 @@ export default function EditHighFmParaDetailsPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading: authLoading } = useAuth();
-    const { entries, updateMgnregsEntry } = useMgnregs();
+    const { entries, updateMgnregsEntry, deleteMgnregsEntry } = useMgnregs();
     const { toast } = useToast();
 
     const entryId = searchParams.get('id');
@@ -133,11 +134,16 @@ export default function EditHighFmParaDetailsPage() {
             }
         }
     }, [entryId, issueNo, entries]);
+    
+    const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
     const watchedEvidence = form.watch("hasEvidence");
     const watchedPhoto = form.watch("hasPhoto");
     const watchedSgsResolution = form.watch("hasSgsResolution");
     const watchedActionTaken = form.watch("actionTakenOnPara");
+    const watchedEvidenceLayout = form.watch("evidencePhotoLayout");
+    const watchedPhotoLayout = form.watch("photoLayout");
+    const watchedSgsResolutionLayout = form.watch("sgsResolutionLayout");
     
     const { fields: evidencePhotoFields, append: appendEvidencePhoto, remove: removeEvidencePhoto } = useFieldArray({ control: form.control, name: 'evidencePhotos' });
     const { fields: photoFields, append: appendPhoto, remove: removePhoto } = useFieldArray({ control: form.control, name: 'photos' });
@@ -187,6 +193,18 @@ export default function EditHighFmParaDetailsPage() {
             }
         }
     }
+
+    useEffect(() => {
+        setupPhotoArray(watchedEvidenceLayout, appendEvidencePhoto, removeEvidencePhoto, 'evidencePhotos');
+    }, [watchedEvidenceLayout, appendEvidencePhoto, removeEvidencePhoto]);
+
+    useEffect(() => {
+        setupPhotoArray(watchedPhotoLayout, appendPhoto, removePhoto, 'photos');
+    }, [watchedPhotoLayout, appendPhoto, removePhoto]);
+
+     useEffect(() => {
+        setupPhotoArray(watchedSgsResolutionLayout, appendSgsPhoto, removeSgsPhoto, 'sgsResolutionPhotos');
+    }, [watchedSgsResolutionLayout, appendSgsPhoto, removeSgsPhoto]);
     
     const onSubmit = (data: HighFmFormValues) => {
         if (!mgnregsEntry || !paraDetails) {
@@ -203,9 +221,17 @@ export default function EditHighFmParaDetailsPage() {
         toast({ title: 'Success!', description: 'High FM Para details have been updated.' });
         router.push('/sa-reports/high-fm-para-details');
     };
+    
+    const handleDelete = () => {
+        if (mgnregsEntry) {
+            deleteMgnregsEntry(mgnregsEntry.id);
+            toast({ title: "Deleted!", description: `Entry for ${mgnregsEntry.panchayatName} has been deleted.` });
+            router.push('/sa-reports/high-fm-para-details');
+        }
+    }
 
-    if (!mgnregsEntry || !paraDetails) {
-        return <p>Loading entry...</p>;
+    if (authLoading || !mgnregsEntry || !paraDetails) {
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
     const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === mgnregsEntry.panchayat)?.name || '';
@@ -299,8 +325,8 @@ export default function EditHighFmParaDetailsPage() {
                                   <FormField control={form.control} name="hasEvidence" render={({ field }) => (<FormItem><FormLabel>EVIDENCE</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                   {watchedEvidence === 'yes' && (
                                       <div className="space-y-4 pl-4 border-l-2">
-                                          <FormField control={form.control} name="evidencePhotoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); setupPhotoArray(v, appendEvidencePhoto, removeEvidencePhoto, 'evidencePhotos'); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                           <div className={cn("grid gap-4", form.watch("evidencePhotoLayout") === 'a4-2' && 'grid-cols-2')}>
+                                          <FormField control={form.control} name="evidencePhotoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
+                                           <div className={cn("grid gap-4", watchedEvidenceLayout === 'a4-1' && 'grid-cols-1', watchedEvidenceLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedEvidenceLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedEvidenceLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
                                                {evidencePhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`evidencePhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'evidencePhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`evidencePhotos.${index}.description`)} /></div>))}
                                            </div>
                                       </div>
@@ -311,8 +337,8 @@ export default function EditHighFmParaDetailsPage() {
                                    <FormField control={form.control} name="hasPhoto" render={({ field }) => ( <FormItem><FormLabel>PHOTO</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                     {watchedPhoto === 'yes' && (
                                         <div className="space-y-4 pl-4 border-l-2">
-                                            <FormField control={form.control} name="photoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); setupPhotoArray(v, appendPhoto, removePhoto, 'photos'); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                            <div className={cn("grid gap-4", form.watch("photoLayout") === 'a4-2' && 'grid-cols-2')}>
+                                            <FormField control={form.control} name="photoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
+                                            <div className={cn("grid gap-4", watchedPhotoLayout === 'a4-1' && 'grid-cols-1', watchedPhotoLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedPhotoLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedPhotoLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
                                                 {photoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`photos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'photos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`photos.${index}.description`)} /></div>))}
                                             </div>
                                         </div>
@@ -323,8 +349,8 @@ export default function EditHighFmParaDetailsPage() {
                                      <FormField control={form.control} name="hasSgsResolution" render={({ field }) => ( <FormItem><FormLabel>SGS RESULATION</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                       {watchedSgsResolution === 'yes' && (
                                          <div className="space-y-4 pl-4 border-l-2">
-                                             <FormField control={form.control} name="sgsResolutionLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); setupPhotoArray(v, appendSgsPhoto, removeSgsPhoto, 'sgsResolutionPhotos'); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                             <div className={cn("grid gap-4", form.watch("sgsResolutionLayout") === 'a4-2' && 'grid-cols-2')}>
+                                             <FormField control={form.control} name="sgsResolutionLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
+                                             <div className={cn("grid gap-4", watchedSgsResolutionLayout === 'a4-1' && 'grid-cols-1', watchedSgsResolutionLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedSgsResolutionLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedSgsResolutionLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
                                                  {sgsPhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`sgsResolutionPhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'sgsResolutionPhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`sgsResolutionPhotos.${index}.description`)} /></div>))}
                                              </div>
                                          </div>
@@ -355,6 +381,23 @@ export default function EditHighFmParaDetailsPage() {
                                  <div className="flex justify-end gap-4 mt-8">
                                      <Button type="button" variant="outline" onClick={() => form.reset()}>Clear</Button>
                                      <Button type="submit">Submit</Button>
+                                     {canEdit && (
+                                         <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button type="button" variant="destructive">Delete</Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>This action cannot be undone. This will permanently delete the entire MGNREGS entry for {panchayatName}.</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                         </AlertDialog>
+                                     )}
                                  </div>
                                 
                             </CardContent>
@@ -367,4 +410,5 @@ export default function EditHighFmParaDetailsPage() {
         </div>
     );
 }
+
 
