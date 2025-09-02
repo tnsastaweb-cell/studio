@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -53,6 +52,16 @@ const paraParticularsSchema = z.object({
   hlcRecoveryAmount: z.coerce.number().optional(),
 });
 
+const vrpDetailSchema = z.object({
+  vrpSearchValue: z.string().optional(),
+  vrpEmployeeCode: z.string().optional(),
+  vrpName: z.string().optional(),
+  vrpContactNumber: z.string().optional(),
+  vrpDistrict: z.string().optional(),
+  vrpBlock: z.string().optional(),
+  vrpPanchayat: z.string().optional(),
+});
+
 
 export const mgnregsFormSchema = z.object({
   // Section A - BRP Details
@@ -83,15 +92,8 @@ export const mgnregsFormSchema = z.object({
   drpName: z.string().optional(),
   drpContact: z.string().optional(),
   drpDistrict: z.string().optional(),
-
-  vrpSearchType: z.enum(['employeeCode', 'contactNumber']).optional(),
-  vrpSearchValue: z.string().optional(),
-  vrpEmployeeCode: z.string().optional(),
-  vrpName: z.string().optional(),
-  vrpContactNumber: z.string().optional(),
-  vrpDistrict: z.string().optional(),
-  vrpBlock: z.string().optional(),
-  vrpPanchayat: z.string().optional(),
+  
+  vrpDetails: z.array(vrpDetailSchema).optional(),
 
   // Section D - Verification Details
   pvtIndividualLandWorks: z.coerce.number().optional(),
@@ -162,14 +164,10 @@ export default function MgnregsDataEntryPage() {
             drpName: "",
             drpContact: "",
             drpDistrict: "",
-            vrpSearchType: undefined,
-            vrpSearchValue: "",
-            vrpEmployeeCode: "",
-            vrpName: "",
-            vrpContactNumber: "",
-            vrpDistrict: "",
-            vrpBlock: "",
-            vrpPanchayat: "",
+            vrpDetails: [{
+                vrpSearchValue: "", vrpEmployeeCode: "", vrpName: "", vrpContactNumber: "",
+                vrpDistrict: "", vrpBlock: "", vrpPanchayat: ""
+            }],
             pvtIndividualLandWorks: 0, pvtIndividualLandAmount: 0,
             pvtIndividualAssetsWorks: 0, pvtIndividualAssetsAmount: 0,
             pubCommunityLandWorks: 0, pubCommunityLandAmount: 0,
@@ -187,6 +185,11 @@ export default function MgnregsDataEntryPage() {
         name: "paraParticulars",
     });
 
+     const { fields: vrpFields, append: appendVrp, remove: removeVrp } = useFieldArray({
+        control: form.control,
+        name: "vrpDetails",
+    });
+
     const watchedBrpCode = form.watch("brpEmployeeCode");
     const watchedDistrict = form.watch("district");
     const watchedBlock = form.watch("block");
@@ -195,6 +198,8 @@ export default function MgnregsDataEntryPage() {
 
     const watchedDrpRole = form.watch('drpRole');
     const watchedDrpCode = form.watch('drpEmployeeCode');
+    const watchedVrpDetails = form.watch("vrpDetails");
+
 
     const watchedVerificationFields = form.watch([
         "pvtIndividualLandWorks", "pvtIndividualLandAmount",
@@ -264,35 +269,29 @@ export default function MgnregsDataEntryPage() {
         form.setValue('drpEmployeeCode', '');
     }, [watchedDrpRole, form]);
 
-    
-    const watchedVrpSearchType = form.watch("vrpSearchType");
-    const watchedVrpSearchValue = form.watch("vrpSearchValue");
-
-    useEffect(() => {
-        let vrp: Vrp | undefined;
-        if(watchedVrpSearchType === 'employeeCode') {
-            vrp = vrps.find(v => v.employeeCode.toLowerCase() === watchedVrpSearchValue?.toLowerCase());
-        } else if (watchedVrpSearchType === 'contactNumber') {
-             vrp = vrps.find(v => v.contactNumber1 === watchedVrpSearchValue);
-        }
-
-        if (vrp) {
-             form.setValue('vrpEmployeeCode', vrp.employeeCode);
-             form.setValue('vrpName', vrp.name);
-             form.setValue('vrpContactNumber', vrp.contactNumber1);
-             form.setValue('vrpDistrict', vrp.district);
-             form.setValue('vrpBlock', vrp.block);
-             form.setValue('vrpPanchayat', vrp.panchayatName);
-        } else {
-             form.setValue('vrpEmployeeCode', '');
-             form.setValue('vrpName', '');
-             form.setValue('vrpContactNumber', '');
-             form.setValue('vrpDistrict', '');
-             form.setValue('vrpBlock', '');
-             form.setValue('vrpPanchayat', '');
-        }
-
-    }, [watchedVrpSearchValue, watchedVrpSearchType, vrps, form]);
+     useEffect(() => {
+        if (!watchedVrpDetails) return;
+        watchedVrpDetails.forEach((vrpItem, index) => {
+            if (vrpItem.vrpSearchValue) {
+                const vrp = vrps.find(v => v.contactNumber1 === vrpItem.vrpSearchValue);
+                if (vrp) {
+                    form.setValue(`vrpDetails.${index}.vrpEmployeeCode`, vrp.employeeCode);
+                    form.setValue(`vrpDetails.${index}.vrpName`, vrp.name);
+                    form.setValue(`vrpDetails.${index}.vrpContactNumber`, vrp.contactNumber1);
+                    form.setValue(`vrpDetails.${index}.vrpDistrict`, vrp.district);
+                    form.setValue(`vrpDetails.${index}.vrpBlock`, vrp.block || '');
+                    form.setValue(`vrpDetails.${index}.vrpPanchayat`, vrp.panchayatName || '');
+                } else {
+                    form.setValue(`vrpDetails.${index}.vrpEmployeeCode`, '');
+                    form.setValue(`vrpDetails.${index}.vrpName`, 'Not Found');
+                    form.setValue(`vrpDetails.${index}.vrpContactNumber`, '');
+                    form.setValue(`vrpDetails.${index}.vrpDistrict`, '');
+                    form.setValue(`vrpDetails.${index}.vrpBlock`, '');
+                    form.setValue(`vrpDetails.${index}.vrpPanchayat`, '');
+                }
+            }
+        });
+    }, [watchedVrpDetails, vrps, form]);
 
 
     const blocksForDistrict = useMemo(() => {
@@ -435,7 +434,7 @@ export default function MgnregsDataEntryPage() {
                                 
                                 {/* Section C */}
                                 <section>
-                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section C: DRP / DRP I/C & VRP DETAILS</h3>
+                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section C: DRP / DRP I/C &amp; VRP DETAILS</h3>
                                     <div className="space-y-6">
                                         <div className="p-4 border rounded-md space-y-4">
                                             <h4 className="font-semibold text-muted-foreground">DRP/DRP I/C Details</h4>
@@ -471,21 +470,24 @@ export default function MgnregsDataEntryPage() {
                                              </div>
                                         </div>
                                          <div className="p-4 border rounded-md space-y-4">
-                                              <h4 className="font-semibold text-muted-foreground">VRP Details</h4>
-                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                                                 <FormField control={form.control} name="vrpSearchType" render={({ field }) => (
-                                                     <FormItem><FormLabel>Search VRP by</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Select method..." /></SelectTrigger></FormControl><SelectContent><SelectItem value="employeeCode">Employee Code</SelectItem><SelectItem value="contactNumber">Contact Number</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                                 )} />
-                                                 <FormField control={form.control} name="vrpSearchValue" render={({ field }) => (<FormItem><FormLabel>Search Value</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                             </div>
-                                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-                                                <FormField control={form.control} name="vrpEmployeeCode" render={({ field }) => (<FormItem><FormLabel>VRP Employee Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                                <FormField control={form.control} name="vrpName" render={({ field }) => (<FormItem><FormLabel>VRP Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                                <FormField control={form.control} name="vrpContactNumber" render={({ field }) => (<FormItem><FormLabel>VRP Contact</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                                <FormField control={form.control} name="vrpDistrict" render={({ field }) => (<FormItem><FormLabel>VRP District</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                                <FormField control={form.control} name="vrpBlock" render={({ field }) => (<FormItem><FormLabel>VRP Block</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                                <FormField control={form.control} name="vrpPanchayat" render={({ field }) => (<FormItem><FormLabel>VRP Panchayat</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
-                                             </div>
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="font-semibold text-muted-foreground">VRP Details</h4>
+                                                <Button type="button" onClick={() => appendVrp({ vrpSearchValue: '' })}><PlusCircle className="mr-2"/>Add VRP</Button>
+                                            </div>
+
+                                            {vrpFields.map((field, index) => (
+                                                 <div key={field.id} className="p-4 border rounded-lg bg-slate-50 relative">
+                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                                                        <FormField control={form.control} name={`vrpDetails.${index}.vrpSearchValue`} render={({ field }) => (<FormItem><FormLabel>Search VRP by Contact No.</FormLabel><FormControl><Input placeholder="Enter 10-digit number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`vrpDetails.${index}.vrpName`} render={({ field }) => (<FormItem><FormLabel>VRP Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                        <FormField control={form.control} name={`vrpDetails.${index}.vrpEmployeeCode`} render={({ field }) => (<FormItem><FormLabel>VRP Employee Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                        <FormField control={form.control} name={`vrpDetails.${index}.vrpPanchayat`} render={({ field }) => (<FormItem><FormLabel>VRP Panchayat</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
+                                                    </div>
+                                                    {vrpFields.length > 1 && (
+                                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2" onClick={() => removeVrp(index)}><Trash2 className="h-4 w-4"/></Button>
+                                                    )}
+                                                </div>
+                                            ))}
                                          </div>
                                     </div>
                                 </section>
@@ -641,3 +643,6 @@ export default function MgnregsDataEntryPage() {
 
 
 
+
+
+    
