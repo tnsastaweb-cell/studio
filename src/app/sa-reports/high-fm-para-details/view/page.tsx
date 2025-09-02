@@ -81,7 +81,7 @@ const ReportViewer = ({ report }: { report: HighFmPara }) => {
 
 
 export default function ViewHighFmReportPage() {
-    const { entries, loading, updateMgnregsEntry, deleteMgnregsEntry } = useMgnregs();
+    const { entries, loading, updateMgnregsEntry } = useMgnregs();
     const { user } = useAuth();
     const { users } = useUsers();
     const router = useRouter();
@@ -234,7 +234,7 @@ export default function ViewHighFmReportPage() {
                              )}
                              <div className="md:col-start-4 flex justify-end gap-2">
                                 <Button onClick={handleGetReports}>Get Reports</Button>
-                                <Button onClick={handlePrint} disabled={displayData.length === 0}><Printer className="mr-2"/> Print Reports</Button>
+                                <Button onClick={handlePrint} disabled={displayData.length === 0}><Printer className="mr-2"/> Download Reports</Button>
                              </div>
                         </div>
                         
