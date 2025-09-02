@@ -9,8 +9,9 @@ import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useCaseStudies, CaseStudy } from '@/services/case-studies';
-import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
-import { usePmayg, PmaygEntry } from '@/services/pmayg-data';
+import { useMgnregs, MgnregsEntry, paraParticularsSchema as mgnregsParaSchema } from '@/services/mgnregs-data';
+import { usePmayg, PmaygEntry, pmaygFormSchema } from '@/services/pmayg-data';
+
 
 import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -69,8 +70,7 @@ const caseStudySchema = z.object({
   stateAmount: z.coerce.number().optional(),
   otherAmount: z.coerce.number().optional(),
   
-  descriptionEnglish: z.string().optional(),
-  descriptionTamil: z.string().optional(),
+  description: z.string().optional(),
 
   pastedTableData: z.string().optional(),
   tableData: z.array(z.array(z.string())).optional(),
@@ -100,7 +100,7 @@ export default function AddCaseStudyPage() {
         defaultValues: {
             caseStudyNo: '', scheme: MOCK_SCHEMES[0].name, district: '', block: '', panchayat: '', lgdCode: '',
             employeeCode: '', brpName: '', paraNo: '', issueNo: '', issueType: '', issueCategory: '', subCategory: '', issueCode: '',
-            beneficiaries: 0, descriptionEnglish: '', descriptionTamil: '', amount: 0, centralAmount: 0, stateAmount: 0, otherAmount: 0,
+            beneficiaries: 0, description: '', amount: 0, centralAmount: 0, stateAmount: 0, otherAmount: 0,
             tableData: [], pastedTableData: '', photoLayout: '', photos: [],
         },
     });
@@ -331,19 +331,25 @@ export default function AddCaseStudyPage() {
                         </Card>
 
                         <Card>
-                            <CardHeader><CardTitle>📝 Section 4: Description</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormField control={form.control} name="descriptionEnglish" render={({ field }) => (
-                                    <FormItem><FormLabel>Description (English)</FormLabel>
-                                        <FormControl><Textarea className="h-40" {...field} /></FormControl>
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="descriptionTamil" render={({ field }) => (
-                                    <FormItem><FormLabel>Description (Tamil)</FormLabel>
-                                        <div className="relative"><FormControl><Textarea className="h-40 pr-10" {...field} /></FormControl><Button type="button" variant="ghost" size="icon" className="absolute bottom-2 right-2 text-muted-foreground"><Mic className="h-4 w-4"/></Button></div>
-                                    </FormItem>
-                                )} />
-                            </CardContent>
+                             <CardHeader><CardTitle>📝 Section 4: Description</CardTitle></CardHeader>
+                             <CardContent>
+                                 <FormField
+                                    control={form.control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Case Study Description</FormLabel>
+                                            <FormControl>
+                                                 <div className="relative">
+                                                     <Textarea placeholder="Enter the full case study description here..." className="h-48 pr-10" {...field} />
+                                                     <Button type="button" variant="ghost" size="icon" className="absolute bottom-2 right-2 text-muted-foreground"><Mic className="h-4 w-4"/></Button>
+                                                 </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                             </CardContent>
                         </Card>
 
                         <Card>
