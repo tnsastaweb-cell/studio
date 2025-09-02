@@ -3,15 +3,16 @@
 
 import React, { useState, useMemo, FC, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 import { MOCK_SCHEMES } from '@/services/schemes';
-import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
-import { useUsers, User } from '@/services/users';
+import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
+import { useUsers } from '@/services/users';
 import { uniqueDistricts } from '@/lib/utils';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
-
+import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -21,19 +22,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Printer, Loader2, FileText, Download } from 'lucide-react';
+import { Printer, Loader2, FileText } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const SectionCard: FC<{title: string, children: React.ReactNode, id: string}> = ({ title, children, id }) => (
-    <div id={id} className="report-section">
+    <div id={id} className="report-section mb-6">
         <h3 className="text-lg font-bold bg-primary/10 text-primary p-2 rounded-t-md">{title}</h3>
-        <div className="p-4 border border-t-0 rounded-b-md">
+        <div className="p-4 border border-t-0 rounded-b-md space-y-4">
             {children}
         </div>
     </div>
 );
 
-const InfoRow: FC<{label: string, value: string | number | undefined | null}> = ({ label, value }) => (
+const InfoRow: FC<{label: string, value: React.ReactNode | undefined | null}> = ({ label, value }) => (
     <div>
         <span className="font-semibold text-foreground/80">{label}:</span>
         <span className="ml-2 font-normal text-foreground">{value || 'N/A'}</span>
@@ -41,8 +42,6 @@ const InfoRow: FC<{label: string, value: string | number | undefined | null}> = 
 );
 
 const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
-    const { users } = useUsers();
-    
     const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
 
     const summaryOfIssues = useMemo(() => {
@@ -89,7 +88,7 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
                   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
               `}</style>
-            <h2 className="text-center text-xl font-bold mb-4">R.6.1.A.1 Grama Panchayat Social Audit Report</h2>
+            <h2 className="text-center text-xl font-bold mb-4">R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT (MGNREGS)</h2>
             
             <SectionCard title="Social Audit Basic Information Details" id="basic-info">
                  <div className="grid grid-cols-2 gap-4">
@@ -102,9 +101,9 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
                      </div>
                       <div className="space-y-2">
                         <h4 className="font-bold">&nbsp;</h4>
-                        <InfoRow label="SA Process Start Date" value={format(entry.auditStartDate, 'dd/MM/yyyy')} />
-                        <InfoRow label="SA Process End Date" value={format(entry.auditEndDate, 'dd/MM/yyyy')} />
-                        <InfoRow label="Gram Sabha Date" value={format(entry.sgsDate, 'dd/MM/yyyy')} />
+                        <InfoRow label="SA Process Start Date" value={entry.auditStartDate ? format(entry.auditStartDate, 'dd/MM/yyyy') : 'N/A'} />
+                        <InfoRow label="SA Process End Date" value={entry.auditEndDate ? format(entry.auditEndDate, 'dd/MM/yyyy') : 'N/A'} />
+                        <InfoRow label="Gram Sabha Date" value={entry.sgsDate ? format(entry.sgsDate, 'dd/MM/yyyy') : 'N/A'} />
                      </div>
                  </div>
             </SectionCard>
@@ -112,13 +111,13 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
             <SectionCard title="Records Given for Social Audit" id="records">
                  <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <InfoRow label="SA Period From Date" value={format(new Date(entry.expenditureYear.split('-')[0], 3, 1), 'dd/MM/yyyy')} />
+                        <InfoRow label="SA Period From Date" value={entry.expenditureYear ? format(new Date(entry.expenditureYear.split('-')[0], 3, 1), 'dd/MM/yyyy') : 'N/A'} />
                         <InfoRow label="Wage Expenditure (Unskilled + Skilled) (Rs.)" value={entry.skilledSemiSkilledAmount} />
                         <InfoRow label="Material Expenditure (Rs.)" value={entry.materialAmount} />
                         <InfoRow label="Total Expenditure (Rs.)" value={entry.totalAmount} />
                       </div>
                        <div className="space-y-2">
-                        <InfoRow label="SA Period To Date" value={format(new Date(Number(entry.expenditureYear.split('-')[0]) + 1, 2, 31), 'dd/MM/yyyy')} />
+                        <InfoRow label="SA Period To Date" value={entry.expenditureYear ? format(new Date(Number(entry.expenditureYear.split('-')[0]) + 1, 2, 31), 'dd/MM/yyyy') : 'N/A'} />
                         <InfoRow label="Total wage expenditure as given by Implementing agency (Rs.)" value={entry.skilledSemiSkilledAmount} />
                         <InfoRow label="Total material expenditure as given by Implementing agency (Rs.)" value={entry.materialAmount} />
                         <InfoRow label="Total expenditure as given by Implementing agency (Rs.)" value={entry.totalAmount} />
@@ -138,7 +137,7 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
              <SectionCard title="Social Audit Grama Sabha" id="grama-sabha">
                 <div className="grid grid-cols-2 gap-4">
                     <InfoRow label="Number of people participated in gram sabha" value={entry.coram} />
-                    {entry.reportFile && <a href={URL.createObjectURL(entry.reportFile)} download={entry.reportFile.name} className="text-blue-600 hover:underline">View/Download</a>}
+                    <InfoRow label="Report Upload" value={entry.reportFile && entry.reportFile.name ? <a href={URL.createObjectURL(entry.reportFile)} download={entry.reportFile.name} className="text-blue-600 hover:underline">View/Download</a> : 'Not Uploaded'} />
                     <InfoRow label="Independent Observer Name" value={entry.observerName} />
                     <InfoRow label="Independent Observer Designation" value={entry.observer} />
                 </div>
@@ -174,16 +173,16 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
                              <TableCell>Total Issues Reported</TableCell><TableCell>Total Issues Closed</TableCell>
                          </TableRow>
                          <TableRow>
-                            <TableCell>{summaryOfIssues['FM - Financial Misappropriation'].reported}</TableCell>
-                            <TableCell>{summaryOfIssues['FM - Financial Misappropriation'].closed}</TableCell>
-                            <TableCell>{summaryOfIssues['FD - Financial Deviation'].reported}</TableCell>
-                            <TableCell>{summaryOfIssues['FD - Financial Deviation'].closed}</TableCell>
-                            <TableCell>{summaryOfIssues['PV - Process Violation'].reported}</TableCell>
-                            <TableCell>{summaryOfIssues['PV - Process Violation'].closed}</TableCell>
-                            <TableCell>{summaryOfIssues['GR - Grievances'].reported}</TableCell>
-                            <TableCell>{summaryOfIssues['GR - Grievances'].closed}</TableCell>
-                            <TableCell>{Object.values(summaryOfIssues).reduce((acc, val) => acc + val.reported, 0)}</TableCell>
-                            <TableCell>{Object.values(summaryOfIssues).reduce((acc, val) => acc + val.closed, 0)}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['FM - Financial Misappropriation'].reported}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['FM - Financial Misappropriation'].closed}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['FD - Financial Deviation'].reported}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['FD - Financial Deviation'].closed}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['PV - Process Violation'].reported}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['PV - Process Violation'].closed}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['GR - Grievances'].reported}</TableCell>
+                            <TableCell className="text-center">{summaryOfIssues['GR - Grievances'].closed}</TableCell>
+                            <TableCell className="text-center font-bold">{Object.values(summaryOfIssues).reduce((acc, val) => acc + val.reported, 0)}</TableCell>
+                            <TableCell className="text-center font-bold">{Object.values(summaryOfIssues).reduce((acc, val) => acc + val.closed, 0)}</TableCell>
                          </TableRow>
                     </TableBody>
                  </Table>
@@ -233,9 +232,60 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
     );
 };
 
+const PmaygReportViewer = ({ entry }: { entry: any }) => {
+    const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
+    
+    return (
+        <div className="bg-white p-8 rounded-lg shadow-md print-content font-sans text-black">
+             <style>{`
+                @media print {
+                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+              `}</style>
+            <h2 className="text-center text-xl font-bold mb-4">R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT (PMAY-G)</h2>
+            
+             <SectionCard title="Basic Details" id="pmayg-basic-info">
+                 <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                        <InfoRow label="District" value={entry.district} />
+                        <InfoRow label="Block" value={entry.block} />
+                        <InfoRow label="Panchayat" value={panchayatName} />
+                        <InfoRow label="LGD Code" value={entry.lgdCode} />
+                     </div>
+                      <div className="space-y-2">
+                        <InfoRow label="Audit Start Date" value={entry.auditStartDate ? format(entry.auditStartDate, 'dd/MM/yyyy') : 'N/A'} />
+                        <InfoRow label="Audit End Date" value={entry.auditEndDate ? format(entry.auditEndDate, 'dd/MM/yyyy') : 'N/A'} />
+                        <InfoRow label="Gram Sabha Date" value={entry.sgsDate ? format(entry.sgsDate, 'dd/MM/yyyy') : 'N/A'} />
+                     </div>
+                 </div>
+            </SectionCard>
+
+             <SectionCard title="Para Particulars" id="pmayg-paras">
+                  <Table>
+                    <TableHeader><TableRow>
+                        <TableHead>Issue No.</TableHead><TableHead>Type</TableHead><TableHead>Category</TableHead><TableHead>Sub Category</TableHead><TableHead>Amount</TableHead>
+                    </TableRow></TableHeader>
+                    <TableBody>
+                        {entry.paraParticulars?.map((para: any, index: number) => (
+                             <TableRow key={index}>
+                                <TableCell>{para.issueNumber}</TableCell>
+                                <TableCell>{para.type}</TableCell>
+                                <TableCell>{para.category}</TableCell>
+                                <TableCell className="max-w-xs">{para.subCategory}</TableCell>
+                                <TableCell>{(para.centralAmount || 0) + (para.stateAmount || 0) + (para.otherAmount || 0)}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+             </SectionCard>
+        </div>
+    );
+};
+
 
 export default function GramaPanchayatSocialAuditReport() {
-    const { entries, loading } = useMgnregs();
+    const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
+    const { issues: pmaygEntries, loading: pmaygLoading } = usePmaygIssues(); // Placeholder for PMAY-G hook
     const printRef = useRef(null);
 
     const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
@@ -243,7 +293,8 @@ export default function GramaPanchayatSocialAuditReport() {
     const [selectedPanchayat, setSelectedPanchayat] = useState<string>('all');
     const [selectedSgsDate, setSelectedSgsDate] = useState<string>('all');
     
-    const [selectedReportEntry, setSelectedReportEntry] = useState<MgnregsEntry | null>(null);
+    const [selectedReportEntry, setSelectedReportEntry] = useState<MgnregsEntry | any | null>(null);
+    const [currentScheme, setCurrentScheme] = useState('MGNREGS');
 
     const blocksForDistrict = useMemo(() => {
         if (selectedDistrict === 'all') return [];
@@ -257,11 +308,13 @@ export default function GramaPanchayatSocialAuditReport() {
 
     const sgsDatesForPanchayat = useMemo(() => {
         if (selectedPanchayat === 'all') return [];
-        return entries.filter(e => e.panchayat === selectedPanchayat).map(e => e.sgsDate);
-    }, [selectedPanchayat, entries]);
+        const entries = currentScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
+        return entries.filter(e => e.panchayat === selectedPanchayat).map((e: any) => e.sgsDate);
+    }, [selectedPanchayat, mgnregsEntries, pmaygEntries, currentScheme]);
 
     const handleGetReport = () => {
-        const entry = entries.find(e => 
+        const entries = currentScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
+        const entry = entries.find((e: any) => 
             e.panchayat === selectedPanchayat && 
             e.sgsDate.toString() === selectedSgsDate
         );
@@ -270,8 +323,10 @@ export default function GramaPanchayatSocialAuditReport() {
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
-        documentTitle: `MGNREGS_Social_Audit_Report_${selectedReportEntry?.panchayatName}`
+        documentTitle: `${currentScheme}_Social_Audit_Report_${selectedReportEntry?.panchayatName}`
     });
+    
+    const loading = mgnregsLoading || pmaygLoading;
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -291,13 +346,17 @@ export default function GramaPanchayatSocialAuditReport() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="MGNREGS" className="w-full">
+                        <Tabs defaultValue="MGNREGS" className="w-full" onValueChange={(val) => {
+                            setCurrentScheme(val);
+                            setSelectedReportEntry(null);
+                            setSelectedDistrict('all');
+                        }}>
                             <TabsList>
                                 <TabsTrigger value="MGNREGS">MGNREGS</TabsTrigger>
-                                <TabsTrigger value="PMAY-G" disabled>PMAY-G</TabsTrigger>
+                                <TabsTrigger value="PMAY-G">PMAY-G</TabsTrigger>
                             </TabsList>
                             <TabsContent value="MGNREGS" className="pt-4">
-                                 <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end mb-6">
+                                <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end mb-6">
                                     <div className="space-y-2">
                                         <label>District</label>
                                         <Select value={selectedDistrict} onValueChange={v => { setSelectedDistrict(v); setSelectedBlock('all'); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }}>
@@ -334,7 +393,7 @@ export default function GramaPanchayatSocialAuditReport() {
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Select Date</SelectItem>
-                                                {sgsDatesForPanchayat.map(d => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
+                                                {sgsDatesForPanchayat.map((d: any) => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -356,6 +415,13 @@ export default function GramaPanchayatSocialAuditReport() {
                                      </div>
                                 )}
                             </TabsContent>
+                             <TabsContent value="PMAY-G" className="pt-4">
+                               <div className="text-center p-16 text-muted-foreground">
+                                   <p>This section is under construction.</p>
+                               </div>
+                               {/* PMAY-G filters and viewer will be implemented here */}
+                               {/* For now, it's just a placeholder */}
+                            </TabsContent>
                         </Tabs>
                     </CardContent>
                 </Card>
@@ -365,4 +431,3 @@ export default function GramaPanchayatSocialAuditReport() {
         </div>
     );
 }
-
