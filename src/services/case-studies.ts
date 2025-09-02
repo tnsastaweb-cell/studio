@@ -2,6 +2,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import type { MgnregsEntry } from './mgnregs-data';
+import type { PmaygEntry } from './pmayg-data';
 
 export interface Photo {
     dataUrl: string;
@@ -16,8 +18,12 @@ export interface CaseStudy {
   block: string;
   panchayat: string;
   lgdCode: string;
-  employeeCode: string;
-  brpName: string;
+  
+  // Issue Details
+  employeeCode?: string;
+  brpName?: string;
+  roundNo?: string;
+  sgsDate?: string;
   paraNo?: string;
   issueNo?: string;
   issueType?: string;
@@ -25,11 +31,17 @@ export interface CaseStudy {
   subCategory?: string;
   issueCode?: string;
   beneficiaries?: number;
+  amount?: number; // MGNREGS
+  centralAmount?: number; // PMAY-G
+  stateAmount?: number; // PMAY-G
+  otherAmount?: number; // PMAY-G
+  
   descriptionEnglish?: string;
   descriptionTamil?: string;
-  tableRows?: number;
-  tableCols?: number;
+
+  pastedTableData?: string;
   tableData?: string[][];
+
   photoLayout?: string;
   photos?: Photo[];
 }
@@ -95,6 +107,7 @@ export const useCaseStudies = () => {
     };
     
     const getNextCaseStudyNumber = useCallback((districtName: string): string => {
+        if(!districtName) return '';
         const counters = getCaseStudyCounters();
         const districtKey = districtName.toUpperCase().substring(0, 3);
         const currentSerial = counters[districtKey] || 0;
@@ -118,11 +131,18 @@ export const useCaseStudies = () => {
         const updatedStudies = [...getInitialCaseStudies(), newStudy];
         syncCaseStudies(updatedStudies);
     }, []);
+
+     const updateCaseStudy = useCallback((updatedStudy: CaseStudy) => {
+        const updatedStudies = getInitialCaseStudies().map(study => 
+            study.id === updatedStudy.id ? updatedStudy : study
+        );
+        syncCaseStudies(updatedStudies);
+    }, []);
     
     const deleteCaseStudy = useCallback((studyId: number) => {
         const updatedStudies = getInitialCaseStudies().filter(study => study.id !== studyId);
         syncCaseStudies(updatedStudies);
     }, []);
 
-    return { caseStudies, loading, addCaseStudy, deleteCaseStudy, getNextCaseStudyNumber };
+    return { caseStudies, loading, addCaseStudy, deleteCaseStudy, getNextCaseStudyNumber, updateCaseStudy };
 };
