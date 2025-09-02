@@ -84,5 +84,3 @@ export const usePmayg = () => {
     
     return { entries, loading, addPmaygEntry };
 };
-
-```
