@@ -7,7 +7,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Edit, Trash2, Printer, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
+import { useMgnregs, MgnregsEntry, ParaParticulars } from '@/services/mgnregs-data';
 import { useUsers } from '@/services/users';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 
 type HighFmPara = MgnregsEntry & {
-    paraDetails: MgnregsEntry['paraParticulars'][0]
+    paraDetails: ParaParticulars
 }
 
 const ReportViewer = ({ report }: { report: HighFmPara }) => {
@@ -79,14 +79,16 @@ const ReportViewer = ({ report }: { report: HighFmPara }) => {
 
 
 export default function ViewHighFmReportPage() {
-    const { entries, loading, deleteMgnregsEntry } = useMgnregs();
+    const { entries, loading, updateMgnregsEntry, deleteMgnregsEntry } = useMgnregs();
     const { user } = useAuth();
     const { users } = useUsers();
     const router = useRouter();
     const { toast } = useToast();
     const printRef = useRef(null);
+    const [displayData, setDisplayData] = useState<HighFmPara[]>([]);
 
     const [filterType, setFilterType] = useState('round');
+    const [selectedRound, setSelectedRound] = useState<string>('all');
     const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
     const [selectedBRP, setSelectedBRP] = useState<string>('all');
 
@@ -106,25 +108,36 @@ export default function ViewHighFmReportPage() {
         return users.filter(u => u.designation === 'BRP');
     }, [users]);
     
-    const sortedData = useMemo(() => {
+    const uniqueRounds = useMemo(() => {
+        const rounds = new Set(entries.map(e => e.roundNo));
+        return Array.from(rounds).sort((a,b) => parseInt(a, 10) - parseInt(b, 10));
+    }, [entries]);
+    
+    const handleGetReports = () => {
         let data = [...highFmParas];
-        if(filterType === 'round') {
-            return data.sort((a,b) => a.district.localeCompare(b.district) || a.panchayat.localeCompare(b.panchayat));
+        
+        if (filterType === 'round') {
+            if (selectedRound !== 'all') {
+                data = data.filter(item => item.roundNo === selectedRound);
+            }
+            // Sort by district then panchayat
+            data.sort((a, b) => a.district.localeCompare(b.district) || a.panchayat.localeCompare(b.panchayat));
         }
-        if(filterType === 'brp' && selectedBRP !== 'all') {
-            data = data.filter(item => item.brpEmployeeCode === selectedBRP);
+        else if (filterType === 'brp') {
+            if (selectedBRP !== 'all') {
+                data = data.filter(item => item.brpEmployeeCode === selectedBRP);
+            }
+             data.sort((a, b) => (parseInt(a.roundNo, 10) || 0) - (parseInt(b.roundNo, 10) || 0));
         }
-        if(filterType === 'district' && selectedDistrict !== 'all') {
-             data = data.filter(item => item.district === selectedDistrict);
+        else if (filterType === 'district') {
+            if (selectedDistrict !== 'all') {
+                 data = data.filter(item => item.district === selectedDistrict);
+            }
+            data.sort((a, b) => (parseInt(a.roundNo, 10) || 0) - (parseInt(b.roundNo, 10) || 0));
         }
-
-        return data.sort((a, b) => {
-            const roundA = parseInt(a.roundNo, 10) || 0;
-            const roundB = parseInt(b.roundNo, 10) || 0;
-            return roundA - roundB;
-        });
-
-    }, [highFmParas, filterType, selectedDistrict, selectedBRP]);
+        
+        setDisplayData(data);
+    };
     
      const handleDelete = (entryId: number, issueNo: string) => {
         const entryToUpdate = entries.find(e => e.id === entryId);
@@ -139,6 +152,8 @@ export default function ViewHighFmReportPage() {
         
         updateMgnregsEntry({ ...entryToUpdate, paraParticulars: updatedParas });
         toast({ title: "Report Deleted", description: "The report has been removed and the entry is marked as pending again." });
+        // Refresh displayed data
+        setDisplayData(prev => prev.filter(item => !(item.id === entryId && item.paraDetails.issueNumber === issueNo)));
     };
 
     const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
@@ -164,6 +179,15 @@ export default function ViewHighFmReportPage() {
                                 </SelectContent>
                             </Select>
 
+                             {filterType === 'round' && (
+                                <Select value={selectedRound} onValueChange={setSelectedRound}>
+                                    <SelectTrigger><SelectValue placeholder="Select Round"/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Rounds</SelectItem>
+                                        {uniqueRounds.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                             )}
                              {filterType === 'district' && (
                                 <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
                                     <SelectTrigger><SelectValue placeholder="Select District"/></SelectTrigger>
@@ -182,41 +206,44 @@ export default function ViewHighFmReportPage() {
                                     </SelectContent>
                                 </Select>
                              )}
-                             <div className="md:col-start-4 flex justify-end">
-                                <Button onClick={handlePrint}><Printer className="mr-2"/> Print Reports</Button>
+                             <div className="md:col-start-3 flex justify-end gap-2">
+                                <Button onClick={handleGetReports}>Get Reports</Button>
+                                <Button onClick={handlePrint} disabled={displayData.length === 0}><Printer className="mr-2"/> Print Reports</Button>
                              </div>
                         </div>
-
-                         <div ref={printRef} className="space-y-4 print-container">
-                            {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
-                            {!loading && sortedData.length === 0 && <p className="text-center p-8 text-muted-foreground">No submitted reports match the selected criteria.</p>}
-                            {!loading && sortedData.map(report => (
-                                <div key={`${report.id}-${report.paraDetails.issueNumber}`} className="report-item space-y-2 break-after-page">
-                                    <ReportViewer report={report} />
-                                    {canEdit && (
-                                        <div className="flex justify-end gap-2 no-print">
-                                            <Button variant="outline" size="sm" onClick={() => router.push(`/sa-reports/high-fm-para-details/edit?id=${report.id}&issueNo=${report.paraDetails.issueNumber}`)}>
-                                                <Edit className="mr-2" /> Edit
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="sm"><Trash2 className="mr-2"/> Delete</Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This will delete the submitted report and mark the original entry as pending again. It will NOT delete the MGNREGS data entry itself.</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(report.id, report.paraDetails.issueNumber)}>Confirm Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                        
+                         <div ref={printRef} className="print-container">
+                             <div className="space-y-4">
+                                {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
+                                {!loading && displayData.length === 0 && <p className="text-center p-8 text-muted-foreground">No submitted reports match the selected criteria. Click "Get Reports" to view data.</p>}
+                                {!loading && displayData.map(report => (
+                                    <div key={`${report.id}-${report.paraDetails.issueNumber}`} className="report-item space-y-2 break-after-page">
+                                        <ReportViewer report={report} />
+                                        {canEdit && (
+                                            <div className="flex justify-end gap-2 no-print">
+                                                <Button variant="outline" size="sm" onClick={() => router.push(`/sa-reports/high-fm-para-details/edit?id=${report.id}&issueNo=${report.paraDetails.issueNumber}`)}>
+                                                    <Edit className="mr-2 h-3 w-3" /> Edit
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-3 w-3"/> Delete</Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This will delete the submitted report and mark the original entry as pending again. It will NOT delete the MGNREGS data entry itself.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(report.id, report.paraDetails.issueNumber)}>Confirm Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                             </div>
                          </div>
                     </CardContent>
                  </Card>
