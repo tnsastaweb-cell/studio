@@ -17,7 +17,7 @@ const mgnregsReports = {
         { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/mgnregs-grama-panchayat-report" },
         { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/mgnregs-individual-issues-listing" },
         { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "/sa-reports/mgnregs-issues-by-category" },
-        { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "#", disabled: true },
+        { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "/sa-reports/mgnregs-issues-by-brp", disabled: false },
         { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "#", disabled: true }
     ],
     "R.6.1.B - SOCIAL AUDIT FINDINGS STATUS": [
