@@ -52,6 +52,7 @@ const paraParticularsSchema = z.object({
   hlcRegNo: z.string().optional(),
   paraStatus: z.enum(['PENDING', 'CLOSED']).default('PENDING'),
   recoveryAmount: z.coerce.number().default(0),
+  hlcRecoveryAmount: z.coerce.number().default(0),
 });
 
 export const pmaygFormSchema = z.object({
@@ -165,6 +166,7 @@ const ParaParticularsItem: FC<{ index: number; control: any; form: any; remove: 
                  <Controller control={form.control} name={`paraParticulars.${index}.hlcRegNo`} render={({ field }) => (<FormItem><FormLabel>HLC Reg No.</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select HLC No."/></SelectTrigger></FormControl><SelectContent>{hlcItems.map(item => <SelectItem key={item.id} value={item.regNo}>{item.regNo}</SelectItem>)}</SelectContent></Select></FormItem>)} />
                  <Controller control={form.control} name={`paraParticulars.${index}.paraStatus`} render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PENDING">Pending</SelectItem><SelectItem value="CLOSED">Closed</SelectItem></SelectContent></Select></FormItem>)} />
                  <FormField control={form.control} name={`paraParticulars.${index}.recoveryAmount`} render={({ field }) => (<FormItem><FormLabel>Recovery Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>)} />
+                 <FormField control={form.control} name={`paraParticulars.${index}.hlcRecoveryAmount`} render={({ field }) => (<FormItem><FormLabel>HLC Recovery Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage/></FormItem>)} />
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
@@ -311,7 +313,8 @@ export default function PmaygDataEntryPage() {
             otherAmount: 0, 
             grievances: 0,
             hlcRegNo: '', 
-            recoveryAmount: 0
+            recoveryAmount: 0,
+            hlcRecoveryAmount: 0,
         });
     };
 
