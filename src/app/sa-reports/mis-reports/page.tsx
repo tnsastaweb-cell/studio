@@ -18,7 +18,7 @@ const mgnregsReports = {
         { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/mgnregs-individual-issues-listing" },
         { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "/sa-reports/mgnregs-issues-by-category" },
         { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "/sa-reports/mgnregs-issues-by-brp", disabled: false },
-        { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "#", disabled: true }
+        { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "/sa-reports/mgnregs-issues-by-round", disabled: false }
     ],
     "R.6.1.B - SOCIAL AUDIT FINDINGS STATUS": [
         { title: "R.6.1.B.1 FM - Financial Misappropriation", href: "#", disabled: true },
@@ -99,7 +99,7 @@ export default function MisReportsPage() {
                         ))}
                     </TabsList>
                     
-                    <TabsContent value={MOCK_SCHEMES[0].name} className="pt-6">
+                    <TabsContent value="MGNREGS" className="pt-6">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {Object.entries(mgnregsReports).map(([title, reports]) => (
                                 <ReportCard key={title} title={title} reports={reports} />
@@ -107,7 +107,7 @@ export default function MisReportsPage() {
                        </div>
                     </TabsContent>
 
-                    <TabsContent value={MOCK_SCHEMES[1].name} className="pt-6">
+                    <TabsContent value="PMAY-G" className="pt-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              {Object.entries(pmaygReports).map(([title, reports]) => (
                                 <ReportCard key={title} title={title} reports={reports} />
@@ -115,7 +115,7 @@ export default function MisReportsPage() {
                         </div>
                     </TabsContent>
 
-                    {MOCK_SCHEMES.slice(2).map(scheme => (
+                    {MOCK_SCHEMES.slice(2).filter(s => s.name !== 'PMAY-G').map(scheme => (
                          <TabsContent key={scheme.id} value={scheme.name} className="pt-6">
                             <div className="text-center text-muted-foreground p-8">
                                 <p>Reports for {scheme.name} are currently under construction. Please check back later.</p>
