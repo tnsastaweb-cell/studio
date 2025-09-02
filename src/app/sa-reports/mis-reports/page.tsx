@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 const mgnregsReports = {
     "R.6.1.A - SOCIAL AUDIT REPORTS": [
         { title: "R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/grama-panchayat-report" },
-        { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "#" },
+        { title: "R.6.1.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/individual-issues-listing" },
         { title: "R.6.1.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
         { title: "R.6.1.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
         { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
@@ -28,7 +28,7 @@ const mgnregsReports = {
     ],
     "R.6.1.C - ANNUAL REPORTS": [
         { title: "R.6.1.C.1 PERIODICAL REPORT", href: "#" },
-        { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/case-studies" }
+        { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/case-studies/view" }
     ],
     "R.6.1.D - URGENT REPORTS": [
         { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details/view" },
@@ -38,8 +38,8 @@ const mgnregsReports = {
 
 const pmaygReports = {
     "R.6.2.A - SOCIAL AUDIT REPORTS": [
-        { title: "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "#" },
-        { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "#" },
+        { title: "R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT", href: "/sa-reports/grama-panchayat-report" },
+        { title: "R.6.2.A.2 INDIVIDUAL ISSUES LISTING", href: "/sa-reports/individual-issues-listing" },
         { title: "R.6.2.A.3 ISSUES REPORTED (BY CATEGORY)", href: "#" },
         { title: "R.6.2.A.4 ISSUES REPORTED (BY BRP)", href: "#" },
         { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "#" }
@@ -51,7 +51,7 @@ const pmaygReports = {
     ],
     "R.6.2.C - ANNUAL REPORTS": [
         { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#" },
-        { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/case-studies" }
+        { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/case-studies/view" }
     ],
     "R.6.2.D - URGENT REPORTS": [
         { title: "R.6.2.D.1 HIGH FM PARA DETAILS", href: "#" },
