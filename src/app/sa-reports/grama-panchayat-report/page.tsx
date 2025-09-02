@@ -233,130 +233,17 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
     );
 };
 
-const PmaygReportViewer = ({ entry }: { entry: PmaygEntry }) => {
-    const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
-
-    return (
-        <div className="bg-white p-8 rounded-lg shadow-md print-content font-sans text-black">
-            <style>{`
-                @media print {
-                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                }
-              `}</style>
-            <h2 className="text-center text-xl font-bold mb-4">R.6.2.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT (PMAY-G)</h2>
-
-            <SectionCard title="Section A & B: Basic Details" id="pmayg-basic">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-                    <InfoRow label="BRP Name" value={entry.brpName} />
-                    <InfoRow label="BRP Employee Code" value={entry.brpEmployeeCode} />
-                    <InfoRow label="District" value={entry.district} />
-                    <InfoRow label="Block" value={entry.block} />
-                    <InfoRow label="Panchayat" value={panchayatName} />
-                    <InfoRow label="LGD Code" value={entry.lgdCode} />
-                    <InfoRow label="Round No" value={entry.roundNo} />
-                    <InfoRow label="SGS Date" value={entry.sgsDate ? format(new Date(entry.sgsDate), 'dd/MM/yyyy') : 'N/A'} />
-                    <InfoRow label="Expenditure Year" value={entry.expenditureYear} />
-                </div>
-            </SectionCard>
-
-             <SectionCard title="Section C: Verification Details" id="pmayg-verification">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-                    <InfoRow label="Total Houses" value={entry.totalHouses} />
-                    <InfoRow label="1st Installments" value={entry.firstInstallment} />
-                    <InfoRow label="2nd Installments" value={entry.secondInstallment} />
-                    <InfoRow label="3rd Installments" value={entry.thirdInstallment} />
-                    <InfoRow label="4th Installments" value={entry.fourthInstallment} />
-                    <InfoRow label="Not Completed After 4th" value={entry.notCompletedAfterFourth} />
-                </div>
-            </SectionCard>
-
-            <SectionCard title="Section D: Panchayat Summary" id="pmayg-summary">
-                 <div className="space-y-2">
-                    <InfoRow label="GS Decision on New Beneficiary" value={entry.gsDecision} />
-                    <div><h4 className="font-semibold text-foreground/80 mt-2">Project Deficiencies:</h4><p className="font-normal text-foreground whitespace-pre-wrap">{entry.projectDeficiencies || 'N/A'}</p></div>
-                    <div><h4 className="font-semibold text-foreground/80 mt-2">Special Remarks:</h4><p className="font-normal text-foreground whitespace-pre-wrap">{entry.specialRemarks || 'N/A'}</p></div>
-                    <div><h4 className="font-semibold text-foreground/80 mt-2">Outcome of Audit:</h4><p className="font-normal text-foreground whitespace-pre-wrap">{entry.auditOutcome || 'N/A'}</p></div>
-                 </div>
-            </SectionCard>
-
-             <SectionCard title="Section E: Panchayat Verification Analysis" id="pmayg-analysis">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 className="font-semibold mb-2">A. As per MIS Report:</h4>
-                        <div className="space-y-1 pl-4">
-                            <InfoRow label="SECC List Count" value={entry.misSeccCount} />
-                            <InfoRow label="SECC Non-Rejected" value={entry.misSeccNonRejected} />
-                            <InfoRow label="SECC Selected" value={entry.misSeccSelected} />
-                            <InfoRow label="Awaas+ List Count" value={entry.misAwaasPlusCount} />
-                             <InfoRow label="Awaas+ Selected" value={entry.misAwaasPlusSelected} />
-                             <InfoRow label="Total Selected (MIS)" value={entry.misTotalSelected} />
-                        </div>
-                    </div>
-                    <div>
-                         <h4 className="font-semibold mb-2">B. Field Verification Data:</h4>
-                         <div className="space-y-1 pl-4">
-                             <InfoRow label="No. of Beneficiaries Interviewed" value={entry.fieldInterviewed} />
-                             <InfoRow label="Not Interviewed but House Visited" value={entry.fieldVisited} />
-                             <InfoRow label="Could Not Identify" value={entry.fieldCouldNotIdentify} />
-                             <InfoRow label="Total Verified (Field)" value={entry.fieldTotalVerified} />
-                         </div>
-                         <h4 className="font-semibold mt-4 mb-2">C. Format 3:</h4>
-                         <div className="space-y-1 pl-4">
-                            <InfoRow label="SECC Beneficiaries in Kutcha Houses" value={entry.format3KutchaCount} />
-                         </div>
-                    </div>
-                </div>
-            </SectionCard>
-            
-            <SectionCard title="Section F: Report Upload" id="pmayg-report-upload">
-                <InfoRow label="Report File" value={entry.reportFile?.name ? <a href={URL.createObjectURL(entry.reportFile)} download={entry.reportFile.name} className="text-blue-600 hover:underline">View/Download</a> : 'Not Uploaded'} />
-            </SectionCard>
-
-            <SectionCard title="Section G: Para Particulars" id="pmayg-paras">
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Issue No.</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Sub Category</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {entry.paraParticulars?.map((para: any, index: number) => (
-                                <TableRow key={index}>
-                                    <TableCell>{para.issueNumber}</TableCell>
-                                    <TableCell>{para.type}</TableCell>
-                                    <TableCell>{para.category}</TableCell>
-                                    <TableCell className="max-w-xs">{para.subCategory}</TableCell>
-                                    <TableCell>{((para.centralAmount || 0) + (para.stateAmount || 0) + (para.otherAmount || 0)).toLocaleString()}</TableCell>
-                                    <TableCell>{para.paraStatus}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </SectionCard>
-        </div>
-    );
-};
-
 
 export default function GramaPanchayatSocialAuditReport() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
-    const { entries: pmaygEntries, loading: pmaygLoading } = usePmayg(); 
     const printRef = useRef(null);
 
-    const [currentScheme, setCurrentScheme] = useState('MGNREGS');
     const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
     const [selectedBlock, setSelectedBlock] = useState<string>('all');
     const [selectedPanchayat, setSelectedPanchayat] = useState<string>('all');
     const [selectedSgsDate, setSelectedSgsDate] = useState<string>('all');
     
-    const [selectedReportEntry, setSelectedReportEntry] = useState<MgnregsEntry | PmaygEntry | null>(null);
+    const [selectedReportEntry, setSelectedReportEntry] = useState<MgnregsEntry | null>(null);
 
     const blocksForDistrict = useMemo(() => {
         if (selectedDistrict === 'all') return [];
@@ -370,13 +257,11 @@ export default function GramaPanchayatSocialAuditReport() {
 
     const sgsDatesForPanchayat = useMemo(() => {
         if (selectedPanchayat === 'all') return [];
-        const entries = currentScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
-        return entries.filter((e: any) => e.panchayat === selectedPanchayat).map((e: any) => e.sgsDate);
-    }, [selectedPanchayat, mgnregsEntries, pmaygEntries, currentScheme]);
+        return mgnregsEntries.filter((e: any) => e.panchayat === selectedPanchayat).map((e: any) => e.sgsDate);
+    }, [selectedPanchayat, mgnregsEntries]);
 
     const handleGetReport = () => {
-        const entries = currentScheme === 'MGNREGS' ? mgnregsEntries : pmaygEntries;
-        const entry = entries.find((e: any) => 
+        const entry = mgnregsEntries.find((e: any) => 
             e.panchayat === selectedPanchayat && 
             e.sgsDate.toString() === selectedSgsDate
         );
@@ -385,10 +270,10 @@ export default function GramaPanchayatSocialAuditReport() {
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
-        documentTitle: `${currentScheme}_Social_Audit_Report_${selectedReportEntry?.district}`
+        documentTitle: `MGNREGS_Social_Audit_Report_${selectedReportEntry?.district}`
     });
     
-    const loading = mgnregsLoading || pmaygLoading;
+    const loading = mgnregsLoading;
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -399,8 +284,8 @@ export default function GramaPanchayatSocialAuditReport() {
                     <CardHeader>
                         <div className="flex justify-between items-center">
                             <div>
-                                <CardTitle>Grama Panchayat Social Audit Report</CardTitle>
-                                <CardDescription>Select filters to view a specific report.</CardDescription>
+                                <CardTitle>R.6.1.A.1 GRAMA PANCHAYAT SOCIAL AUDIT REPORT</CardTitle>
+                                <CardDescription>Select filters to view a specific MGNREGS report.</CardDescription>
                             </div>
                              <Button onClick={handlePrint} disabled={!selectedReportEntry}>
                                 <Printer className="mr-2" /> Print Report
@@ -408,96 +293,66 @@ export default function GramaPanchayatSocialAuditReport() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="MGNREGS" className="w-full" onValueChange={(val) => {
-                            setCurrentScheme(val);
-                            setSelectedReportEntry(null);
-                            setSelectedDistrict('all');
-                            setSelectedBlock('all');
-                            setSelectedPanchayat('all');
-                            setSelectedSgsDate('all');
-                        }}>
-                            <TabsList>
-                                <TabsTrigger value="MGNREGS">MGNREGS</TabsTrigger>
-                                <TabsTrigger value="PMAY-G">PMAY-G</TabsTrigger>
-                            </TabsList>
-
-                            <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end my-6">
-                                <div className="space-y-2">
-                                    <label>District</label>
-                                    <Select value={selectedDistrict} onValueChange={v => { setSelectedDistrict(v); setSelectedBlock('all'); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Districts</SelectItem>
-                                            {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label>Block</label>
-                                    <Select value={selectedBlock} onValueChange={v => { setSelectedBlock(v); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedDistrict === 'all'}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Blocks</SelectItem>
-                                            {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label>Panchayat</label>
-                                    <Select value={selectedPanchayat} onValueChange={v => { setSelectedPanchayat(v); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedBlock === 'all'}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Panchayats</SelectItem>
-                                            {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label>SGS Date</label>
-                                    <Select value={selectedSgsDate} onValueChange={v => {setSelectedSgsDate(v); setSelectedReportEntry(null); }} disabled={selectedPanchayat === 'all'}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Select Date</SelectItem>
-                                            {sgsDatesForPanchayat.map((d: any) => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <Button onClick={handleGetReport} disabled={selectedSgsDate === 'all'}>Get Report</Button>
+                        <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end my-6">
+                            <div className="space-y-2">
+                                <label>District</label>
+                                <Select value={selectedDistrict} onValueChange={v => { setSelectedDistrict(v); setSelectedBlock('all'); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Districts</SelectItem>
+                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
+                            <div className="space-y-2">
+                                <label>Block</label>
+                                <Select value={selectedBlock} onValueChange={v => { setSelectedBlock(v); setSelectedPanchayat('all'); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedDistrict === 'all'}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Blocks</SelectItem>
+                                        {blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <label>Panchayat</label>
+                                <Select value={selectedPanchayat} onValueChange={v => { setSelectedPanchayat(v); setSelectedSgsDate('all'); setSelectedReportEntry(null); }} disabled={selectedBlock === 'all'}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Panchayats</SelectItem>
+                                        {panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <label>SGS Date</label>
+                                <Select value={selectedSgsDate} onValueChange={v => {setSelectedSgsDate(v); setSelectedReportEntry(null); }} disabled={selectedPanchayat === 'all'}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Select Date</SelectItem>
+                                        {sgsDatesForPanchayat.map((d: any) => <SelectItem key={d.toString()} value={d.toString()}>{format(new Date(d), 'dd/MM/yyyy')}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button onClick={handleGetReport} disabled={selectedSgsDate === 'all'}>Get Report</Button>
+                        </div>
+                        
+                        <div className="pt-4">
+                            {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             
-                            <TabsContent value="MGNREGS" className="pt-4">
-                                {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
-                                
-                                {!loading && selectedReportEntry && currentScheme === 'MGNREGS' && (
-                                    <div ref={printRef}>
-                                        <MgnregsReportViewer entry={selectedReportEntry as MgnregsEntry} />
-                                    </div>
-                                )}
-                                
-                                {!loading && !selectedReportEntry && (
-                                     <div className="text-center p-16 text-muted-foreground">
-                                        <FileText className="mx-auto h-12 w-12 mb-4" />
-                                        <p>Please select your filters and click "Get Report" to view the social audit details.</p>
-                                     </div>
-                                )}
-                            </TabsContent>
-                             <TabsContent value="PMAY-G" className="pt-4">
-                               {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
-                                
-                                {!loading && selectedReportEntry && currentScheme === 'PMAY-G' && (
-                                    <div ref={printRef}>
-                                        <PmaygReportViewer entry={selectedReportEntry as PmaygEntry} />
-                                    </div>
-                                )}
-                                
-                                {!loading && !selectedReportEntry && (
-                                     <div className="text-center p-16 text-muted-foreground">
-                                        <FileText className="mx-auto h-12 w-12 mb-4" />
-                                        <p>Please select your filters and click "Get Report" to view the social audit details.</p>
-                                     </div>
-                                )}
-                            </TabsContent>
-                        </Tabs>
+                            {!loading && selectedReportEntry && (
+                                <div ref={printRef}>
+                                    <MgnregsReportViewer entry={selectedReportEntry as MgnregsEntry} />
+                                </div>
+                            )}
+                            
+                            {!loading && !selectedReportEntry && (
+                                 <div className="text-center p-16 text-muted-foreground">
+                                    <FileText className="mx-auto h-12 w-12 mb-4" />
+                                    <p>Please select your filters and click "Get Report" to view the social audit details.</p>
+                                 </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             </main>
