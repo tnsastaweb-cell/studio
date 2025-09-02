@@ -5,6 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Edit, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 import { useMgnregs } from '@/services/mgnregs-data';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
@@ -69,7 +70,7 @@ export default function HighFmParaDetailsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>High FM Para Details</CardTitle>
-                        <CardDescription>Details of Financial Misappropriation paras with amounts of ₹10,000 and above.</CardDescription>
+                        <CardDescription>Details of Financial Misappropriation paras with amounts of ₹10,000 and above. Entries in bold require report submission.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -115,7 +116,7 @@ export default function HighFmParaDetailsPage() {
                                          <TableRow><TableCell colSpan={canEdit ? 10 : 9} className="text-center">No high value FM paras found.</TableCell></TableRow>
                                     ) : (
                                         filteredData.map((item, index) => (
-                                            <TableRow key={`${item.id}-${item.paraDetails.issueNumber}`}>
+                                            <TableRow key={`${item.id}-${item.paraDetails.issueNumber}`} className={cn(!item.paraDetails.isReportSubmitted && "font-bold")}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>{item.roundNo}</TableCell>
                                                 <TableCell>{format(new Date(item.sgsDate), 'dd/MM/yyyy')}</TableCell>
@@ -146,4 +147,3 @@ export default function HighFmParaDetailsPage() {
         </div>
     );
 }
-

@@ -4,9 +4,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { MgnregsFormValues } from '@/app/data-entry/mgnregs/page';
 
+export interface ParaParticulars extends z.infer<typeof paraParticularsSchema> {
+    isReportSubmitted?: boolean;
+}
+
 export interface MgnregsEntry extends MgnregsFormValues {
   id: number;
   submittedAt: string;
+  paraParticulars?: ParaParticulars[];
 }
 
 const MOCK_MGNREGS_ENTRIES: MgnregsEntry[] = [
@@ -57,6 +62,7 @@ const MOCK_MGNREGS_ENTRIES: MgnregsEntry[] = [
         codeNumber: 'FM-3.7',
         amount: 25000,
         paraStatus: 'PENDING',
+        isReportSubmitted: false,
       },
       {
         issueNumber: "PV-ARI-001",
@@ -66,6 +72,7 @@ const MOCK_MGNREGS_ENTRIES: MgnregsEntry[] = [
         codeNumber: 'PV-1.11',
         amount: 0,
         paraStatus: 'PENDING',
+        isReportSubmitted: false,
       },
     ],
   },
@@ -155,3 +162,21 @@ export const useMgnregs = () => {
     
     return { entries, loading, addMgnregsEntry, updateMgnregsEntry, deleteMgnregsEntry };
 };
+
+// Re-exporting the schema definition type, this is not ideal but needed for type inference in ParaParticulars
+import * as z from 'zod';
+export const paraParticularsSchema = z.object({
+  issueNumber: z.string().min(1, "Issue No. is required."),
+  type: z.string().min(1, "Type is required."),
+  category: z.string().min(1, "Category is required."),
+  subCategory: z.string().min(1, "Sub-category is required."),
+  codeNumber: z.string(),
+  grievances: z.coerce.number().optional(),
+  beneficiaries: z.coerce.number().optional(),
+  cases: z.coerce.number().optional(),
+  amount: z.coerce.number().optional(),
+  recoveredAmount: z.coerce.number().optional(),
+  hlcRegNo: z.string().optional(),
+  paraStatus: z.enum(['PENDING', 'CLOSED']),
+  hlcRecoveryAmount: z.coerce.number().optional(),
+});

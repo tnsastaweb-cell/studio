@@ -31,7 +31,7 @@ const mgnregsReports = {
         { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/view-case-studies" }
     ],
     "R.6.1.D - URGENT REPORTS": [
-        { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "#" },
+        { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details/view" },
         { title: "R.6.1.D.2 OTHER REPORTS", href: "#" }
     ]
 };
