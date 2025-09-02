@@ -4,7 +4,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReactToPrint } from 'react-to-print';
-import { Edit, Trash2, Printer, Search, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Printer, Search, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useMgnregs, MgnregsEntry, ParaParticulars } from '@/services/mgnregs-data';
@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 
 type HighFmPara = MgnregsEntry & {
@@ -86,7 +88,8 @@ export default function ViewHighFmReportPage() {
     const { toast } = useToast();
     const printRef = useRef(null);
     const [displayData, setDisplayData] = useState<HighFmPara[]>([]);
-
+    
+    const [openBRPPopover, setOpenBRPPopover] = useState(false);
     const [filterType, setFilterType] = useState('round');
     const [selectedRound, setSelectedRound] = useState<string>('all');
     const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
@@ -198,15 +201,38 @@ export default function ViewHighFmReportPage() {
                                 </Select>
                              )}
                              {filterType === 'brp' && (
-                                 <Select value={selectedBRP} onValueChange={setSelectedBRP}>
-                                    <SelectTrigger><SelectValue placeholder="Select BRP"/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All BRPs</SelectItem>
-                                        {brpList.map(brp => <SelectItem key={brp.id} value={brp.employeeCode}>{brp.name} ({brp.employeeCode})</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                                 <Popover open={openBRPPopover} onOpenChange={setOpenBRPPopover}>
+                                     <PopoverTrigger asChild>
+                                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                                            {selectedBRP !== 'all' ? brpList.find(brp => brp.employeeCode === selectedBRP)?.name : "Select BRP..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                     <PopoverContent className="w-[300px] p-0">
+                                         <Command>
+                                            <CommandInput placeholder="Search BRP..."/>
+                                             <CommandEmpty>No BRP found.</CommandEmpty>
+                                             <CommandList>
+                                                 <CommandItem onSelect={() => {setSelectedBRP('all'); setOpenBRPPopover(false);}}>All BRPs</CommandItem>
+                                                 {brpList.map((brp) => (
+                                                    <CommandItem
+                                                        key={brp.id}
+                                                        value={`${brp.name} ${brp.employeeCode}`}
+                                                        onSelect={() => {
+                                                            setSelectedBRP(brp.employeeCode);
+                                                            setOpenBRPPopover(false);
+                                                        }}
+                                                    >
+                                                         <Check className={cn("mr-2 h-4 w-4", selectedBRP === brp.employeeCode ? "opacity-100" : "opacity-0")} />
+                                                         {brp.name} ({brp.employeeCode})
+                                                    </CommandItem>
+                                                 ))}
+                                             </CommandList>
+                                         </Command>
+                                     </PopoverContent>
+                                 </Popover>
                              )}
-                             <div className="md:col-start-3 flex justify-end gap-2">
+                             <div className="md:col-start-4 flex justify-end gap-2">
                                 <Button onClick={handleGetReports}>Get Reports</Button>
                                 <Button onClick={handlePrint} disabled={displayData.length === 0}><Printer className="mr-2"/> Print Reports</Button>
                              </div>
@@ -250,6 +276,10 @@ export default function ViewHighFmReportPage() {
             </main>
              <style jsx global>{`
                 @media print {
+                    body {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
                     .no-print {
                         display: none;
                     }
