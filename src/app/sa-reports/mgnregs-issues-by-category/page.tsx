@@ -86,10 +86,10 @@ const ReportTable = ({ title, data, viewType }: { title: string; data: ReportRow
                   <TableCell>
                     {viewType !== 'panchayat' ? (
                        <Link href={`?view=${viewType === 'district' ? 'block' : 'panchayat'}&name=${row.name}`} className="text-primary hover:underline">
-                        {row.name}
+                        {toTitleCase(row.name)}
                        </Link>
                     ) : (
-                      row.name
+                      toTitleCase(row.name)
                     )}
                   </TableCell>
                   <TableCell>{row.totalGps}</TableCell>
@@ -122,6 +122,7 @@ const ReportTable = ({ title, data, viewType }: { title: string; data: ReportRow
 
 export default function MgnregsIssuesByCategoryPage() {
     const { entries, loading } = useMgnregs();
+    const router = useRouter();
     const searchParams = useSearchParams();
     
     const view = searchParams.get('view') || 'district';
@@ -134,21 +135,41 @@ export default function MgnregsIssuesByCategoryPage() {
             ? entries 
             : entries.filter(e => e.expenditureYear === expenditureYear);
 
-        const processEntries = (filteredEntries: any[], groupBy: 'district' | 'block' | 'panchayat') => {
+        const processEntries = (geoList: string[], groupBy: 'district' | 'block' | 'panchayat') => {
             const aggregation = new Map<string, ReportRow>();
-
-            filteredEntries.forEach(entry => {
-                const key = entry[groupBy];
-                if (!key) return;
-
-                if (!aggregation.has(key)) {
-                    aggregation.set(key, {
-                        name: key, totalGps: 0, auditedGps: 1,
-                        fmIssues: 0, fmAmount: 0, fdIssues: 0, fdAmount: 0,
-                        pvIssues: 0, pvAmount: 0, grIssues: 0, grAmount: 0,
-                        totalIssues: 0, totalAmount: 0
-                    });
+            
+             // Initialize aggregation map with all geographic units
+            geoList.forEach(geoName => {
+                 let totalGps = 0;
+                 if (groupBy === 'district') {
+                    totalGps = MOCK_PANCHAYATS.filter(p => p.district === geoName).length;
+                } else if (groupBy === 'block') {
+                    totalGps = MOCK_PANCHAYATS.filter(p => p.block === geoName).length;
+                } else if (groupBy === 'panchayat') {
+                    totalGps = 1;
                 }
+                aggregation.set(geoName, {
+                    name: geoName, totalGps: totalGps, auditedGps: 0,
+                    fmIssues: 0, fmAmount: 0, fdIssues: 0, fdAmount: 0,
+                    pvIssues: 0, pvAmount: 0, grIssues: 0, grAmount: 0,
+                    totalIssues: 0, totalAmount: 0
+                });
+            });
+
+            const auditedPanchayats = new Set<string>();
+
+            yearFilteredEntries.forEach(entry => {
+                let key;
+                if(groupBy === 'panchayat') {
+                    const panchayat = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat);
+                    key = panchayat ? panchayat.name : entry.panchayat; // Fallback to LGD code
+                } else {
+                    key = entry[groupBy];
+                }
+
+                if (!key || !aggregation.has(key)) return;
+                
+                auditedPanchayats.add(entry.panchayat);
                 const current = aggregation.get(key)!;
                 
                 entry.paraParticulars?.forEach((para: any) => {
@@ -162,27 +183,31 @@ export default function MgnregsIssuesByCategoryPage() {
                 });
             });
             
-             // Populate totalGPs
+             // Update auditedGps count based on unique panchayats processed for each group
             aggregation.forEach((value, key) => {
-                if (groupBy === 'district') {
-                    value.totalGps = MOCK_PANCHAYATS.filter(p => p.district === key).length;
-                } else if (groupBy === 'block') {
-                    value.totalGps = MOCK_PANCHAYATS.filter(p => p.block === key).length;
-                } else if (groupBy === 'panchayat') {
-                    value.totalGps = 1; // Each panchayat is its own row
-                }
+                const auditedInGroup = yearFilteredEntries.filter(e => {
+                    if (groupBy === 'panchayat') {
+                         const pName = MOCK_PANCHAYATS.find(p => p.lgdCode === e.panchayat)?.name || e.panchayat;
+                         return pName === key;
+                    }
+                    return e[groupBy] === key;
+                });
+                value.auditedGps = new Set(auditedInGroup.map(e => e.panchayat)).size;
             });
 
 
-            return Array.from(aggregation.values());
+            return Array.from(aggregation.values()).sort((a,b) => a.name.localeCompare(b.name));
         };
         
         if (view === 'district') {
-            return processEntries(yearFilteredEntries, 'district');
+            const allDistricts = uniqueDistricts.filter(d => d.toUpperCase() !== 'CHENNAI');
+            return processEntries(allDistricts, 'district');
         } else if (view === 'block' && name) {
-            return processEntries(yearFilteredEntries.filter(e => e.district === name), 'block');
+             const blocksInDistrict = Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === name).map(p => p.block)));
+             return processEntries(blocksInDistrict, 'block');
         } else if (view === 'panchayat' && name) {
-            return processEntries(yearFilteredEntries.filter(e => e.block === name), 'panchayat');
+             const panchayatsInBlock = MOCK_PANCHAYATS.filter(p => p.block === name).map(p => p.name);
+             return processEntries(panchayatsInBlock, 'panchayat');
         }
         return [];
 
