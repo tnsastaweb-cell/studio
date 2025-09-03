@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
-import { SignedInMenu } from "@/components/signed-in-menu";
+import { QuickAccessMenu } from "@/components/quick-access-menu";
 
 export default function Home() {
   const { isSignedIn } = useAuth();
@@ -62,7 +62,7 @@ export default function Home() {
           />
         </div>
 
-        {isSignedIn && <SignedInMenu />}
+        <QuickAccessMenu />
 
         <GalleryHighlights />
 
