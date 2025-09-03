@@ -200,7 +200,6 @@ export default function EditHighFmParaDetailsPage() {
                 { name: '', designation: 'Village Panchayat President', in_service: false },
                 { name: '', designation: 'Computer Operator', in_service: false },
                 { name: '', designation: 'Union OVERSEER', in_service: false },
-                { name: '', designation: 'Union Engineer / Assistant Engineer', in_service: false },
                 { name: '', designation: 'ZONAL Deputy Block Development Officer', in_service: false },
                 { name: '', designation: 'Deputy Block Development Officer (MGNREGS)', in_service: false },
                 { name: '', designation: 'Block Development Officer (Village Panchayat)', in_service: false },
@@ -408,7 +407,7 @@ export default function EditHighFmParaDetailsPage() {
                                          {officialFields.map((field, index) => (
                                               <FormField key={field.id} control={form.control} name={`officials.${index}.name`} render={({ field }) => (
                                                  <FormItem>
-                                                     <FormLabel>{`• ${form.getValues(`officials.${index}.designation`)}`}</FormLabel>
+                                                     <FormLabel>{`• ${form.getValues(`officials`)[index].designation}`}</FormLabel>
                                                      <FormControl><Input {...field} /></FormControl>
                                                  </FormItem>
                                               )} />
