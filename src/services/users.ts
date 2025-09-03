@@ -1,17 +1,8 @@
 
 'use client';
 
-/**
- * @fileOverview User and Role management service.
- * This file contains the data models and mock data for users and roles
- * in the application.
- *
- * - Role: Defines the possible user roles.
- * - User: Defines the structure for a user account.
- * - ROLES: A constant array of all available roles.
- * - MOCK_USERS: A list of sample users for development and testing.
- */
 import { useState, useEffect, useCallback } from 'react';
+import * as z from 'zod';
 
 // Defines the set of user roles available in the application.
 export type Role =
@@ -34,7 +25,180 @@ export type Role =
   | 'VRP'
   | 'CREATOR';
 
-// Represents a user account in the system.
+// A constant array of all available roles.
+export const ROLES: Role[] = [
+  'DIRECTOR', 'JD (NR)', 'JD (SR)', 'AD', 'SUPERINTENDENT (ADMIN)',
+  'SUPERINTENDENT (AUDIT)', 'AO', 'CONSULTANT', 'SS', 'AAO', 'SLM',
+  'ADMIN', 'MIS ASSISTANT', 'DRP', 'DRP I/C', 'BRP', 'VRP', 'CREATOR',
+];
+
+
+export const staffFormSchema = z.object({
+  designation: z.string().min(1, "Role/Designation is required."),
+  
+  // Basic Information
+  photo: z.any().optional(),
+  recruitmentType: z.enum(['direct', 'retired'], { required_error: "Recruitment Type is required."}),
+  employeeCode: z.string().min(1, "Employee Code is required."),
+  name: z.string().min(1, "Name is required."),
+  contactNumber: z.string().min(1, "Contact Number is required."),
+  renewalDate: z.date({ required_error: "Renewal Date of Joining is required." }),
+
+  // Location Details
+  locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
+  district: z.string().min(1, "District is required."),
+  block: z.string().optional(),
+  panchayat: z.string().optional(),
+  lgdCode: z.string().optional(),
+  urbanBodyType: z.enum(['town_panchayat', 'municipality', 'corporation']).optional(),
+  urbanBodyName: z.string().optional(),
+  fullAddress: z.string().min(1, "Full Address is required.").max(200, "Address is too long"),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits."),
+
+  // Family Details
+  fatherName: z.string().min(1, "Father's Name is required."),
+  motherName: z.string().min(1, "Mother's Name is required."),
+  spouseName: z.string().optional(),
+
+  // Personal details
+  religion: z.string().min(1, "Religion is required."),
+  caste: z.string().optional(),
+  dateOfBirth: z.date({ required_error: "Date of birth is required." }),
+  age: z.string().optional(),
+  gender: z.string().min(1, "Gender is required"),
+  femaleType: z.string().optional(),
+  bloodGroup: z.string().optional(),
+  isDifferentlyAbled: z.enum(['yes', 'no'], { required_error: "This field is required."}),
+  differentlyAbledCert: z.any().optional(),
+  healthIssues: z.enum(['normal', 'minor', 'major'], { required_error: "This field is required."}),
+  healthIssuesDetails: z.string().optional(),
+  medicalCert: z.any().optional(),
+  
+  // Personal Info
+  contactNumber2: z.string().optional(),
+  emailId: z.string().email("Invalid email address.").min(1, "Email is required."),
+  eportalEmailId: z.string().email("Invalid E-Portal email address.").min(1, "E-portal email is required."),
+  pfmsId: z.string().min(1, "PFMS ID is required."),
+  bankName: z.string().min(1, "Bank Name is required."),
+  branchName: z.string().min(1, "Branch Name is required."),
+  accountNumber: z.string().min(1, "Account Number is required."),
+  ifscCode: z.string().min(1, "IFSC Code is required."),
+  aadhaar: z.string().min(12, "Aadhaar must be 12 digits.").max(12, "Aadhaar must be 12 digits."),
+  aadhaarUpload: z.any().refine(file => file?.[0], "Aadhaar copy is required."),
+  pan: z.string().min(10, "PAN must be 10 characters.").max(10, "PAN must be 10 characters."),
+  panUpload: z.any().refine(file => file?.[0], "PAN copy is required."),
+  uan: z.string().optional(),
+
+  // Education & Experience
+  academicDetails: z.array(z.object({
+    course: z.string().min(1, 'Course is required'),
+    institution: z.string().min(1, 'Institution is required'),
+    board: z.string().min(1, 'Board/University is required'),
+    fromYear: z.date({ required_error: 'From year is required' }),
+    toYear: z.date({ required_error: 'To year is required' }),
+    aggregate: z.coerce.number().min(0).max(100, "Cannot be over 100%"),
+    certificate: z.any().optional(),
+  })).min(1, "At least one academic detail is required."),
+
+  workExperience: z.array(z.object({
+    companyName: z.string().min(1, 'Company Name is required'),
+    natureOfJob: z.string().min(1, 'Nature of Job is required'),
+    fromDate: z.date({ required_error: 'From date is required' }),
+    toDate: z.date({ required_error: 'To date is required' }),
+    duration: z.string().optional(),
+    certificate: z.any().optional(),
+  })).min(1, "At least one work experience is required."),
+
+  skills: z.array(z.object({
+    skill: z.string().min(1, "Skill cannot be empty")
+  })).min(1, "At least one skill is required."),
+
+  // Working Details
+  joiningDate: z.date({ required_error: "Joining date is required." }),
+  brpWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    block: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
+  drpWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
+  workedAsDrpIc: z.enum(['yes', 'no']).optional(),
+  drpIcWorkHistory: z.array(z.object({
+    station: z.enum(['worked', 'present']),
+    district: z.string().min(1),
+    fromDate: z.date(),
+    toDate: z.date(),
+    duration: z.string().optional(),
+  })).optional(),
+
+  // Training & Audit Particulars
+  trainingTaken: z.enum(['yes', 'no']),
+  trainingTakenDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    trainingName: z.string(),
+    grade: z.string(),
+  })).optional(),
+  
+  trainingGiven: z.enum(['yes', 'no']),
+  trainingGivenDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    trainingName: z.string(),
+  })).optional(),
+
+  pilotAudit: z.enum(['yes', 'no']),
+  pilotAuditDetails: z.array(z.object({
+    startDate: z.date(),
+    endDate: z.date(),
+    location: z.string(),
+    schemeName: z.string(),
+  })).optional(),
+
+  stateOfficeActivities: z.enum(['yes', 'no']),
+  stateOfficeActivitiesDetails: z.array(z.object({
+    year: z.date(),
+    workParticulars: z.string(),
+  })).optional(),
+
+  complaints: z.array(z.object({
+    receivedOn: z.date(),
+    complainantDetails: z.string().optional(),
+    complaint: z.string().optional(),
+    remarks: z.string().optional(),
+    actionTaken: z.string().optional(),
+  })).optional(),
+  
+  declaration: z.boolean().default(true),
+
+}).refine(data => {
+    if (data.locationType === 'rural') return !!data.block && !!data.panchayat;
+    return true;
+}, { message: "Block and Panchayat are required for Rural locations.", path: ['panchayat'],
+}).refine(data => {
+    if (data.locationType === 'urban') return !!data.urbanBodyType && !!data.urbanBodyName;
+    return true;
+}, { message: "Urban Body Type and Name are required for Urban locations.", path: ['urbanBodyName'],
+}).refine(data => {
+    if (data.isDifferentlyAbled === 'yes') return !!data.differentlyAbledCert?.[0];
+    return true;
+}, { message: "Certificate is required if differently abled.", path: ['differentlyAbledCert']
+}).refine(data => {
+    if (data.healthIssues === 'major') return !!data.medicalCert?.[0];
+    return true;
+}, { message: "Medical certificate is required for major health issues.", path: ['medicalCert']
+});
+
 export interface User {
   id: number;
   name: string;
@@ -112,27 +276,7 @@ export interface User {
   complaints?: any[];
 }
 
-// A constant array of all available roles.
-export const ROLES: Role[] = [
-  'DIRECTOR',
-  'JD (NR)',
-  'JD (SR)',
-  'AD',
-  'SUPERINTENDENT (ADMIN)',
-  'SUPERINTENDENT (AUDIT)',
-  'AO',
-  'CONSULTANT',
-  'SS',
-  'AAO',
-  'SLM',
-  'ADMIN',
-  'MIS ASSISTANT',
-  'DRP',
-  'DRP I/C',
-  'BRP',
-  'VRP',
-  'CREATOR',
-];
+
 
 // A list of mock users for development purposes.
 export const MOCK_USERS: User[] = [
@@ -254,4 +398,3 @@ export const useUsers = () => {
   return { users, loading, addUser, updateUser, deleteUser };
 };
 
-    

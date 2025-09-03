@@ -51,7 +51,7 @@ const pmaygReports = {
     ],
     "R.6.2.C - ANNUAL REPORTS": [
         { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#", disabled: true },
-        { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/case-studies/view" }
+        { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/pmayg-case-studies" }
     ],
     "R.6.2.D - URGENT REPORTS": [
         { title: "R.6.2.D.1 HIGH FM PARA DETAILS", href: "#", disabled: true },
@@ -116,7 +116,7 @@ export default function MisReportsPage() {
                     </TabsContent>
 
                     {MOCK_SCHEMES.slice(2).filter(s => s.name !== 'PMAY-G').map(scheme => (
-                         <TabsContent key={scheme.id} value={scheme.name} className="pt-6">
+                         <TabsContent key={scheme.id} value={scheme.id} className="pt-6">
                             <div className="text-center text-muted-foreground p-8">
                                 <p>Reports for {scheme.name} are currently under construction. Please check back later.</p>
                             </div>
