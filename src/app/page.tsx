@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { SignedInMenu } from "@/components/signed-in-menu";
 
 export default function Home() {
   const { isSignedIn } = useAuth();
@@ -60,6 +61,8 @@ export default function Home() {
             className="pl-10 w-full text-base bg-white"
           />
         </div>
+
+        {isSignedIn && <SignedInMenu />}
 
         <GalleryHighlights />
 
