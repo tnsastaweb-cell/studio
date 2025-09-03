@@ -45,9 +45,9 @@ const pmaygReports = {
         { title: "R.6.2.A.5 ISSUES REPORTED (BY ROUND)", href: "/sa-reports/pmayg-issues-by-round", disabled: false }
     ],
     "R.6.2.B - SOCIAL AUDIT FINDINGS STATUS": [
-        { title: "R.6.2.B.1 FM - முறைகேடு", href: "#", disabled: true },
-        { title: "R.6.2.B.2 FD - செயல்முறை மீறல்", href: "#", disabled: true },
-        { title: "R.6.2.B.3 PV - குறை", href: "#", disabled: true }
+        { title: "R.6.2.B.1 முறைகேடு", href: "/sa-reports/pmayg-misappropriation-report", disabled: false },
+        { title: "R.6.2.B.2 செயல்முறை மீறல்", href: "#", disabled: true },
+        { title: "R.6.2.B.3 குறை", href: "#", disabled: true }
     ],
     "R.6.2.C - ANNUAL REPORTS": [
         { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#", disabled: true },
