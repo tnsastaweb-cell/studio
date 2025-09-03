@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Upload, Eye, Delete, ChevronsUpDown, Check, Loader2 } from 'lucide-react';
+import { Trash2, Upload, Eye, Delete, ChevronsUpDown, Check, Loader2, PlusCircle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
@@ -131,9 +131,12 @@ export default function EditHighFmParaDetailsPage() {
                 const para = entry.paraParticulars?.find(p => p.issueNumber === issueNo);
                 setMgnregsEntry(entry);
                 setParaDetails(para || null);
+                if (para) {
+                    form.reset(para as any); // Reset form with existing para details
+                }
             }
         }
-    }, [entryId, issueNo, entries]);
+    }, [entryId, issueNo, entries, form]);
     
     const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
@@ -141,9 +144,6 @@ export default function EditHighFmParaDetailsPage() {
     const watchedPhoto = form.watch("hasPhoto");
     const watchedSgsResolution = form.watch("hasSgsResolution");
     const watchedActionTaken = form.watch("actionTakenOnPara");
-    const watchedEvidenceLayout = form.watch("evidencePhotoLayout");
-    const watchedPhotoLayout = form.watch("photoLayout");
-    const watchedSgsResolutionLayout = form.watch("sgsResolutionLayout");
     
     const { fields: evidencePhotoFields, append: appendEvidencePhoto, remove: removeEvidencePhoto } = useFieldArray({ control: form.control, name: 'evidencePhotos' });
     const { fields: photoFields, append: appendPhoto, remove: removePhoto } = useFieldArray({ control: form.control, name: 'photos' });
@@ -180,39 +180,13 @@ export default function EditHighFmParaDetailsPage() {
         reader.readAsDataURL(file);
     };
 
-    const setupPhotoArray = (value: string, appendFn: any, removeFn: any, fieldName: 'evidencePhotos' | 'photos' | 'sgsResolutionPhotos') => {
-        const count = parseInt(value?.split('-')[1] || '0', 10);
-        const currentCount = (form.getValues(fieldName) || []).length;
-        if(count > currentCount) {
-            for(let i = currentCount; i < count; i++) {
-                appendFn({ dataUrl: '', description: '' });
-            }
-        } else if (count < currentCount) {
-            for(let i = currentCount - 1; i >= count; i--) {
-                removeFn(i);
-            }
-        }
-    }
-
-    useEffect(() => {
-        setupPhotoArray(watchedEvidenceLayout, appendEvidencePhoto, removeEvidencePhoto, 'evidencePhotos');
-    }, [watchedEvidenceLayout, appendEvidencePhoto, removeEvidencePhoto]);
-
-    useEffect(() => {
-        setupPhotoArray(watchedPhotoLayout, appendPhoto, removePhoto, 'photos');
-    }, [watchedPhotoLayout, appendPhoto, removePhoto]);
-
-     useEffect(() => {
-        setupPhotoArray(watchedSgsResolutionLayout, appendSgsPhoto, removeSgsPhoto, 'sgsResolutionPhotos');
-    }, [watchedSgsResolutionLayout, appendSgsPhoto, removeSgsPhoto]);
-    
     const onSubmit = (data: HighFmFormValues) => {
         if (!mgnregsEntry || !paraDetails) {
             toast({ variant: 'destructive', title: 'Error', description: 'Original entry not found.' });
             return;
         }
         
-        const updatedPara = { ...paraDetails, ...data };
+        const updatedPara = { ...paraDetails, ...data, isReportSubmitted: true };
         const updatedParas = mgnregsEntry.paraParticulars?.map(p => p.issueNumber === issueNo ? updatedPara : p) || [];
         const updatedEntry = { ...mgnregsEntry, paraParticulars: updatedParas };
         
@@ -325,10 +299,10 @@ export default function EditHighFmParaDetailsPage() {
                                   <FormField control={form.control} name="hasEvidence" render={({ field }) => (<FormItem><FormLabel>EVIDENCE</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                   {watchedEvidence === 'yes' && (
                                       <div className="space-y-4 pl-4 border-l-2">
-                                          <FormField control={form.control} name="evidencePhotoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                           <div className={cn("grid gap-4", watchedEvidenceLayout === 'a4-1' && 'grid-cols-1', watchedEvidenceLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedEvidenceLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedEvidenceLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
+                                           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                                {evidencePhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`evidencePhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'evidencePhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`evidencePhotos.${index}.description`)} /></div>))}
                                            </div>
+                                            <Button type="button" onClick={() => appendEvidencePhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Evidence Photo</Button>
                                       </div>
                                   )}
                                 </section>
@@ -337,10 +311,10 @@ export default function EditHighFmParaDetailsPage() {
                                    <FormField control={form.control} name="hasPhoto" render={({ field }) => ( <FormItem><FormLabel>PHOTO</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                     {watchedPhoto === 'yes' && (
                                         <div className="space-y-4 pl-4 border-l-2">
-                                            <FormField control={form.control} name="photoLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                            <div className={cn("grid gap-4", watchedPhotoLayout === 'a4-1' && 'grid-cols-1', watchedPhotoLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedPhotoLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedPhotoLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
+                                             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                                 {photoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`photos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'photos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`photos.${index}.description`)} /></div>))}
                                             </div>
+                                             <Button type="button" onClick={() => appendPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Photo</Button>
                                         </div>
                                     )}
                                 </section>
@@ -349,10 +323,10 @@ export default function EditHighFmParaDetailsPage() {
                                      <FormField control={form.control} name="hasSgsResolution" render={({ field }) => ( <FormItem><FormLabel>SGS RESULATION</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
                                       {watchedSgsResolution === 'yes' && (
                                          <div className="space-y-4 pl-4 border-l-2">
-                                             <FormField control={form.control} name="sgsResolutionLayout" render={({ field }) => ( <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={(v) => { field.onChange(v); }} value={field.value}><FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl><SelectContent><SelectItem value="a4-1">A4 Full (1 photo)</SelectItem><SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem><SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem><SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem></SelectContent></Select></FormItem>)} />
-                                             <div className={cn("grid gap-4", watchedSgsResolutionLayout === 'a4-1' && 'grid-cols-1', watchedSgsResolutionLayout === 'a4-2' && 'grid-cols-1 md:grid-cols-2', watchedSgsResolutionLayout === 'a4-4' && 'grid-cols-1 md:grid-cols-2', watchedSgsResolutionLayout === 'a4-6' && 'grid-cols-1 md:grid-cols-3')}>
+                                             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                                  {sgsPhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`sgsResolutionPhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'sgsResolutionPhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`sgsResolutionPhotos.${index}.description`)} /></div>))}
                                              </div>
+                                            <Button type="button" onClick={() => appendSgsPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add SGS Resolution Photo</Button>
                                          </div>
                                      )}
                                  </section>
@@ -411,4 +385,4 @@ export default function EditHighFmParaDetailsPage() {
     );
 }
 
-
+    

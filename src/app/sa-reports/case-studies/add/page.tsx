@@ -122,7 +122,6 @@ export default function AddCaseStudyPage() {
     const watchedBlock = form.watch("block");
     const watchedPanchayat = form.watch("panchayat");
     const watchedIssueNo = form.watch("issueNo");
-    const watchedPhotoLayout = form.watch("photoLayout");
 
     const blocks = useMemo(() => {
         if (!watchedDistrict) return [];
@@ -232,21 +231,6 @@ export default function AddCaseStudyPage() {
         };
         reader.readAsDataURL(file);
     };
-    
-    useEffect(() => {
-        const count = parseInt(watchedPhotoLayout?.split('-')[1] || '0', 10);
-        const currentCount = photoFields.length;
-        if(count > currentCount) {
-            for(let i = currentCount; i < count; i++) {
-                appendPhoto({ dataUrl: '', description: '' });
-            }
-        } else if (count < currentCount) {
-            for(let i = currentCount - 1; i >= count; i--) {
-                removePhoto(i);
-            }
-        }
-    }, [watchedPhotoLayout, appendPhoto, removePhoto, photoFields.length]);
-
 
     const onSubmit = (data: CaseStudyFormValues) => {
         if(editId) {
@@ -284,7 +268,7 @@ export default function AddCaseStudyPage() {
                             <CardHeader><CardTitle>🧾 Section 1: Basic Case Info</CardTitle></CardHeader>
                             <CardContent>
                                 <FormField control={form.control} name="caseStudyNo" render={({ field }) => (
-                                    <FormItem><FormLabel>Case Study No</FormLabel><FormControl><Input {...field} readOnly className="bg-muted w-1/3" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Case Study No</FormLabel><FormControl><Input {...field} value={caseStudyNo} readOnly className="bg-muted w-1/3" /></FormControl></FormItem>
                                 )} />
                             </CardContent>
                         </Card>
@@ -293,8 +277,8 @@ export default function AddCaseStudyPage() {
                             <CardHeader><CardTitle>🗺️ Section 2: Location</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="panchayat" render={({ field }) => (<FormItem><FormLabel>Panchayat</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="block" render={({ field }) => (<FormItem><FormLabel>Block</FormLabel><Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedDistrict}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{blocks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="panchayat" render={({ field }) => (<FormItem><FormLabel>Panchayat</FormLabel><Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedBlock}><FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl><SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="lgdCode" render={({ field }) => (<FormItem><FormLabel>LGD Code</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
                             </CardContent>
                         </Card>
@@ -387,7 +371,7 @@ export default function AddCaseStudyPage() {
                             <CardContent className="space-y-6">
                                 <FormField control={form.control} name="photoLayout" render={({ field }) => (
                                     <FormItem><FormLabel>Photo Layout</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                         <FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl>
                                         <SelectContent>
                                             <SelectItem value="a4-1">A4 Full (1 photo)</SelectItem>
@@ -397,13 +381,7 @@ export default function AddCaseStudyPage() {
                                         </SelectContent>
                                     </Select></FormItem>
                                 )} />
-                                <div className={cn(
-                                    "grid gap-4",
-                                    watchedPhotoLayout === 'a4-1' && "grid-cols-1",
-                                    watchedPhotoLayout === 'a4-2' && "grid-cols-1 md:grid-cols-2",
-                                    watchedPhotoLayout === 'a4-4' && "grid-cols-1 md:grid-cols-2",
-                                    watchedPhotoLayout === 'a4-6' && "grid-cols-1 md:grid-cols-3",
-                                )}>
+                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                     {photoFields.map((item, index) => (
                                         <div key={item.id} className="border p-4 rounded-lg space-y-2">
                                             <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center">
@@ -424,6 +402,7 @@ export default function AddCaseStudyPage() {
                                         </div>
                                     ))}
                                 </div>
+                                <Button type="button" onClick={() => appendPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Another Photo</Button>
                             </CardContent>
                         </Card>
 
@@ -440,3 +419,5 @@ export default function AddCaseStudyPage() {
         </div>
     );
 }
+
+    
