@@ -21,7 +21,7 @@ const mgnregsReports = {
         { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "/sa-reports/mgnregs-issues-by-round", disabled: false }
     ],
     "R.6.1.B - SOCIAL AUDIT FINDINGS STATUS": [
-        { title: "R.6.1.B.1 FM - Financial Misappropriation", href: "#", disabled: true },
+        { title: "R.6.1.B.1 FM - Financial Misappropriation", href: "/sa-reports/mgnregs-fm-report", disabled: false },
         { title: "R.6.1.B.2 FD - Financial Deviation", href: "#", disabled: true },
         { title: "R.6.1.B.3 PV - Process Violation", href: "#", disabled: true },
         { title: "R.6.1.B.4 GR – Grievances", href: "#", disabled: true }
