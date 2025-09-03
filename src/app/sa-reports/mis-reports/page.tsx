@@ -46,8 +46,8 @@ const pmaygReports = {
     ],
     "R.6.2.B - SOCIAL AUDIT FINDINGS STATUS": [
         { title: "R.6.2.B.1 முறைகேடு", href: "/sa-reports/pmayg-misappropriation-report", disabled: false },
-        { title: "R.6.2.B.2 செயல்முறை மீறல்", href: "#", disabled: true },
-        { title: "R.6.2.B.3 குறை", href: "#", disabled: true }
+        { title: "R.6.2.B.2 செயல்முறை மீறல்", href: "/sa-reports/pmayg-process-violation-report", disabled: false },
+        { title: "R.6.2.B.3 குறை", href: "/sa-reports/pmayg-grievance-report", disabled: false }
     ],
     "R.6.2.C - ANNUAL REPORTS": [
         { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#", disabled: true },
