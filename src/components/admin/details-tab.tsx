@@ -122,7 +122,7 @@ export function DetailsTab() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 p-4 border rounded-lg">
                             <div className="relative lg:col-span-2">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                <Input placeholder="Search by Name, Contact, Email..." className="pl-10" value={staffFilters.search} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
+                                <Input placeholder="Search by Name, Contact, Email..." className="pl-10" value={staffFilters.search || ''} onChange={e => setStaffFilters(f => ({ ...f, search: e.target.value }))} />
                             </div>
                             <Select value={staffFilters.role} onValueChange={v => setStaffFilters(f => ({ ...f, role: v }))}>
                                 <SelectTrigger><SelectValue placeholder="All Roles" /></SelectTrigger>
@@ -331,7 +331,7 @@ export function DetailsTab() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                            <Input placeholder="Search by Name, Code, PFMS, Contact..." value={vrpFilters.search} onChange={e => setVrpFilters(f => ({ ...f, search: e.target.value }))} />
+                            <Input placeholder="Search by Name, Code, PFMS, Contact..." value={vrpFilters.search || ''} onChange={e => setVrpFilters(f => ({ ...f, search: e.target.value }))} />
                             <Select value={vrpFilters.district} onValueChange={v => setVrpFilters(f => ({ ...f, district: v }))}>
                                 <SelectTrigger><SelectValue placeholder="All Districts" /></SelectTrigger>
                                 <SelectContent>
