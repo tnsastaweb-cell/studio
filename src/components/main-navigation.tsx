@@ -60,6 +60,10 @@ const guestMenuItems = [
   {
     title: "SA REPORTS",
     href: "/sa-reports/mis-reports",
+     children: [
+        { title: "MIS Reports", href: "/sa-reports/mis-reports" },
+        { title: "Case Studies", href: "/sa-reports/case-studies/view" },
+    ]
   },
   {
     title: "LIBRARY",
