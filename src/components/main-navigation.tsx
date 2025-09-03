@@ -62,8 +62,6 @@ const guestMenuItems = [
     href: "/sa-reports/mis-reports",
      children: [
         { title: "MIS REPORTS", href: "/sa-reports/mis-reports" },
-        { title: "HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details"},
-        { title: "CASE STUDIES", href: "/sa-reports/case-studies"},
         { title: "Consolidated Reports", href: "#", disabled: true },
         { title: "Reports in MGNREGS website", href: "#", disabled: true },
         { title: "Reports in MSJE website", href: "#", disabled: true },
@@ -86,7 +84,6 @@ const guestMenuItems = [
 ];
 
 const signedInMenuItems = [
-    { title: "DASHBOARD", href: "/dashboard" },
     { 
       title: "REGISTRATION", 
       href: "#",
@@ -108,6 +105,14 @@ const signedInMenuItems = [
         { title: "TOUR DIARY", href: "/daily-activities/tour-diary" },
         { title: "DUTY CERTIFICATE", href: "/daily-activities/duty-certificate", disabled: true },
         { title: "MOVEMENT REGISTER", href: "#", disabled: true },
+      ]
+    },
+    {
+      title: "REPORTS",
+      href: "#",
+       children: [
+          { title: "HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details"},
+          { title: "CASE STUDIES", href: "/sa-reports/case-studies"},
       ]
     },
 ];
