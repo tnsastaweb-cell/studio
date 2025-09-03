@@ -168,8 +168,6 @@ export default function PmaygMisappropriationReportPage() {
                 });
             });
 
-            const auditedPanchayats = new Set<string>();
-
             misappropriationEntries.forEach(entry => {
                 let key: string | undefined;
                 const panchayatInfo = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat);
@@ -180,8 +178,8 @@ export default function PmaygMisappropriationReportPage() {
 
                 if (!key || !aggregation.has(key)) return;
                 
-                auditedPanchayats.add(entry.panchayat);
                 const current = aggregation.get(key)!;
+                current.auditedGps +=1;
                 
                 entry.paraParticulars?.forEach((para: any) => {
                     const central = para.centralAmount || 0;
@@ -238,7 +236,7 @@ export default function PmaygMisappropriationReportPage() {
         const searchLower = searchTerm.toLowerCase();
         return searchTerm ? data.filter(d => d.name.toLowerCase().includes(searchLower)) : data;
 
-    }, [entries, expenditureYear, view, name, searchTerm]);
+    }, [entries, view, name, searchTerm]);
 
     const getTitle = () => {
         if (view === 'panchayat' && name) return `Panchayat-wise Report for ${toTitleCase(name)} Block`;
