@@ -12,7 +12,6 @@ import { MainNavigation } from "@/components/main-navigation";
 import { Footer } from "@/components/footer";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { GalleryHighlights } from "@/components/gallery-highlights";
-import { SignedInMenu } from "@/components/signed-in-menu";
 import {
   Accordion,
   AccordionContent,
@@ -61,8 +60,6 @@ export default function Home() {
             className="pl-10 w-full text-base bg-white"
           />
         </div>
-        
-        <SignedInMenu />
 
         <GalleryHighlights />
 

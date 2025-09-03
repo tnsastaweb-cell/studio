@@ -50,6 +50,7 @@ const guestMenuItems = [
     title: "GALLERY",
     href: "/gallery",
     children: [
+      { title: "All", href: "/gallery"},
       { title: "Photos", href: "/gallery/photos" },
       { title: "Videos", href: "/gallery/videos" },
       { title: "News Reports", href: "/gallery/news-reports" },
@@ -59,12 +60,6 @@ const guestMenuItems = [
   {
     title: "SA REPORTS",
     href: "/sa-reports/mis-reports",
-    children: [
-        { title: "MIS Report", href: "/sa-reports/mis-reports", disabled: false },
-        { title: "Consolidated Reports", href: "#", disabled: true },
-        { title: "Reports in MGNREGS website", href: "#", disabled: true },
-        { title: "Reports in MSJE website", href: "#", disabled: true },
-    ]
   },
   {
     title: "LIBRARY",
@@ -83,6 +78,7 @@ const guestMenuItems = [
 ];
 
 const signedInMenuItems = [
+    { title: "DASHBOARD", href: "/dashboard" },
     { 
       title: "REGISTRATION", 
       href: "#",
@@ -95,16 +91,6 @@ const signedInMenuItems = [
     { 
       title: "DATA ENTRY", 
       href: "/data-entry",
-      children: [
-        { title: "MGNREGS", href: "/data-entry/mgnregs" },
-        { title: "PMAY-G", href: "/data-entry/pamy-g" },
-        { title: "NSAP", href: "/data-entry/nsap", disabled: true },
-        { title: "NMP", href: "/data-entry/nmp", disabled: true },
-        { title: "15th CFC Grant", href: "/data-entry/ffcg", disabled: true },
-        { title: "DSJE", href: "/data-entry/dsje", disabled: true },
-        { title: "HLC", href: "/data-entry/hlc" },
-        { title: "State/District Assembly", href: "/data-entry/assembly", disabled: true },
-      ]
     },
     { 
       title: "DAILY ACTIVITES", 
@@ -112,16 +98,8 @@ const signedInMenuItems = [
       children: [
         { title: "DAILY ATTENDENCE", href: "/daily-activities/daily-attendance" },
         { title: "TOUR DIARY", href: "/daily-activities/tour-diary" },
+        { title: "DUTY CERTIFICATE", href: "/daily-activities/duty-certificate", disabled: true },
         { title: "MOVEMENT REGISTER", href: "#", disabled: true },
-      ]
-    },
-    { 
-      title: "REPORTS", 
-      href: "#",
-      children: [
-        { title: "HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details", disabled: false },
-        { title: "CASE STUDIES", href: "/sa-reports/case-studies", disabled: false },
-        { title: "OTHERS", href: "#", disabled: true },
       ]
     },
 ];
@@ -136,12 +114,18 @@ const MenuBar = ({ items }: { items: (typeof guestMenuItems[0] & {children?: {ti
                     {item.children ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2">
+                        <Button 
+                          variant="ghost" 
+                          className={cn(
+                            "text-primary hover:bg-accent font-semibold text-xs sm:text-sm px-2 sm:px-4 py-2",
+                            item.children.some(child => pathname.startsWith(child.href) && child.href !== "/") && "bg-accent"
+                          )}
+                        >
                             {item.title}
                         </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                        {item.children.map((child, childIndex) => (
+                        {item.children.map((child) => (
                            <React.Fragment key={child.title}>
                              <DropdownMenuItem asChild className={cn("focus:bg-accent focus:text-accent-foreground", pathname === child.href && "bg-accent/80 font-bold")} disabled={child.disabled}>
                                  <Link href={child.href}>{child.title}</Link>
