@@ -152,7 +152,7 @@ const PhotoPage = ({ pageIndex, control, form, removePage, fieldName }: { pageIn
                             {form.watch(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`) ? (
                                 <Image src={form.watch(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`) as string} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
                             ) : (
-                                <p className="text-muted-foreground text-sm">Photo {index+1}</p>
+                                <p className="text-muted-foreground text-sm">Photo ${index + 1}</p>
                             )}
                         </div>
                         <Input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, index)}/>
@@ -405,10 +405,10 @@ export default function EditHighFmParaDetailsPage() {
                                      <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">Officials in Service During the Period of Financial Irregularity</h3>
                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                          {officialFields.map((field, index) => (
-                                              <FormField key={field.id} control={form.control} name={`officials.${index}.name`} render={({ field }) => (
+                                              <FormField key={field.id} control={form.control} name={`officials.${index}.name`} render={({ field: formField }) => (
                                                  <FormItem>
-                                                     <FormLabel>{`• ${form.getValues(`officials`)[index].designation}`}</FormLabel>
-                                                     <FormControl><Input {...field} /></FormControl>
+                                                     <FormLabel>{`• ${officialFields[index].designation}`}</FormLabel>
+                                                     <FormControl><Input {...formField} /></FormControl>
                                                  </FormItem>
                                               )} />
                                          ))}
