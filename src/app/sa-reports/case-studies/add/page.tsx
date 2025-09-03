@@ -41,6 +41,12 @@ const photoSchema = z.object({
     description: z.string().max(200).optional(),
 });
 
+const photoPageSchema = z.object({
+    layout: z.string().optional(),
+    photos: z.array(photoSchema).optional(),
+});
+
+
 const caseStudySchema = z.object({
   caseStudyNo: z.string(),
   scheme: z.string().min(1),
@@ -74,11 +80,94 @@ const caseStudySchema = z.object({
 
   pastedTableData: z.string().optional(),
   tableData: z.array(z.array(z.string())).optional(),
-  photoLayout: z.string().optional(),
-  photos: z.array(photoSchema).optional(),
+  photoPages: z.array(photoPageSchema).optional(),
 });
 
 type CaseStudyFormValues = z.infer<typeof caseStudySchema>;
+
+const PhotoPage = ({ pageIndex, control, form, removePage }: { pageIndex: number; control: any; form: any; removePage: (index: number) => void; }) => {
+    const layout = useWatch({ control, name: `photoPages.${pageIndex}.layout` });
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: `photoPages.${pageIndex}.photos`,
+    });
+
+    const photoCount = useMemo(() => {
+        if (layout === 'a4-1') return 1;
+        if (layout === 'a4-2') return 2;
+        if (layout === 'a4-4') return 4;
+        if (layout === 'a4-6') return 6;
+        return 0;
+    }, [layout]);
+
+    useEffect(() => {
+        const currentPhotos = fields.length;
+        if (currentPhotos < photoCount) {
+            for (let i = currentPhotos; i < photoCount; i++) {
+                append({ dataUrl: '', description: '' });
+            }
+        } else if (currentPhotos > photoCount) {
+            for (let i = currentPhotos - 1; i >= photoCount; i--) {
+                remove(i);
+            }
+        }
+    }, [photoCount, fields.length, append, remove]);
+    
+     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            form.setError(`photoPages.${pageIndex}.photos.${index}.dataUrl`, { message: 'Photo must be 5MB or smaller.' });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            form.setValue(`photoPages.${pageIndex}.photos.${index}.dataUrl`, reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    return (
+        <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+            <div className="flex justify-between items-center">
+                 <h4 className="font-semibold text-lg">Photo Page {pageIndex + 1}</h4>
+                 <Button type="button" variant="destructive" size="sm" onClick={() => removePage(pageIndex)}>Remove Page</Button>
+            </div>
+            <FormField control={control} name={`photoPages.${pageIndex}.layout`} render={({ field }) => (
+                <FormItem><FormLabel>Photo Layout</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                        <FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                            <SelectItem value="a4-1">A4 Full (1 photo)</SelectItem>
+                            <SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem>
+                            <SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem>
+                            <SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FormItem>
+            )} />
+             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {fields.map((item, index) => (
+                    <div key={item.id} className="border p-2 rounded-lg space-y-2">
+                        <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center">
+                            {form.watch(`photoPages.${pageIndex}.photos.${index}.dataUrl`) ? (
+                                <Image src={form.watch(`photoPages.${pageIndex}.photos.${index}.dataUrl`) as string} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">Photo {index+1}</p>
+                            )}
+                        </div>
+                        <Input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, index)}/>
+                        <FormField control={control} name={`photoPages.${pageIndex}.photos.${index}.description`} render={({ field }) => (
+                            <FormItem><FormLabel className="sr-only">Description</FormLabel><FormControl><Textarea placeholder={`Description for photo ${index+1}...`} className="h-20" maxLength={200} {...field} /></FormControl></FormItem>
+                        )} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
 
 export default function AddCaseStudyPage() {
     const { user, loading: authLoading } = useAuth();
@@ -101,9 +190,11 @@ export default function AddCaseStudyPage() {
             caseStudyNo: '', scheme: MOCK_SCHEMES[0].name, district: '', block: '', panchayat: '', lgdCode: '',
             employeeCode: '', brpName: '', paraNo: '', issueNo: '', issueType: '', issueCategory: '', subCategory: '', issueCode: '',
             beneficiaries: 0, description: '', amount: 0, centralAmount: 0, stateAmount: 0, otherAmount: 0,
-            tableData: [], pastedTableData: '', photoLayout: '', photos: [],
+            tableData: [], pastedTableData: '', photoPages: [],
         },
     });
+    
+    const { fields: photoPageFields, append: appendPhotoPage, remove: removePhotoPage } = useFieldArray({ control: form.control, name: 'photoPages' });
     
     useEffect(() => {
         if(editId) {
@@ -114,8 +205,6 @@ export default function AddCaseStudyPage() {
             }
         }
     }, [editId, caseStudies, form]);
-
-    const { fields: photoFields, append: appendPhoto, remove: removePhoto } = useFieldArray({ control: form.control, name: 'photos' });
 
     const watchedScheme = form.watch("scheme");
     const watchedDistrict = form.watch("district");
@@ -213,37 +302,19 @@ export default function AddCaseStudyPage() {
         form.setValue('tableData', parsedData);
          toast({ title: "Table Parsed", description: `Created a table with ${parsedData.length} rows and ${parsedData[0]?.length || 0} columns.`});
     };
-    
-    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            toast({ variant: 'destructive', title: "File too large", description: "Photo must be 5MB or smaller." });
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const currentPhotos = form.getValues('photos') || [];
-            currentPhotos[index].dataUrl = reader.result as string;
-            form.setValue('photos', [...currentPhotos]);
-        };
-        reader.readAsDataURL(file);
-    };
 
     const onSubmit = (data: CaseStudyFormValues) => {
         if(editId) {
             const existingCaseStudy = caseStudies.find(cs => cs.caseStudyNo === editId);
             if(existingCaseStudy) {
-                updateCaseStudy({ ...data, id: existingCaseStudy.id });
+                updateCaseStudy({ ...existingCaseStudy, ...data });
                 toast({ title: "Success!", description: `Case Study ${data.caseStudyNo} has been updated.` });
             }
         } else {
             addCaseStudy(data);
             toast({ title: "Success!", description: `Case Study ${data.caseStudyNo} has been saved.` });
         }
-        router.push('/sa-reports/case-studies/view');
+        router.push('/sa-reports/mgnregs-case-studies');
     };
 
     return (
@@ -369,40 +440,10 @@ export default function AddCaseStudyPage() {
                         <Card>
                             <CardHeader><CardTitle>🖼️ Section 6: Photo Upload</CardTitle></CardHeader>
                             <CardContent className="space-y-6">
-                                <FormField control={form.control} name="photoLayout" render={({ field }) => (
-                                    <FormItem><FormLabel>Photo Layout</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                        <FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="a4-1">A4 Full (1 photo)</SelectItem>
-                                            <SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem>
-                                            <SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem>
-                                            <SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem>
-                                        </SelectContent>
-                                    </Select></FormItem>
-                                )} />
-                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                    {photoFields.map((item, index) => (
-                                        <div key={item.id} className="border p-4 rounded-lg space-y-2">
-                                            <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center">
-                                                    {form.watch(`photos.${index}.dataUrl`) ? (
-                                                    <Image src={form.watch(`photos.${index}.dataUrl`) as string} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
-                                                    ) : (
-                                                    <p className="text-muted-foreground text-sm">Photo {index+1}</p>
-                                                    )}
-                                            </div>
-                                            <FormField control={form.control} name={`photos.${index}.dataUrl`} render={({ field }) => (
-                                                <FormItem><FormLabel className="sr-only">Upload</FormLabel><FormControl>
-                                                    <Input type="file" accept="image/*" onChange={(e) => { handlePhotoUpload(e, index); }}/>
-                                                </FormControl></FormItem>
-                                            )} />
-                                                <FormField control={form.control} name={`photos.${index}.description`} render={({ field }) => (
-                                                <FormItem><FormLabel className="sr-only">Description</FormLabel><FormControl><Textarea placeholder={`Description for photo ${index+1}...`} className="h-20" maxLength={200} {...field} /></FormControl></FormItem>
-                                                )} />
-                                        </div>
-                                    ))}
-                                </div>
-                                <Button type="button" onClick={() => appendPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Another Photo</Button>
+                                {photoPageFields.map((item, index) => (
+                                    <PhotoPage key={item.id} pageIndex={index} control={form.control} form={form} removePage={removePhotoPage} />
+                                ))}
+                                <Button type="button" onClick={() => appendPhotoPage({ layout: 'a4-2', photos: [] })}><PlusCircle className="mr-2 h-4 w-4"/>Add Photo Page</Button>
                             </CardContent>
                         </Card>
 
@@ -419,5 +460,3 @@ export default function AddCaseStudyPage() {
         </div>
     );
 }
-
-    

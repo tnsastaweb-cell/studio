@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import React, { useState, useMemo, useEffect, FC } from 'react';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -39,6 +39,12 @@ const photoSchema = z.object({
   description: z.string().max(200),
 });
 
+const photoPageSchema = z.object({
+    layout: z.string().optional(),
+    photos: z.array(photoSchema).optional(),
+});
+
+
 const highFmFormSchema = z.object({
   // Section 1 is display only
   
@@ -56,18 +62,15 @@ const highFmFormSchema = z.object({
   
   // Section 5: Evidence
   hasEvidence: z.enum(['yes', 'no']),
-  evidencePhotoLayout: z.string().optional(),
-  evidencePhotos: z.array(photoSchema).optional(),
+  evidencePhotoPages: z.array(photoPageSchema).optional(),
 
   // Section 6: Photo
   hasPhoto: z.enum(['yes', 'no']),
-  photoLayout: z.string().optional(),
-  photos: z.array(photoSchema).optional(),
+  photoPages: z.array(photoPageSchema).optional(),
 
   // Section 7: SGS Resolution
   hasSgsResolution: z.enum(['yes', 'no']),
-  sgsResolutionLayout: z.string().optional(),
-  sgsResolutionPhotos: z.array(photoSchema).optional(),
+  sgsResolutionPhotoPages: z.array(photoPageSchema).optional(),
 
   // Section 8: Action Taken
   actionTakenOnPara: z.enum(['yes', 'no']),
@@ -78,6 +81,90 @@ const highFmFormSchema = z.object({
 });
 
 type HighFmFormValues = z.infer<typeof highFmFormSchema>;
+
+const PhotoPage = ({ pageIndex, control, form, removePage, fieldName }: { pageIndex: number; control: any; form: any; removePage: (index: number) => void; fieldName: "evidencePhotoPages" | "photoPages" | "sgsResolutionPhotoPages" }) => {
+    const layout = useWatch({ control, name: `${fieldName}.${pageIndex}.layout` });
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: `${fieldName}.${pageIndex}.photos`,
+    });
+
+    const photoCount = useMemo(() => {
+        if (layout === 'a4-1') return 1;
+        if (layout === 'a4-2') return 2;
+        if (layout === 'a4-4') return 4;
+        if (layout === 'a4-6') return 6;
+        return 0;
+    }, [layout]);
+
+    useEffect(() => {
+        const currentPhotos = fields.length;
+        if (currentPhotos < photoCount) {
+            for (let i = currentPhotos; i < photoCount; i++) {
+                append({ dataUrl: '', description: '' });
+            }
+        } else if (currentPhotos > photoCount) {
+            for (let i = currentPhotos - 1; i >= photoCount; i--) {
+                remove(i);
+            }
+        }
+    }, [photoCount, fields.length, append, remove]);
+    
+     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            form.setError(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`, { message: 'Photo must be 5MB or smaller.' });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            form.setValue(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`, reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    return (
+        <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+            <div className="flex justify-between items-center">
+                 <h4 className="font-semibold text-lg">Photo Page {pageIndex + 1}</h4>
+                 <Button type="button" variant="destructive" size="sm" onClick={() => removePage(pageIndex)}>Remove Page</Button>
+            </div>
+            <FormField control={control} name={`${fieldName}.${pageIndex}.layout`} render={({ field }) => (
+                <FormItem><FormLabel>Photo Layout</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                        <FormControl><SelectTrigger className="w-1/3"><SelectValue placeholder="Select layout" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                            <SelectItem value="a4-1">A4 Full (1 photo)</SelectItem>
+                            <SelectItem value="a4-2">A4 Split 2 (2 photos)</SelectItem>
+                            <SelectItem value="a4-4">A4 Split 4 (4 photos)</SelectItem>
+                            <SelectItem value="a4-6">A4 Split 6 (6 photos)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FormItem>
+            )} />
+             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {fields.map((item, index) => (
+                    <div key={item.id} className="border p-2 rounded-lg space-y-2">
+                        <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center">
+                            {form.watch(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`) ? (
+                                <Image src={form.watch(`${fieldName}.${pageIndex}.photos.${index}.dataUrl`) as string} alt={`Photo ${index+1}`} width={300} height={200} className="object-cover w-full h-full rounded-md"/>
+                            ) : (
+                                <p className="text-muted-foreground text-sm">Photo {index+1}</p>
+                            )}
+                        </div>
+                        <Input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, index)}/>
+                        <FormField control={control} name={`${fieldName}.${pageIndex}.photos.${index}.description`} render={({ field }) => (
+                            <FormItem><FormLabel className="sr-only">Description</FormLabel><FormControl><Textarea placeholder={`Description for photo ${index+1}...`} className="h-20" maxLength={200} {...field} /></FormControl></FormItem>
+                        )} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
 
 export default function EditHighFmParaDetailsPage() {
     const router = useRouter();
@@ -99,14 +186,11 @@ export default function EditHighFmParaDetailsPage() {
             pastedTableData: '',
             tableData: [],
             hasEvidence: 'no',
-            evidencePhotoLayout: '',
-            evidencePhotos: [],
+            evidencePhotoPages: [],
             hasPhoto: 'no',
-            photoLayout: '',
-            photos: [],
+            photoPages: [],
             hasSgsResolution: 'no',
-            sgsResolutionLayout: '',
-            sgsResolutionPhotos: [],
+            sgsResolutionPhotoPages: [],
             actionTakenOnPara: 'no',
             actionTakenDetails: '',
             officials: [
@@ -145,9 +229,9 @@ export default function EditHighFmParaDetailsPage() {
     const watchedSgsResolution = form.watch("hasSgsResolution");
     const watchedActionTaken = form.watch("actionTakenOnPara");
     
-    const { fields: evidencePhotoFields, append: appendEvidencePhoto, remove: removeEvidencePhoto } = useFieldArray({ control: form.control, name: 'evidencePhotos' });
-    const { fields: photoFields, append: appendPhoto, remove: removePhoto } = useFieldArray({ control: form.control, name: 'photos' });
-    const { fields: sgsPhotoFields, append: appendSgsPhoto, remove: removeSgsPhoto } = useFieldArray({ control: form.control, name: 'sgsResolutionPhotos' });
+    const { fields: evidencePageFields, append: appendEvidencePage, remove: removeEvidencePage } = useFieldArray({ control: form.control, name: 'evidencePhotoPages' });
+    const { fields: photoPageFields, append: appendPhotoPage, remove: removePhotoPage } = useFieldArray({ control: form.control, name: 'photoPages' });
+    const { fields: sgsPhotoPageFields, append: appendSgsPhotoPage, remove: removeSgsPhotoPage } = useFieldArray({ control: form.control, name: 'sgsResolutionPhotoPages' });
     const { fields: officialFields } = useFieldArray({ control: form.control, name: 'officials' });
     
     const handleParseTable = () => {
@@ -162,24 +246,6 @@ export default function EditHighFmParaDetailsPage() {
         toast({ title: "Table Parsed", description: `Created a table with ${parsedData.length} rows and ${parsedData[0]?.length || 0} columns.`});
     };
     
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number, fieldName: 'evidencePhotos' | 'photos' | 'sgsResolutionPhotos') => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            toast({ variant: 'destructive', title: "File too large", description: "Photo must be 5MB or smaller." });
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const currentPhotos = form.getValues(fieldName) || [];
-            currentPhotos[index].dataUrl = reader.result as string;
-            form.setValue(fieldName, [...currentPhotos]);
-        };
-        reader.readAsDataURL(file);
-    };
-
     const onSubmit = (data: HighFmFormValues) => {
         if (!mgnregsEntry || !paraDetails) {
             toast({ variant: 'destructive', title: 'Error', description: 'Original entry not found.' });
@@ -296,43 +362,41 @@ export default function EditHighFmParaDetailsPage() {
                                 </section>
                                 
                                 <section className="space-y-4">
-                                  <FormField control={form.control} name="hasEvidence" render={({ field }) => (<FormItem><FormLabel>EVIDENCE</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
+                                  <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">EVIDENCE</h3>
+                                  <FormField control={form.control} name="hasEvidence" render={({ field }) => (<FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl>)} />
                                   {watchedEvidence === 'yes' && (
                                       <div className="space-y-4 pl-4 border-l-2">
-                                           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                               {evidencePhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`evidencePhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'evidencePhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`evidencePhotos.${index}.description`)} /></div>))}
-                                           </div>
-                                            <Button type="button" onClick={() => appendEvidencePhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Evidence Photo</Button>
+                                          {evidencePageFields.map((item, index) => <PhotoPage key={item.id} pageIndex={index} control={form.control} form={form} removePage={removeEvidencePage} fieldName="evidencePhotoPages" />)}
+                                          <Button type="button" onClick={() => appendEvidencePage({ layout: 'a4-2', photos: [] })}><PlusCircle className="mr-2 h-4 w-4"/>Add Evidence Page</Button>
                                       </div>
                                   )}
                                 </section>
                                 
                                 <section className="space-y-4">
-                                   <FormField control={form.control} name="hasPhoto" render={({ field }) => ( <FormItem><FormLabel>PHOTO</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
+                                   <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">PHOTO</h3>
+                                   <FormField control={form.control} name="hasPhoto" render={({ field }) => ( <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl>)} />
                                     {watchedPhoto === 'yes' && (
                                         <div className="space-y-4 pl-4 border-l-2">
-                                             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                                {photoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`photos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'photos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`photos.${index}.description`)} /></div>))}
-                                            </div>
-                                             <Button type="button" onClick={() => appendPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add Photo</Button>
+                                             {photoPageFields.map((item, index) => <PhotoPage key={item.id} pageIndex={index} control={form.control} form={form} removePage={removePhotoPage} fieldName="photoPages" />)}
+                                             <Button type="button" onClick={() => appendPhotoPage({ layout: 'a4-2', photos: [] })}><PlusCircle className="mr-2 h-4 w-4"/>Add Photo Page</Button>
                                         </div>
                                     )}
                                 </section>
                                 
                                  <section className="space-y-4">
-                                     <FormField control={form.control} name="hasSgsResolution" render={({ field }) => ( <FormItem><FormLabel>SGS RESULATION</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
+                                     <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">SGS RESULATION</h3>
+                                     <FormField control={form.control} name="hasSgsResolution" render={({ field }) => ( <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl>)} />
                                       {watchedSgsResolution === 'yes' && (
                                          <div className="space-y-4 pl-4 border-l-2">
-                                             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                                 {sgsPhotoFields.map((item, index) => ( <div key={item.id} className="border p-2 rounded-lg space-y-2"><Image src={form.watch(`sgsResolutionPhotos.${index}.dataUrl`) || '/placeholder.svg'} alt={`Photo ${index+1}`} width={300} height={200} className="w-full h-auto object-contain rounded-md bg-muted" /><Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, index, 'sgsResolutionPhotos')} /><Textarea placeholder={`Description for photo ${index+1}...`} {...form.register(`sgsResolutionPhotos.${index}.description`)} /></div>))}
-                                             </div>
-                                            <Button type="button" onClick={() => appendSgsPhoto({ dataUrl: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4"/>Add SGS Resolution Photo</Button>
+                                             {sgsPhotoPageFields.map((item, index) => <PhotoPage key={item.id} pageIndex={index} control={form.control} form={form} removePage={removeSgsPhotoPage} fieldName="sgsResolutionPhotoPages" />)}
+                                             <Button type="button" onClick={() => appendSgsPhotoPage({ layout: 'a4-2', photos: [] })}><PlusCircle className="mr-2 h-4 w-4"/>Add SGS Resolution Page</Button>
                                          </div>
                                      )}
                                  </section>
                                  
                                 <section className="space-y-4">
-                                     <FormField control={form.control} name="actionTakenOnPara" render={({ field }) => ( <FormItem><FormLabel>Action Taken on the Para</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
+                                     <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">Action Taken on the Para</h3>
+                                     <FormField control={form.control} name="actionTakenOnPara" render={({ field }) => ( <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl>)} />
                                      {watchedActionTaken === 'yes' && (
                                          <FormField control={form.control} name="actionTakenDetails" render={({ field }) => (<FormItem><FormControl><Textarea placeholder="If the matter has been addressed in the Gram Sabha, or thereafter, or if the money has been refunded, or any other action has been taken, please specify." className="h-28" {...field} /></FormControl><FormMessage/></FormItem>)} />
                                      )}
@@ -384,5 +448,3 @@ export default function EditHighFmParaDetailsPage() {
         </div>
     );
 }
-
-    

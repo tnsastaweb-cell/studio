@@ -28,7 +28,7 @@ const mgnregsReports = {
     ],
     "R.6.1.C - ANNUAL REPORTS": [
         { title: "R.6.1.C.1 PERIODICAL REPORT", href: "#", disabled: true },
-        { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/case-studies/view" }
+        { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/mgnregs-case-studies" }
     ],
     "R.6.1.D - URGENT REPORTS": [
         { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details/view" },
