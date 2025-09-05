@@ -21,15 +21,15 @@ const mgnregsReports = {
         { title: "R.6.1.A.5 ISSUES REPORTED (BY ROUND)", href: "/sa-reports/mgnregs-issues-by-round", disabled: false }
     ],
     "R.6.1.B - SOCIAL AUDIT FINDINGS STATUS": [
-        { title: "R.6.1.B.1 FM - Financial Misappropriation", href: "/sa-reports/mgnregs-fm-report", disabled: false },
-        { title: "R.6.1.B.2 FD - Financial Deviation", href: "/sa-reports/mgnregs-fd-report", disabled: false },
-        { title: "R.6.1.B.3 PV - Process Violation", href: "/sa-reports/mgnregs-pv-report", disabled: false },
-        { title: "R.6.1.B.4 GR – Grievances", href: "/sa-reports/mgnregs-gr-report", disabled: false }
+        { title: "R.6.1.B.1 FM - FINANCIAL MISAPPROPRIATION", href: "/sa-reports/mgnregs-fm-report", disabled: false },
+        { title: "R.6.1.B.2 FD - FINANCIAL DEVIATION", href: "/sa-reports/mgnregs-fd-report", disabled: false },
+        { title: "R.6.1.B.3 PV - PROCESS VIOLATION", href: "/sa-reports/mgnregs-pv-report", disabled: false },
+        { title: "R.6.1.B.4 GR – GRIEVANCES", href: "/sa-reports/mgnregs-gr-report", disabled: false }
     ],
     "R.6.1.C - ANNUAL REPORTS": [
         { title: "R.6.1.C.1 PERIODICAL REPORT", href: "#", disabled: true },
         { title: "R.6.1.C.2 CASE STUDIES", href: "/sa-reports/mgnregs-case-studies" },
-        { title: "R.6.1.C.3 Consolidated Reports", href: "#", disabled: true }
+        { title: "R.6.1.C.3 CONSOLIDATED REPORTS", href: "#", disabled: true }
     ],
     "R.6.1.D - URGENT REPORTS": [
         { title: "R.6.1.D.1 HIGH FM PARA DETAILS", href: "/sa-reports/high-fm-para-details/view" },
