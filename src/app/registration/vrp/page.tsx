@@ -24,33 +24,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { useVRPs, Vrp } from '@/services/vrp';
+import { useVRPs, Vrp, baseSchema } from '@/services/vrp';
 import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { useAuth } from '@/hooks/use-auth';
 
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
-
-const baseSchema = z.object({
-  name: z.string().min(1, "Name as per bank is required"),
-  address: z.string().min(1, "Full Address is required"),
-  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
-  familyRelation: z.enum(["father", "husband"]),
-  familyName: z.string().min(1, "Father/Husband name is required"),
-  caste: z.string().min(1, "Caste is required"),
-  dob: z.date({ required_error: "Date of Birth is required" }),
-  gender: z.literal("Female"),
-  qualification: z.string().min(1, "Qualification is required"),
-  contactNumber1: z.string().regex(/^\d{10}$/, "Must be a 10-digit number"),
-  contactNumber2: z.string().regex(/^\d{10}$/, "Must be a 10-digit number").optional().or(z.literal('')),
-  bankName: z.string().min(1, "Bank name is required"),
-  branchName: z.string().min(1, "Branch name is required"),
-  accountNumber: z.string().regex(/^\d+$/, "Account number must contain only digits"),
-  ifscCode: z.string().min(1, "IFSC code is required"),
-  aadhaar: z.string().regex(/^\d{12}$/, "Aadhaar must be 12 digits"),
-  pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format").optional().or(z.literal('')),
-  pfmsId: z.string().min(1, "PFMS ID is required"),
-});
 
 const yesEmployeeCodeSchema = baseSchema.extend({
   hasEmployeeCode: z.literal("yes"),
@@ -268,6 +247,7 @@ const VrpFormWithCode = () => {
                             )} />
                                 <FormItem><FormLabel>Age</FormLabel><FormControl><Input value={age} readOnly className="bg-muted" /></FormControl></FormItem>
                         </div>
+                         <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Physically Challenged?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="qualification" render={({ field }) => (
                             <FormItem><FormLabel>Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
@@ -571,6 +551,7 @@ const VrpFormWithoutCode = () => {
                             )} />
                                 <FormItem><FormLabel>Age</FormLabel><FormControl><Input value={age} readOnly className="bg-muted" /></FormControl></FormItem>
                         </div>
+                        <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Physically Challenged?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="qualification" render={({ field }) => (
                             <FormItem><FormLabel>Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />

@@ -1,9 +1,11 @@
 
+
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { DISTRICTS } from './district-offices';
 import { MOCK_PANCHAYATS } from './panchayats';
+import * as z from "zod";
 
 // Base VRP data structure
 export interface BaseVrp {
@@ -18,6 +20,7 @@ export interface BaseVrp {
   dob: string;
   age: number;
   gender: 'Female';
+  isDifferentlyAbled: "yes" | "no";
   qualification: string;
   contactNumber1: string;
   contactNumber2?: string;
@@ -58,6 +61,28 @@ export interface VrpWithoutCode extends BaseVrp {
 export type Vrp = (VrpWithCode | VrpWithoutCode) & { id: number };
 
 const VRP_STORAGE_KEY = 'sasta-vrps';
+
+export const baseSchema = z.object({
+  name: z.string().min(1, "Name as per bank is required"),
+  address: z.string().min(1, "Full Address is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
+  familyRelation: z.enum(["father", "husband"]),
+  familyName: z.string().min(1, "Father/Husband name is required"),
+  caste: z.string().min(1, "Caste is required"),
+  dob: z.date({ required_error: "Date of Birth is required" }),
+  gender: z.literal("Female"),
+  isDifferentlyAbled: z.enum(["yes", "no"], { required_error: "This field is required."}),
+  qualification: z.string().min(1, "Qualification is required"),
+  contactNumber1: z.string().regex(/^\d{10}$/, "Must be a 10-digit number"),
+  contactNumber2: z.string().regex(/^\d{10}$/, "Must be a 10-digit number").optional().or(z.literal('')),
+  bankName: z.string().min(1, "Bank name is required"),
+  branchName: z.string().min(1, "Branch name is required"),
+  accountNumber: z.string().regex(/^\d+$/, "Account number must contain only digits"),
+  ifscCode: z.string().min(1, "IFSC code is required"),
+  aadhaar: z.string().regex(/^\d{12}$/, "Aadhaar must be 12 digits"),
+  pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format").optional().or(z.literal('')),
+  pfmsId: z.string().min(1, "PFMS ID is required"),
+});
 
 const getInitialVRPs = (): Vrp[] => {
     if (typeof window === 'undefined') return [];
