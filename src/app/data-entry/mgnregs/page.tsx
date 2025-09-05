@@ -16,7 +16,7 @@ import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { MOCK_MGNREGS_DATA, MgnregsData } from '@/services/mgnregs';
 import { useHlc } from '@/services/hlc';
 import { useActivity } from '@/services/activity';
-import { useMgnregs } from '@/services/mgnregs-data';
+import { useMgnregs, mgnregsFormSchema } from '@/services/mgnregs-data';
 import { uniqueDistricts, toTitleCase } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -35,89 +35,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Upload, ChevronsUpDown, Check } from 'lucide-react';
 import Link from 'next/link';
-
-const paraParticularsSchema = z.object({
-  issueNumber: z.string().min(1, "Issue No. is required."),
-  type: z.string().min(1, "Type is required."),
-  category: z.string().min(1, "Category is required."),
-  subCategory: z.string().min(1, "Sub-category is required."),
-  codeNumber: z.string(),
-  grievances: z.coerce.number().optional(),
-  beneficiaries: z.coerce.number().optional(),
-  cases: z.coerce.number().optional(),
-  amount: z.coerce.number().optional(),
-  recoveredAmount: z.coerce.number().optional(),
-  hlcRegNo: z.string().optional(),
-  paraStatus: z.enum(['PENDING', 'CLOSED']),
-  hlcRecoveryAmount: z.coerce.number().optional(),
-});
-
-const vrpDetailSchema = z.object({
-  vrpSearchValue: z.string().optional(),
-  vrpEmployeeCode: z.string().optional(),
-  vrpName: z.string().optional(),
-  vrpContactNumber: z.string().optional(),
-  vrpDistrict: z.string().optional(),
-  vrpBlock: z.string().optional(),
-  vrpPanchayat: z.string().optional(),
-});
-
-
-export const mgnregsFormSchema = z.object({
-  // Section A - BRP Details
-  brpEmployeeCode: z.string().min(1, "Employee Code is required."),
-  brpName: z.string(),
-  brpContact: z.string(),
-  brpDistrict: z.string(),
-  brpBlock: z.string(),
-  
-  // Section B - Basic Details
-  district: z.string().min(1, "District is required"),
-  block: z.string().min(1, "Block is required"),
-  panchayat: z.string().min(1, "Panchayat is required"),
-  lgdCode: z.string(),
-  roundNo: z.string().min(1, "Round No. is required"),
-  auditStartDate: z.date({ required_error: "Start Date is required" }),
-  auditEndDate: z.date({ required_error: "End Date is required" }),
-  sgsDate: z.date({ required_error: "SGS Date is required" }),
-  expenditureYear: z.string(),
-  auditYear: z.string(),
-  observer: z.enum(['yes', 'no']),
-  observerName: z.string().optional(),
-  coram: z.coerce.number().max(999, "Must be max 3 digits"),
-
-  // Section C - DRP / DRP I/C & VRP Details
-  drpRole: z.enum(['DRP', 'DRP I/C']).optional(),
-  drpEmployeeCode: z.string().optional(),
-  drpName: z.string().optional(),
-  drpContact: z.string().optional(),
-  drpDistrict: z.string().optional(),
-  
-  vrpDetails: z.array(vrpDetailSchema).optional(),
-
-  // Section D - Verification Details
-  pvtIndividualLandWorks: z.coerce.number().optional(),
-  pvtIndividualLandAmount: z.coerce.number().optional(),
-  pvtIndividualAssetsWorks: z.coerce.number().optional(),
-  pvtIndividualAssetsAmount: z.coerce.number().optional(),
-  pubCommunityLandWorks: z.coerce.number().optional(),
-  pubCommunityLandAmount: z.coerce.number().optional(),
-  pubCommunityAssetsWorks: z.coerce.number().optional(),
-  pubCommunityAssetsAmount: z.coerce.number().optional(),
-  skilledSemiSkilledAmount: z.coerce.number().optional(),
-  materialAmount: z.coerce.number().optional(),
-  totalWorks: z.coerce.number().optional(),
-  totalAmount: z.coerce.number().optional(),
-  worksVerified: z.coerce.number().optional(),
-  householdsWorked: z.coerce.number().optional(),
-  householdsVerified: z.coerce.number().optional(),
-
-  // Section E - Report
-  reportFile: z.any().optional(),
-  
-  // Section F - Para Particulars
-  paraParticulars: z.array(paraParticularsSchema).optional(),
-});
 
 export type MgnregsFormValues = z.infer<typeof mgnregsFormSchema>;
 
@@ -158,6 +75,7 @@ export default function MgnregsDataEntryPage() {
             auditYear: "",
             observer: 'no',
             observerName: "",
+            observerDesignation: "",
             coram: 0,
             drpRole: undefined,
             drpEmployeeCode: "",
@@ -168,13 +86,14 @@ export default function MgnregsDataEntryPage() {
                 vrpSearchValue: "", vrpEmployeeCode: "", vrpName: "", vrpContactNumber: "",
                 vrpDistrict: "", vrpBlock: "", vrpPanchayat: ""
             }],
-            pvtIndividualLandWorks: 0, pvtIndividualLandAmount: 0,
-            pvtIndividualAssetsWorks: 0, pvtIndividualAssetsAmount: 0,
-            pubCommunityLandWorks: 0, pubCommunityLandAmount: 0,
-            pubCommunityAssetsWorks: 0, pubCommunityAssetsAmount: 0,
-            skilledSemiSkilledAmount: 0, materialAmount: 0,
-            totalWorks: 0, totalAmount: 0,
-            worksVerified: 0, householdsWorked: 0, householdsVerified: 0,
+            totalWorks: 0,
+            totalAmount: 0,
+            unskilledAmount: 0,
+            skilledSemiSkilledAmount: 0,
+            materialAmount: 0,
+            worksVerified: 0, 
+            householdsWorked: 0, 
+            householdsVerified: 0,
             reportFile: null,
             paraParticulars: [],
         },
@@ -202,26 +121,16 @@ export default function MgnregsDataEntryPage() {
 
 
     const watchedVerificationFields = form.watch([
-        "pvtIndividualLandWorks", "pvtIndividualLandAmount",
-        "pvtIndividualAssetsWorks", "pvtIndividualAssetsAmount",
-        "pubCommunityLandWorks", "pubCommunityLandAmount",
-        "pubCommunityAssetsWorks", "pubCommunityAssetsAmount",
-        "skilledSemiSkilledAmount", "materialAmount"
+        "unskilledAmount", "skilledSemiSkilledAmount", "materialAmount"
     ]);
     
      useEffect(() => {
         const [
-            pvtIndividualLandWorks, pvtIndividualLandAmount,
-            pvtIndividualAssetsWorks, pvtIndividualAssetsAmount,
-            pubCommunityLandWorks, pubCommunityLandAmount,
-            pubCommunityAssetsWorks, pubCommunityAssetsAmount,
-            skilledSemiSkilledAmount, materialAmount
+            unskilledAmount, skilledSemiSkilledAmount, materialAmount
         ] = watchedVerificationFields.map(v => Number(v) || 0);
 
-        const totalWorks = pvtIndividualLandWorks + pvtIndividualAssetsWorks + pubCommunityLandWorks + pubCommunityAssetsWorks;
-        const totalAmount = pvtIndividualLandAmount + pvtIndividualAssetsAmount + pubCommunityLandAmount + pubCommunityAssetsAmount + skilledSemiSkilledAmount + materialAmount;
+        const totalAmount = unskilledAmount + skilledSemiSkilledAmount + materialAmount;
         
-        form.setValue('totalWorks', totalWorks);
         form.setValue('totalAmount', totalAmount);
     }, [watchedVerificationFields, form]);
 
@@ -427,7 +336,10 @@ export default function MgnregsDataEntryPage() {
                                          <FormField control={form.control} name="expenditureYear" render={({ field }) => (<FormItem><FormLabel>Expenditure Year*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger></FormControl><SelectContent><SelectItem value="2022-2023">2022-2023</SelectItem><SelectItem value="2023-2024">2023-2024</SelectItem><SelectItem value="2024-2025">2024-2025</SelectItem></SelectContent></Select></FormItem>)} />
                                          <FormField control={form.control} name="auditYear" render={({ field }) => (<FormItem><FormLabel>Audit Year*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                          <FormField control={form.control} name="observer" render={({ field }) => (<FormItem><FormLabel>Observer*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel>Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel>No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
-                                         {form.watch('observer') === 'yes' && <FormField control={form.control} name="observerName" render={({ field }) => (<FormItem><FormLabel>Observer Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
+                                         {form.watch('observer') === 'yes' && <>
+                                            <FormField control={form.control} name="observerName" render={({ field }) => (<FormItem><FormLabel>Observer Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                                            <FormField control={form.control} name="observerDesignation" render={({ field }) => (<FormItem><FormLabel>Observer Designation</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                                         </>}
                                          <FormField control={form.control} name="coram" render={({ field }) => (<FormItem><FormLabel>CORAM (Max 3 digits)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                      </div>
                                 </section>
@@ -495,35 +407,10 @@ export default function MgnregsDataEntryPage() {
                                 <section>
                                     <h3 className="text-lg font-semibold text-primary mb-4 border-b pb-2">Section D: Verification Details</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <div className="lg:col-span-2 p-4 border rounded-md">
-                                             <h4 className="font-semibold mb-2">Private</h4>
-                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <FormField control={form.control} name="pvtIndividualLandWorks" render={({ field }) => (<FormItem><FormLabel>Individual Land (Earth) - No. of Works</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                  <FormField control={form.control} name="pvtIndividualLandAmount" render={({ field }) => (<FormItem><FormLabel>Individual Land (Earth) - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <FormField control={form.control} name="pvtIndividualAssetsWorks" render={({ field }) => (<FormItem><FormLabel>Individual Assets (Construction) - No. of Works</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                  <FormField control={form.control} name="pvtIndividualAssetsAmount" render={({ field }) => (<FormItem><FormLabel>Individual Assets (Construction) - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                </div>
-                                             </div>
-                                        </div>
-                                         <div className="lg:col-span-2 p-4 border rounded-md">
-                                             <h4 className="font-semibold mb-2">Public</h4>
-                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <FormField control={form.control} name="pubCommunityLandWorks" render={({ field }) => (<FormItem><FormLabel>Community Land (Earth) - No. of Works</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                  <FormField control={form.control} name="pubCommunityLandAmount" render={({ field }) => (<FormItem><FormLabel>Community Land (Earth) - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <FormField control={form.control} name="pubCommunityAssetsWorks" render={({ field }) => (<FormItem><FormLabel>Community Assets (Construction) - No. of Works</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                  <FormField control={form.control} name="pubCommunityAssetsAmount" render={({ field }) => (<FormItem><FormLabel>Community Assets (Construction) - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                                </div>
-                                             </div>
-                                        </div>
+                                        <FormField control={form.control} name="totalWorks" render={({ field }) => (<FormItem><FormLabel>Total Works</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
+                                        <FormField control={form.control} name="unskilledAmount" render={({ field }) => (<FormItem><FormLabel>Unskilled - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="skilledSemiSkilledAmount" render={({ field }) => (<FormItem><FormLabel>Skilled/Semi Skilled - Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="materialAmount" render={({ field }) => (<FormItem><FormLabel>Material Expenditure Amount</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
-                                        <FormField control={form.control} name="totalWorks" render={({ field }) => (<FormItem><FormLabel>Total Works</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="totalAmount" render={({ field }) => (<FormItem><FormLabel>Total Expenditure Amount</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="worksVerified" render={({ field }) => (<FormItem><FormLabel>Number of Works Verified</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />
                                         <FormField control={form.control} name="householdsWorked" render={({ field }) => (<FormItem><FormLabel>Total House Holds Worked</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>)} />

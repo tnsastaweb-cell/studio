@@ -14,7 +14,7 @@ import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useHlc } from '@/services/hlc';
 import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
-import { usePmayg } from '@/services/pmayg-data';
+import { usePmayg, pmaygFormSchema } from '@/services/pmayg-data';
 import { uniqueDistricts } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -55,62 +55,6 @@ const paraParticularsSchema = z.object({
   hlcRecoveryAmount: z.coerce.number().default(0),
 });
 
-export const pmaygFormSchema = z.object({
-  // Section A - BRP Details
-  brpEmployeeCode: z.string().min(1, "Employee Code is required."),
-  brpName: z.string(),
-  brpContact: z.string(),
-  brpDistrict: z.string(),
-  brpBlock: z.string(),
-
-  // Section B - Basic Details
-  district: z.string().min(1, "District is required"),
-  block: z.string().min(1, "Block is required"),
-  panchayat: z.string().min(1, "Panchayat is required"),
-  lgdCode: z.string(),
-  roundNo: z.string().min(1, "Round No. is required"),
-  auditStartDate: z.date({ required_error: "Start Date is required" }),
-  auditEndDate: z.date({ required_error: "End Date is required" }),
-  sgsDate: z.date({ required_error: "SGS Date is required" }),
-  expenditureYear: z.string().default('2016-2022'),
-  auditYear: z.string(),
-  observer: z.enum(['yes', 'no']),
-  observerName: z.string().optional(),
-  coram: z.coerce.number().max(999, "Must be max 3 digits"),
-
-  // Section C - Verification Details
-  totalHouses: z.coerce.number().default(0),
-  firstInstallment: z.coerce.number().default(0),
-  secondInstallment: z.coerce.number().default(0),
-  thirdInstallment: z.coerce.number().default(0),
-  fourthInstallment: z.coerce.number().default(0),
-  notCompletedAfterFourth: z.coerce.number().default(0),
-  
-  // Section D - Panchayat Summary
-  gsDecision: z.enum(['yes', 'no']),
-  projectDeficiencies: z.string().optional(),
-  specialRemarks: z.string().optional(),
-  auditOutcome: z.string().optional(),
-
-  // Section E - Panchayat Verification Analysis
-  misSeccCount: z.coerce.number().default(0),
-  misSeccNonRejected: z.coerce.number().default(0),
-  misSeccSelected: z.coerce.number().default(0),
-  misAwaasPlusCount: z.coerce.number().default(0),
-  misAwaasPlusSelected: z.coerce.number().default(0),
-  misTotalSelected: z.coerce.number().default(0),
-  fieldInterviewed: z.coerce.number().default(0),
-  fieldVisited: z.coerce.number().default(0),
-  fieldCouldNotIdentify: z.coerce.number().default(0),
-  fieldTotalVerified: z.coerce.number().default(0),
-  format3KutchaCount: z.coerce.number().default(0),
-
-  // Section F - Report
-  reportFile: z.any().optional(),
-
-  // Section G - Para Particulars
-  paraParticulars: z.array(paraParticularsSchema).optional(),
-});
 
 export type PmaygFormValues = z.infer<typeof pmaygFormSchema>;
 
@@ -191,7 +135,7 @@ export default function PmaygDataEntryPage() {
         defaultValues: {
             brpEmployeeCode: '', brpName: '', brpContact: '', brpDistrict: '', brpBlock: '',
             district: '', block: '', panchayat: '', lgdCode: '', roundNo: '',
-            auditYear: '', observer: 'no', observerName: '', coram: 0,
+            auditYear: '', observer: 'no', observerName: '', observerDesignation: '', coram: 0,
             totalHouses: 0, firstInstallment: 0, secondInstallment: 0, thirdInstallment: 0, fourthInstallment: 0, notCompletedAfterFourth: 0,
             gsDecision: 'yes', projectDeficiencies: '', specialRemarks: '', auditOutcome: '',
             misSeccCount: 0, misSeccNonRejected: 0, misSeccSelected: 0, misAwaasPlusCount: 0, misAwaasPlusSelected: 0, misTotalSelected: 0,
@@ -433,7 +377,10 @@ export default function PmaygDataEntryPage() {
                                        <FormField control={form.control} name="expenditureYear" render={({ field }) => (<FormItem><FormLabel>Expenditure Year*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                        <FormField control={form.control} name="auditYear" render={({ field }) => (<FormItem><FormLabel>Audit Year*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl></FormItem>)} />
                                        <FormField control={form.control} name="observer" render={({ field }) => (<FormItem><FormLabel>Observer*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl></FormItem>)} />
-                                       {form.watch('observer') === 'yes' && <FormField control={form.control} name="observerName" render={({ field }) => (<FormItem><FormLabel>Observer Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
+                                       {form.watch('observer') === 'yes' && <>
+                                            <FormField control={form.control} name="observerName" render={({ field }) => (<FormItem><FormLabel>Observer Name</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                                            <FormField control={form.control} name="observerDesignation" render={({ field }) => (<FormItem><FormLabel>Observer Designation</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                                       </>}
                                        <FormField control={form.control} name="coram" render={({ field }) => (<FormItem><FormLabel>CORAM (Max 3 digits)*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                    </div>
                               </section>

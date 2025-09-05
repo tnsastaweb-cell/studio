@@ -4,6 +4,84 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import type { MgnregsFormValues } from '@/app/data-entry/mgnregs/page';
+import * as z from 'zod';
+
+export const vrpDetailSchema = z.object({
+  vrpSearchValue: z.string().optional(),
+  vrpEmployeeCode: z.string().optional(),
+  vrpName: z.string().optional(),
+  vrpContactNumber: z.string().optional(),
+  vrpDistrict: z.string().optional(),
+  vrpBlock: z.string().optional(),
+  vrpPanchayat: z.string().optional(),
+});
+
+export const paraParticularsSchema = z.object({
+  issueNumber: z.string().min(1, "Issue No. is required."),
+  type: z.string().min(1, "Type is required."),
+  category: z.string().min(1, "Category is required."),
+  subCategory: z.string().min(1, "Sub-category is required."),
+  codeNumber: z.string(),
+  grievances: z.coerce.number().optional(),
+  beneficiaries: z.coerce.number().optional(),
+  cases: z.coerce.number().optional(),
+  amount: z.coerce.number().optional(),
+  recoveredAmount: z.coerce.number().optional(),
+  hlcRegNo: z.string().optional(),
+  paraStatus: z.enum(['PENDING', 'CLOSED']),
+  hlcRecoveryAmount: z.coerce.number().optional(),
+});
+
+export const mgnregsFormSchema = z.object({
+  // Section A - BRP Details
+  brpEmployeeCode: z.string().min(1, "Employee Code is required."),
+  brpName: z.string(),
+  brpContact: z.string(),
+  brpDistrict: z.string(),
+  brpBlock: z.string(),
+  
+  // Section B - Basic Details
+  district: z.string().min(1, "District is required"),
+  block: z.string().min(1, "Block is required"),
+  panchayat: z.string().min(1, "Panchayat is required"),
+  lgdCode: z.string(),
+  roundNo: z.string().min(1, "Round No. is required"),
+  auditStartDate: z.date({ required_error: "Start Date is required" }),
+  auditEndDate: z.date({ required_error: "End Date is required" }),
+  sgsDate: z.date({ required_error: "SGS Date is required" }),
+  expenditureYear: z.string(),
+  auditYear: z.string(),
+  observer: z.enum(['yes', 'no']),
+  observerName: z.string().optional(),
+  observerDesignation: z.string().optional(),
+  coram: z.coerce.number().max(999, "Must be max 3 digits"),
+
+  // Section C - DRP / DRP I/C & VRP Details
+  drpRole: z.enum(['DRP', 'DRP I/C']).optional(),
+  drpEmployeeCode: z.string().optional(),
+  drpName: z.string().optional(),
+  drpContact: z.string().optional(),
+  drpDistrict: z.string().optional(),
+  
+  vrpDetails: z.array(vrpDetailSchema).optional(),
+
+  // Section D - Verification Details
+  totalWorks: z.coerce.number().optional(),
+  unskilledAmount: z.coerce.number().optional(),
+  skilledSemiSkilledAmount: z.coerce.number().optional(),
+  materialAmount: z.coerce.number().optional(),
+  totalAmount: z.coerce.number().optional(),
+  worksVerified: z.coerce.number().optional(),
+  householdsWorked: z.coerce.number().optional(),
+  householdsVerified: z.coerce.number().optional(),
+
+  // Section E - Report
+  reportFile: z.any().optional(),
+  
+  // Section F - Para Particulars
+  paraParticulars: z.array(paraParticularsSchema).optional(),
+});
+
 
 export interface ParaParticulars extends z.infer<typeof paraParticularsSchema> {
     isReportSubmitted?: boolean;
@@ -166,20 +244,3 @@ export const useMgnregs = () => {
     return { entries, loading, addMgnregsEntry, updateMgnregsEntry, deleteMgnregsEntry };
 };
 
-// Re-exporting the schema definition type, this is not ideal but needed for type inference in ParaParticulars
-import * as z from 'zod';
-export const paraParticularsSchema = z.object({
-  issueNumber: z.string().min(1, "Issue No. is required."),
-  type: z.string().min(1, "Type is required."),
-  category: z.string().min(1, "Category is required."),
-  subCategory: z.string().min(1, "Sub-category is required."),
-  codeNumber: z.string(),
-  grievances: z.coerce.number().optional(),
-  beneficiaries: z.coerce.number().optional(),
-  cases: z.coerce.number().optional(),
-  amount: z.coerce.number().optional(),
-  recoveredAmount: z.coerce.number().optional(),
-  hlcRegNo: z.string().optional(),
-  paraStatus: z.enum(['PENDING', 'CLOSED']),
-  hlcRecoveryAmount: z.coerce.number().optional(),
-});
