@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useDistrictOffices, DistrictOffice, DISTRICTS } from '@/services/district-offices';
-import { Mail, Phone, ExternalLink, Loader2, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Mail, Phone, ExternalLink, Loader2, PlusCircle, Edit, Trash2, MapPin } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,6 +63,7 @@ export default function DistrictOfficePage() {
     const [selectedDistrict, setSelectedDistrict] = useState('all');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingOffice, setEditingOffice] = useState<DistrictOffice | null>(null);
+    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
     const canEdit = useMemo(() => user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation), [user]);
 
@@ -78,24 +79,26 @@ export default function DistrictOfficePage() {
     });
 
     useEffect(() => {
-        if (editingOffice) {
-            form.reset({
-                ...editingOffice,
-                contactNumbers: editingOffice.contactNumbers.join(', '),
-            });
-        } else {
-            form.reset({
-                district: '',
-                buildingName: '',
-                address: '',
-                pincode: '',
-                contactPerson: '',
-                email: '',
-                contactNumbers: '',
-                mapsLink: '',
-            });
+        if (isFormOpen) {
+            if (editingOffice) {
+                form.reset({
+                    ...editingOffice,
+                    contactNumbers: editingOffice.contactNumbers.join(', '),
+                });
+            } else {
+                form.reset({
+                    district: '',
+                    buildingName: '',
+                    address: '',
+                    pincode: '',
+                    contactPerson: '',
+                    email: '',
+                    contactNumbers: '',
+                    mapsLink: '',
+                });
+            }
         }
-    }, [editingOffice, form]);
+    }, [editingOffice, form, isFormOpen]);
 
     const handleAddNewOffice = () => {
         setEditingOffice(null);
@@ -130,6 +133,53 @@ export default function DistrictOfficePage() {
         setIsFormOpen(false);
         setEditingOffice(null);
     };
+    
+    const handleSetLocation = () => {
+        if (!navigator.geolocation) {
+            toast({
+                variant: 'destructive',
+                title: 'Geolocation Not Supported',
+                description: 'Your browser does not support geolocation.',
+            });
+            return;
+        }
+
+        setIsLoadingLocation(true);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                form.setValue('mapsLink', mapsLink, { shouldValidate: true });
+                toast({
+                    title: 'Location Set!',
+                    description: 'Google Maps link has been updated with your current location.',
+                });
+                setIsLoadingLocation(false);
+            },
+            (error) => {
+                let errorMessage = 'Could not retrieve your location.';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'You denied the request for Geolocation.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'The request to get user location timed out.';
+                        break;
+                }
+                toast({
+                    variant: 'destructive',
+                    title: 'Location Error',
+                    description: errorMessage,
+                });
+                setIsLoadingLocation(false);
+            }
+        );
+    };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -285,7 +335,19 @@ export default function DistrictOfficePage() {
                         <FormItem><FormLabel>Contact Numbers (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                      )} />
                       <FormField control={form.control} name="mapsLink" render={({ field }) => (
-                        <FormItem><FormLabel>Google Maps Link</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                          <FormLabel>Google Maps Link</FormLabel>
+                          <div className="flex gap-2">
+                            <FormControl>
+                                <Input {...field} placeholder="https://www.google.com/maps?q=..." />
+                            </FormControl>
+                            <Button type="button" variant="outline" size="icon" onClick={handleSetLocation} disabled={isLoadingLocation}>
+                                {isLoadingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                                <span className="sr-only">Set current location</span>
+                            </Button>
+                           </div>
+                           <FormMessage />
+                        </FormItem>
                      )} />
                     <DialogFooter>
                         <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
