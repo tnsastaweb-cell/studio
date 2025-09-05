@@ -1,17 +1,20 @@
 
 'use client';
 
-import React from 'react';
-import { useFieldArray } from 'react-hook-form';
+import React, { useMemo } from 'react';
+import { useFieldArray, useWatch } from 'react-hook-form';
 import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
-import { FormField, FormControl } from '@/components/ui/form';
+import { FormField, FormControl, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EDUCATION_QUALIFICATIONS } from '@/services/education';
+
 
 interface TabProps {
     form: any;
@@ -22,6 +25,8 @@ export function EducationExperienceTab({ form }: TabProps) {
     const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({ control: form.control, name: "workExperience" });
     const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({ control: form.control, name: "skills" });
     
+    const uniqueEducationLevels = useMemo(() => Array.from(new Set(EDUCATION_QUALIFICATIONS.map(q => q.level))), []);
+
     const calculateDuration = (from: Date | undefined, to: Date | undefined) => {
         if (!from || !to) return '';
         const years = differenceInYears(to, from);
@@ -36,11 +41,30 @@ export function EducationExperienceTab({ form }: TabProps) {
                 <CardContent>
                     <div className="overflow-x-auto">
                         <Table>
-                            <TableHeader><TableRow><TableHead>Course</TableHead><TableHead>Institution</TableHead><TableHead>Board/University</TableHead><TableHead>From</TableHead><TableHead>To</TableHead><TableHead>Aggregate %</TableHead><TableHead>Certificate</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Course</TableHead><TableHead>Institution</TableHead><TableHead>Board/University</TableHead><TableHead>From</TableHead><TableHead>To</TableHead><TableHead>Aggregate %</TableHead><TableHead>Certificate</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {academicFields.map((field, index) => (
+                                {academicFields.map((field, index) => {
+                                    const selectedLevel = form.watch(`academicDetails.${index}.level`);
+                                    const coursesForLevel = EDUCATION_QUALIFICATIONS.filter(q => q.level === selectedLevel);
+                                    
+                                    return (
                                     <TableRow key={field.id}>
-                                        <TableCell><FormField control={form.control} name={`academicDetails.${index}.course`} render={({ field }) => <Input {...field} />} /></TableCell>
+                                        <TableCell>
+                                            <FormField control={form.control} name={`academicDetails.${index}.level`} render={({ field }) => (
+                                                <Select onValueChange={(value) => { field.onChange(value); form.setValue(`academicDetails.${index}.course`, ''); }} value={field.value}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger></FormControl>
+                                                    <SelectContent>{uniqueEducationLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            )} />
+                                        </TableCell>
+                                        <TableCell>
+                                             <FormField control={form.control} name={`academicDetails.${index}.course`} render={({ field }) => (
+                                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedLevel}>
+                                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Course" /></SelectTrigger></FormControl>
+                                                    <SelectContent>{coursesForLevel.map(c => <SelectItem key={c.id} value={c.course}>{c.course}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                             )} />
+                                        </TableCell>
                                         <TableCell><FormField control={form.control} name={`academicDetails.${index}.institution`} render={({ field }) => <Input {...field} />} /></TableCell>
                                         <TableCell><FormField control={form.control} name={`academicDetails.${index}.board`} render={({ field }) => <Input {...field} />} /></TableCell>
                                         <TableCell><FormField control={form.control} name={`academicDetails.${index}.fromYear`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(new Date(field.value), 'yyyy') : 'Year'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={new Date(field.value)} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
@@ -49,11 +73,12 @@ export function EducationExperienceTab({ form }: TabProps) {
                                         <TableCell><FormField control={form.control} name={`academicDetails.${index}.certificate`} render={({ field }) => <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} />} /></TableCell>
                                         <TableCell><Button type="button" variant="destructive" size="icon" onClick={() => removeAcademic(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>
                                     </TableRow>
-                                ))}
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAcademic({ course: '', institution: '', board: '', fromYear: new Date(), toYear: new Date(), aggregate: 0 })}><PlusCircle className="mr-2 h-4 w-4" /> Add Academic Record</Button>
+                    <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendAcademic({ level: '', course: '', institution: '', board: '', fromYear: new Date(), toYear: new Date(), aggregate: 0 })}><PlusCircle className="mr-2 h-4 w-4" /> Add Academic Record</Button>
                 </CardContent>
             </Card>
             <Card>
@@ -105,4 +130,3 @@ export function EducationExperienceTab({ form }: TabProps) {
         </div>
     );
 }
-

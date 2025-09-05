@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -91,6 +92,7 @@ export const staffFormSchema = z.object({
 
   // Education & Experience
   academicDetails: z.array(z.object({
+    level: z.string().min(1, 'Level is required'),
     course: z.string().min(1, 'Course is required'),
     institution: z.string().min(1, 'Institution is required'),
     board: z.string().min(1, 'Board/University is required'),
@@ -138,8 +140,8 @@ export const staffFormSchema = z.object({
     toDate: z.date(),
     duration: z.string().optional(),
   })).optional(),
-
-  // Training & Audit Particulars
+  
+  // Training & Audit
   trainingTaken: z.enum(['yes', 'no']),
   trainingTakenDetails: z.array(z.object({
     startDate: z.date(),
@@ -397,4 +399,3 @@ export const useUsers = () => {
 
   return { users, loading, addUser, updateUser, deleteUser };
 };
-
