@@ -43,18 +43,18 @@ export function Header() {
          {/* This empty div can be used for left-aligned items if needed in the future */}
       </div>
       <div className="flex justify-center">
-        <Link href="/" className="flex items-center gap-3" prefetch={false}>
-          <div className="w-16 h-16 flex items-center justify-center">
+        <Link href="/" className="flex flex-col items-center gap-1" prefetch={false}>
+          <div className="w-12 h-12 flex items-center justify-center">
               {logo ? (
-                  <Image src={logo} alt="Sasta logo" width={64} height={64} className="object-contain" />
+                  <Image src={logo} alt="Sasta logo" width={48} height={48} className="object-contain" />
               ) : (
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                      <Upload className="h-6 w-6 text-muted-foreground" />
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <Upload className="h-5 w-5 text-muted-foreground" />
                   </div>
               )}
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground font-bold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-primary font-bold uppercase">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
           </div>
         </Link>
       </div>
