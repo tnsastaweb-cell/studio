@@ -69,20 +69,7 @@ export const DISTRICTS = DISTRICTS_WITH_CODES.map(d => d.name);
 
 
 const MOCK_OFFICES: DistrictOffice[] = [
-    {
-        id: 1,
-        district: "Chennai",
-        code: "00",
-        buildingName: "District Collectorate",
-        address: "123, Rajaji Salai, George Town",
-        pincode: "600001",
-        latitude: 13.0827,
-        longitude: 80.2707,
-        mapsLink: "https://maps.google.com/?q=13.0827,80.2707",
-        contactPerson: "Thiru. Admin",
-        contactNumbers: ["9876543210"],
-        email: "collector.chn@tn.gov.in"
-    }
+   
 ];
 
 const OFFICE_STORAGE_KEY = 'sasta-district-offices';
