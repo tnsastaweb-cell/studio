@@ -43,7 +43,6 @@ export const staffFormSchema = z.object({
   employeeCode: z.string().min(1, "Employee Code is required."),
   name: z.string().min(1, "Name is required."),
   contactNumber: z.string().min(1, "Contact Number is required."),
-  renewalDate: z.date({ required_error: "Renewal Date of Joining is required." }),
 
   // Location Details
   locationType: z.enum(['rural', 'urban'], { required_error: "Location Type is required."}),
@@ -216,6 +215,7 @@ export interface User {
   
   // Extended Profile Details
   recruitmentType?: 'direct' | 'retired';
+  renewalDate?: string;
   locationType?: 'rural' | 'urban';
   district?: string;
   block?: string;

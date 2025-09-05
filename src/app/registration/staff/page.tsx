@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -56,7 +57,7 @@ export default function StaffRegistrationPage() {
         // Default values are essential to prevent uncontrolled-to-controlled input errors
         defaultValues: {
             designation: '', recruitmentType: undefined, employeeCode: '', name: '',
-            contactNumber: '', renewalDate: undefined, photo: undefined, locationType: undefined,
+            contactNumber: '', photo: undefined, locationType: undefined,
             district: '', block: '', panchayat: '', lgdCode: '', urbanBodyType: undefined,
             urbanBodyName: '', fullAddress: '', pincode: '', fatherName: '', motherName: '',
             spouseName: '', religion: '', caste: '', dateOfBirth: undefined, age: '',
@@ -82,7 +83,7 @@ export default function StaffRegistrationPage() {
                 setIsEditMode(true);
                 setSelectedRole(userToEdit.designation);
 
-                const dateFieldsToConvert = ['dateOfBirth', 'joiningDate', 'renewalDate'];
+                const dateFieldsToConvert = ['dateOfBirth', 'joiningDate'];
                 const arrayDateFields = {
                     'academicDetails': ['fromYear', 'toYear'],
                     'workExperience': ['fromDate', 'toDate'],
