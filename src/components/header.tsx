@@ -38,23 +38,27 @@ export function Header() {
   const canAccessAdminPanel = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
   return (
-    <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
-      <Link href="/" className="flex items-center gap-3" prefetch={false}>
-         <div className="w-16 h-16 flex items-center justify-center">
-            {logo ? (
-                <Image src={logo} alt="Sasta logo" width={64} height={64} className="object-contain" />
-            ) : (
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                    <Upload className="h-6 w-6 text-muted-foreground" />
-                </div>
-            )}
-        </div>
-        <div className="flex flex-col">
-          <span className="font-impact text-2xl font-bold text-primary tracking-wider">SASTA</span>
-          <span className="text-xs text-muted-foreground font-semibold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
-        </div>
-      </Link>
-      <nav className="ml-auto flex gap-2 sm:gap-4 items-center">
+    <header className="px-4 lg:px-6 h-20 grid grid-cols-3 items-center bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
+       <div className="flex items-center justify-start">
+         {/* This empty div can be used for left-aligned items if needed in the future */}
+      </div>
+      <div className="flex justify-center">
+        <Link href="/" className="flex items-center gap-3" prefetch={false}>
+          <div className="w-16 h-16 flex items-center justify-center">
+              {logo ? (
+                  <Image src={logo} alt="Sasta logo" width={64} height={64} className="object-contain" />
+              ) : (
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                  </div>
+              )}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground font-bold -mt-1">SOCIAL AUDIT UNIT OF TAMIL NADU</span>
+          </div>
+        </Link>
+      </div>
+      <nav className="flex gap-2 sm:gap-4 items-center justify-end">
         {canAccessAdminPanel && (
           <Button asChild variant="link" className="text-primary hidden sm:inline-flex">
             <Link href="/admin" prefetch={false}>
