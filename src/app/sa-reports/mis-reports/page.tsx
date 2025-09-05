@@ -53,7 +53,7 @@ const pmaygReports = {
     "R.6.2.C - ANNUAL REPORTS": [
         { title: "R.6.2.C.1 PERIODICAL REPORT", href: "#", disabled: true },
         { title: "R.6.2.C.2 CASE STUDIES", href: "/sa-reports/pmayg-case-studies" },
-        { title: "R.6.2.C.3 Consolidated Reports", href: "#", disabled: true }
+        { title: "R.6.2.C.3 CONSOLIDATED REPORTS", href: "#", disabled: true }
     ],
     "R.6.2.D - URGENT REPORTS": [
         { title: "R.6.2.D.1 HIGH FM PARA DETAILS", href: "#", disabled: true },
@@ -64,14 +64,14 @@ const pmaygReports = {
 const ReportCard = ({ title, reports }: { title: string; reports: {title: string, href: string, disabled?: boolean}[] }) => (
     <Card>
         <CardHeader>
-            <CardTitle className="text-lg text-primary">{title}</CardTitle>
+            <CardTitle className="text-lg text-primary">{title.toUpperCase()}</CardTitle>
         </CardHeader>
         <CardContent>
             <ul className="space-y-2">
                 {reports.map((report) => (
                     <li key={report.title}>
                         <Button variant="link" className="p-0 h-auto text-left whitespace-normal font-normal text-foreground/90" asChild disabled={report.disabled}>
-                           <Link href={report.href}>{report.title}</Link>
+                           <Link href={report.href}>{report.title.toUpperCase()}</Link>
                         </Button>
                     </li>
                 ))}
