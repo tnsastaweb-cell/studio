@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -35,6 +36,7 @@ const MOCK_MGNREGS_ENTRIES: MgnregsEntry[] = [
     auditYear: '2023-2024',
     observer: 'yes',
     observerName: 'Observer One',
+    observerDesignation: 'Designation One',
     coram: 150,
     drpRole: 'DRP',
     drpEmployeeCode: 'TN-1022',
@@ -46,13 +48,14 @@ const MOCK_MGNREGS_ENTRIES: MgnregsEntry[] = [
       { vrpSearchValue: '9876543211' },
       { vrpSearchValue: '9876543212' },
     ],
-    pvtIndividualLandWorks: 5, pvtIndividualLandAmount: 50000,
-    pvtIndividualAssetsWorks: 2, pvtIndividualAssetsAmount: 100000,
-    pubCommunityLandWorks: 3, pubCommunityLandAmount: 75000,
-    pubCommunityAssetsWorks: 1, pubCommunityAssetsAmount: 200000,
-    skilledSemiSkilledAmount: 25000, materialAmount: 150000,
-    totalWorks: 11, totalAmount: 600000,
-    worksVerified: 10, householdsWorked: 50, householdsVerified: 45,
+    totalWorks: 11, 
+    unskilledAmount: 425000,
+    skilledSemiSkilledAmount: 25000, 
+    materialAmount: 150000,
+    totalAmount: 600000,
+    worksVerified: 10, 
+    householdsWorked: 50, 
+    householdsVerified: 45,
     paraParticulars: [
       {
         issueNumber: "FM-ARI-001",
