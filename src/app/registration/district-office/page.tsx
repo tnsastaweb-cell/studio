@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useDistrictOffices, DistrictOffice, DISTRICTS } from '@/services/district-offices';
-import { Mail, Phone, ExternalLink, Loader2, PlusCircle, Edit, Trash2, MapPin } from "lucide-react";
+import { Mail, Phone, ExternalLink, Loader2, PlusCircle, Edit, Trash2, MapPin, Search } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,6 +40,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
 
 const officeFormSchema = z.object({
     district: z.string().min(1, "District is required."),
@@ -62,8 +63,11 @@ export default function DistrictOfficePage() {
 
     const [selectedDistrict, setSelectedDistrict] = useState('all');
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+    const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
     const [editingOffice, setEditingOffice] = useState<DistrictOffice | null>(null);
     const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const canEdit = useMemo(() => user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation), [user]);
 
@@ -156,6 +160,7 @@ export default function DistrictOfficePage() {
                     description: 'Google Maps link has been updated with your current location.',
                 });
                 setIsLoadingLocation(false);
+                setIsLocationDialogOpen(false);
             },
             (error) => {
                 let errorMessage = 'Could not retrieve your location.';
@@ -178,6 +183,19 @@ export default function DistrictOfficePage() {
                 setIsLoadingLocation(false);
             }
         );
+    };
+
+    const handleSearchLocation = () => {
+      if (!searchQuery) return;
+      const encodedQuery = encodeURIComponent(searchQuery);
+      const mapsLink = `https://www.google.com/maps?q=${encodedQuery}`;
+      form.setValue('mapsLink', mapsLink, { shouldValidate: true });
+      toast({
+          title: 'Location Set!',
+          description: `Google Maps link has been set to: ${searchQuery}`,
+      });
+      setIsSearchDialogOpen(false);
+      setIsLocationDialogOpen(false);
     };
 
 
@@ -341,8 +359,8 @@ export default function DistrictOfficePage() {
                             <FormControl>
                                 <Input {...field} placeholder="https://www.google.com/maps?q=..." />
                             </FormControl>
-                            <Button type="button" variant="outline" size="icon" onClick={handleSetLocation} disabled={isLoadingLocation}>
-                                {isLoadingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                            <Button type="button" variant="outline" size="icon" onClick={() => setIsLocationDialogOpen(true)}>
+                                <MapPin className="h-4 w-4" />
                                 <span className="sr-only">Set current location</span>
                             </Button>
                            </div>
@@ -358,6 +376,50 @@ export default function DistrictOfficePage() {
         </DialogContent>
       </Dialog>
       
+        <AlertDialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Set Location</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Choose how you want to set the map location.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                 <div className="flex flex-col gap-4 py-4">
+                    <Button onClick={handleSetLocation} disabled={isLoadingLocation}>
+                        {isLoadingLocation && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Use Current GPS Location
+                    </Button>
+                    <Button variant="secondary" onClick={() => { setIsLocationDialogOpen(false); setIsSearchDialogOpen(true); }}>
+                        Search by Place Name
+                    </Button>
+                 </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <Dialog open={isSearchDialogOpen} onOpenChange={setIsSearchDialogOpen}>
+            <DialogContent>
+                 <DialogHeader>
+                    <DialogTitle>Search for Location</DialogTitle>
+                    <DialogDescription>
+                        Enter a place name or address to generate a Google Maps link.
+                    </DialogDescription>
+                </DialogHeader>
+                 <div className="grid gap-4 py-4">
+                    <Label htmlFor="search-location" className="text-left">Place Name/Address</Label>
+                    <Input id="search-location" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                 </div>
+                 <DialogFooter>
+                    <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                    <Button onClick={handleSearchLocation}>
+                        <Search className="mr-2" /> Set Link
+                    </Button>
+                 </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
       <Footer />
       <BottomNavigation />
     </div>
