@@ -31,6 +31,8 @@ export interface BaseVrp {
   aadhaar: string;
   pan?: string;
   pfmsId: string;
+  aadhaarUpload: any;
+  bankPassbookUpload: any;
 }
 
 // VRP with an existing employee code
@@ -66,7 +68,7 @@ export const baseSchema = z.object({
   name: z.string().min(1, "Name as per bank is required"),
   address: z.string().min(1, "Full Address is required"),
   pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
-  familyRelation: z.enum(["father", "husband"]),
+  familyRelation: z.enum(["father", "husband"], { required_error: "Relationship is required" }),
   familyName: z.string().min(1, "Father/Husband name is required"),
   caste: z.string().min(1, "Caste is required"),
   dob: z.date({ required_error: "Date of Birth is required" }),
@@ -82,6 +84,8 @@ export const baseSchema = z.object({
   aadhaar: z.string().regex(/^\d{12}$/, "Aadhaar must be 12 digits"),
   pan: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format").optional().or(z.literal('')),
   pfmsId: z.string().min(1, "PFMS ID is required"),
+  aadhaarUpload: z.any().refine(file => file?.[0], "Aadhaar image is required."),
+  bankPassbookUpload: z.any().refine(file => file?.[0], "Bank passbook image is required."),
 });
 
 const getInitialVRPs = (): Vrp[] => {

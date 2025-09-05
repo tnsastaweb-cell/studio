@@ -27,9 +27,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useVRPs, Vrp, baseSchema } from '@/services/vrp';
 import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { EDUCATION_QUALIFICATIONS } from '@/services/education';
 import { useAuth } from '@/hooks/use-auth';
 
 const uniqueDistricts = Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort();
+const uniqueEducationLevels = Array.from(new Set(EDUCATION_QUALIFICATIONS.map(q => q.level))).sort();
 
 const yesEmployeeCodeSchema = baseSchema.extend({
   hasEmployeeCode: z.literal("yes"),
@@ -142,7 +144,7 @@ const VrpFormWithCode = () => {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormItem><FormLabel>Role</FormLabel><FormControl><Input value="VRP" readOnly className="bg-muted" /></FormControl></FormItem>
                         <FormField control={form.control} name="mgnregaEmpCode" render={({ field }) => (
-                            <FormItem><FormLabel>MGNREGA Employee Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>MGNREGA Employee Code*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                 </div>
@@ -151,11 +153,11 @@ const VrpFormWithCode = () => {
                     <h3 className="text-lg font-semibold text-primary">Personal & Location Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <FormField control={form.control} name="name" render={({ field }) => (
-                            <FormItem><FormLabel>Name (as per Bank)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Name (as per Bank)*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="district" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>District</FormLabel>
+                                <FormLabel>District*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                     <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
@@ -165,7 +167,7 @@ const VrpFormWithCode = () => {
                         )} />
                         <FormField control={form.control} name="block" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Block</FormLabel>
+                                <FormLabel>Block*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedDistrict}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                     <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
@@ -175,7 +177,7 @@ const VrpFormWithCode = () => {
                         )} />
                         <FormField control={form.control} name="panchayat" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Panchayat</FormLabel>
+                                <FormLabel>Panchayat*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedBlock}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
                                     <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent>
@@ -185,10 +187,10 @@ const VrpFormWithCode = () => {
                         )} />
                          <FormItem><FormLabel>LGD Code</FormLabel><FormControl><Input value={lgdCode} readOnly className="bg-muted" /></FormControl></FormItem>
                         <FormField control={form.control} name="address" render={({ field }) => (
-                            <FormItem className="col-span-1 lg:col-span-3"><FormLabel>Full Address</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem className="col-span-1 lg:col-span-3"><FormLabel>Full Address*</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="pincode" render={({ field }) => (
-                            <FormItem><FormLabel>Pincode</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Pincode*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                 </div>
@@ -198,7 +200,7 @@ const VrpFormWithCode = () => {
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="text-lg font-semibold text-primary">Family Info</h3>
                         <FormField control={form.control} name="familyRelation" render={({ field }) => (
-                            <FormItem className="space-y-2">
+                            <FormItem className="space-y-2"><FormLabel>Relationship*</FormLabel>
                                 <FormControl>
                                         <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
                                         <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="father" /></FormControl><FormLabel className="font-normal">Father</FormLabel></FormItem>
@@ -209,14 +211,14 @@ const VrpFormWithCode = () => {
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="familyName" render={({ field }) => (
-                            <FormItem><FormLabel>Father/Husband Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Father/Husband Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="text-lg font-semibold text-primary">Personal Info</h3>
                         <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="caste" render={({ field }) => (
-                                <FormItem><FormLabel>Caste</FormLabel>
+                                <FormItem><FormLabel>Caste*</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl>
                                         <SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="General">General</SelectItem></SelectContent>
@@ -224,13 +226,12 @@ const VrpFormWithCode = () => {
                                 <FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="gender" render={({ field }) => (
-                                <FormItem><FormLabel>Gender</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>
+                                <FormItem><FormLabel>Gender*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>
                             )}/>
                         </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="dob" render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Date of Birth</FormLabel>
+                                <FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -249,10 +250,10 @@ const VrpFormWithCode = () => {
                         </div>
                          <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Physically Challenged?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="qualification" render={({ field }) => (
-                            <FormItem><FormLabel>Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Qualification*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Level"/></SelectTrigger></FormControl><SelectContent>{uniqueEducationLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="contactNumber1" render={({ field }) => (
-                            <FormItem><FormLabel>Contact Number 1 (MGNREGA Reg. No)</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Contact Number 1 (MGNREGA Reg. No)*</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="contactNumber2" render={({ field }) => (
                             <FormItem><FormLabel>Contact Number 2 (Optional)</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
@@ -264,29 +265,35 @@ const VrpFormWithCode = () => {
                     <h3 className="text-lg font-semibold text-primary">Financial & Identity Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <FormField control={form.control} name="bankName" render={({ field }) => (
-                            <FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Bank Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="branchName" render={({ field }) => (
-                            <FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Branch Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="accountNumber" render={({ field }) => (
-                            <FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Account Number*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="ifscCode" render={({ field }) => (
-                            <FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>IFSC Code*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="aadhaar" render={({ field }) => (
-                            <FormItem><FormLabel>Aadhaar</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Aadhaar*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="pan" render={({ field }) => (
                             <FormItem><FormLabel>PAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="pfmsId" render={({ field }) => (
-                            <FormItem><FormLabel>PFMS ID</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                          <FormField control={form.control} name="mgnregaJobCard" render={({ field }) => (
-                            <FormItem><FormLabel>MGNREGA Jobcard No.</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>MGNREGA Jobcard No.*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
+                         <FormField control={form.control} name="aadhaarUpload" render={({ field }) => (
+                            <FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" accept="image/*" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
+                         )} />
+                         <FormField control={form.control} name="bankPassbookUpload" render={({ field }) => (
+                            <FormItem><FormLabel>Bank Passbook Upload*</FormLabel><FormControl><Input type="file" accept="image/*" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
+                         )} />
                     </div>
                 </div>
 
@@ -392,11 +399,11 @@ const VrpFormWithoutCode = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="space-y-4 p-4 border rounded-md">
                     <h3 className="text-lg font-semibold text-primary">Role Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
                         <FormItem><FormLabel>Role</FormLabel><FormControl><Input value="VRP" readOnly className="bg-muted" /></FormControl></FormItem>
                          <FormField control={form.control} name="employeeCode" render={({ field }) => (
                            <FormItem>
-                               <FormLabel>Generated Employee Code</FormLabel>
+                               <FormLabel>Generated Employee Code*</FormLabel>
                                <div className="flex gap-2">
                                   <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
                                   <Button type="button" onClick={handleGenerateCode}>Generate</Button>
@@ -407,7 +414,7 @@ const VrpFormWithoutCode = () => {
 
                         <FormField control={form.control} name="scheme" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Scheme</FormLabel>
+                                <FormLabel>Scheme*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Scheme" /></SelectTrigger></FormControl>
                                     <SelectContent><SelectItem value="NMP">NMP</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent>
@@ -422,11 +429,11 @@ const VrpFormWithoutCode = () => {
                     <h3 className="text-lg font-semibold text-primary">Personal & Location Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <FormField control={form.control} name="name" render={({ field }) => (
-                            <FormItem><FormLabel>Name (as per Bank)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Name (as per Bank)*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                          <FormField control={form.control} name="locationType" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Location Type</FormLabel>
+                                <FormLabel>Location Type*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Location Type" /></SelectTrigger></FormControl>
                                     <SelectContent><SelectItem value="rural">Rural</SelectItem><SelectItem value="urban">Urban</SelectItem></SelectContent>
@@ -436,7 +443,7 @@ const VrpFormWithoutCode = () => {
                         )} />
                         <FormField control={form.control} name="district" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>District</FormLabel>
+                                <FormLabel>District*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger></FormControl>
                                     <SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
@@ -448,7 +455,7 @@ const VrpFormWithoutCode = () => {
                          {locationType === 'rural' && <>
                             <FormField control={form.control} name="block" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Block</FormLabel>
+                                    <FormLabel>Block*</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedDistrict}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl>
                                         <SelectContent>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
@@ -458,7 +465,7 @@ const VrpFormWithoutCode = () => {
                             )} />
                             <FormField control={form.control} name="panchayat" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Panchayat</FormLabel>
+                                    <FormLabel>Panchayat*</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={!watchedBlock}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Panchayat" /></SelectTrigger></FormControl>
                                         <SelectContent>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{p.name}</SelectItem>)}</SelectContent>
@@ -472,7 +479,7 @@ const VrpFormWithoutCode = () => {
                         {locationType === 'urban' && <>
                             <FormField control={form.control} name="urbanBodyType" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Urban Body Type</FormLabel>
+                                <FormLabel>Urban Body Type*</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select Urban Body Type" /></SelectTrigger></FormControl>
                                     <SelectContent>
@@ -485,15 +492,15 @@ const VrpFormWithoutCode = () => {
                             </FormItem>
                         )} />
                             <FormField control={form.control} name="urbanBodyName" render={({ field }) => (
-                            <FormItem><FormLabel>Urban Body Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Urban Body Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         </>}
                         
                          <FormField control={form.control} name="address" render={({ field }) => (
-                            <FormItem className="col-span-1 lg:col-span-3"><FormLabel>Full Address</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem className="col-span-1 lg:col-span-3"><FormLabel>Full Address*</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                          <FormField control={form.control} name="pincode" render={({ field }) => (
-                            <FormItem><FormLabel>Pincode</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Pincode*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                 </div>
@@ -502,7 +509,7 @@ const VrpFormWithoutCode = () => {
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="text-lg font-semibold text-primary">Family Info</h3>
                         <FormField control={form.control} name="familyRelation" render={({ field }) => (
-                            <FormItem className="space-y-2">
+                            <FormItem className="space-y-2"><FormLabel>Relationship*</FormLabel>
                                 <FormControl>
                                         <RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4">
                                         <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="father" /></FormControl><FormLabel className="font-normal">Father</FormLabel></FormItem>
@@ -513,14 +520,14 @@ const VrpFormWithoutCode = () => {
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="familyName" render={({ field }) => (
-                            <FormItem><FormLabel>Father/Husband Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Father/Husband Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                     <div className="space-y-4 p-4 border rounded-md">
                         <h3 className="text-lg font-semibold text-primary">Personal Info</h3>
                         <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="caste" render={({ field }) => (
-                                <FormItem><FormLabel>Caste</FormLabel>
+                                <FormItem><FormLabel>Caste*</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Caste" /></SelectTrigger></FormControl>
                                         <SelectContent><SelectItem value="SC">SC</SelectItem><SelectItem value="ST">ST</SelectItem><SelectItem value="OBC">OBC</SelectItem><SelectItem value="General">General</SelectItem></SelectContent>
@@ -528,13 +535,12 @@ const VrpFormWithoutCode = () => {
                                 <FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="gender" render={({ field }) => (
-                                <FormItem><FormLabel>Gender</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>
+                                <FormItem><FormLabel>Gender*</FormLabel><FormControl><Input {...field} readOnly className="bg-muted" /></FormControl></FormItem>
                             )}/>
                         </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="dob" render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Date of Birth</FormLabel>
+                                <FormItem className="flex flex-col"><FormLabel>Date of Birth*</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -553,10 +559,10 @@ const VrpFormWithoutCode = () => {
                         </div>
                         <FormField control={form.control} name="isDifferentlyAbled" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Physically Challenged?*</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex space-x-4 pt-2"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="no" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="qualification" render={({ field }) => (
-                            <FormItem><FormLabel>Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Qualification*</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Level"/></SelectTrigger></FormControl><SelectContent>{uniqueEducationLevels.map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="contactNumber1" render={({ field }) => (
-                            <FormItem><FormLabel>Contact Number 1</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Contact Number 1*</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="contactNumber2" render={({ field }) => (
                             <FormItem><FormLabel>Contact Number 2 (Optional)</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
@@ -568,26 +574,32 @@ const VrpFormWithoutCode = () => {
                     <h3 className="text-lg font-semibold text-primary">Financial & Identity Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <FormField control={form.control} name="bankName" render={({ field }) => (
-                            <FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Bank Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="branchName" render={({ field }) => (
-                            <FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Branch Name*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="accountNumber" render={({ field }) => (
-                            <FormItem><FormLabel>Account Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Account Number*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="ifscCode" render={({ field }) => (
-                            <FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>IFSC Code*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="aadhaar" render={({ field }) => (
-                            <FormItem><FormLabel>Aadhaar</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Aadhaar*</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                             <FormField control={form.control} name="pan" render={({ field }) => (
                             <FormItem><FormLabel>PAN (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="pfmsId" render={({ field }) => (
-                            <FormItem><FormLabel>PFMS ID</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>PFMS ID*</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
+                         <FormField control={form.control} name="aadhaarUpload" render={({ field }) => (
+                            <FormItem><FormLabel>Aadhaar Upload*</FormLabel><FormControl><Input type="file" accept="image/*" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
+                         )} />
+                         <FormField control={form.control} name="bankPassbookUpload" render={({ field }) => (
+                            <FormItem><FormLabel>Bank Passbook Upload*</FormLabel><FormControl><Input type="file" accept="image/*" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>
+                         )} />
                     </div>
                 </div>
                 
