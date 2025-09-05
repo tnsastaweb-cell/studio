@@ -63,6 +63,7 @@ const yesEmployeeCodeSchema = baseSchema.extend({
 
 const noEmployeeCodeSchema = baseSchema.extend({
   hasEmployeeCode: z.literal("no"),
+  employeeCode: z.string().min(1, "Please generate an employee code."),
   scheme: z.string().min(1, "Scheme is required"),
   locationType: z.enum(["rural", "urban"]),
   district: z.string().min(1, "District is required"),
@@ -324,7 +325,7 @@ const VrpFormWithoutCode = () => {
 
     const form = useForm<NoFormValues>({
         resolver: zodResolver(noEmployeeCodeSchema),
-        defaultValues: { gender: "Female", hasEmployeeCode: "no" }
+        defaultValues: { gender: "Female", hasEmployeeCode: "no", employeeCode: "" }
     });
 
     const locationType = form.watch("locationType");
@@ -370,9 +371,13 @@ const VrpFormWithoutCode = () => {
            form.setValue("panchayat", "");
         }
     }, [watchedBlock, form]);
+    
+    const handleGenerateCode = () => {
+        const newCode = generateEmployeeCode();
+        form.setValue("employeeCode", newCode);
+    }
 
     const onSubmit = (data: NoFormValues) => {
-        const employeeCode = generateEmployeeCode(data.district);
         let panchayatName = '';
         let blockName = '';
 
@@ -386,7 +391,6 @@ const VrpFormWithoutCode = () => {
         
         const formattedData: Omit<Vrp, 'id'> = {
             ...data,
-            employeeCode,
             dob: format(data.dob, 'yyyy-MM-dd'),
             age: parseInt(age, 10),
             role: 'VRP',
@@ -398,7 +402,7 @@ const VrpFormWithoutCode = () => {
         addVrp(formattedData);
         toast({
             title: "Registration Successful!",
-            description: `VRP ${data.name} has been registered with Employee Code: ${employeeCode}`,
+            description: `VRP ${data.name} has been registered with Employee Code: ${data.employeeCode}`,
         });
         form.reset();
     };
@@ -408,8 +412,19 @@ const VrpFormWithoutCode = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="space-y-4 p-4 border rounded-md">
                     <h3 className="text-lg font-semibold text-primary">Role Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                         <FormItem><FormLabel>Role</FormLabel><FormControl><Input value="VRP" readOnly className="bg-muted" /></FormControl></FormItem>
+                         <FormField control={form.control} name="employeeCode" render={({ field }) => (
+                           <FormItem>
+                               <FormLabel>Generated Employee Code</FormLabel>
+                               <div className="flex gap-2">
+                                  <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
+                                  <Button type="button" onClick={handleGenerateCode}>Generate</Button>
+                               </div>
+                               <FormMessage/>
+                           </FormItem>
+                        )} />
+
                         <FormField control={form.control} name="scheme" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Scheme</FormLabel>
