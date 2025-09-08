@@ -116,5 +116,3 @@ export const usePanchayats = () => {
 
   return { panchayats, loading };
 };
-
-    

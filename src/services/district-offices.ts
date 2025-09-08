@@ -37,7 +37,7 @@ export const DISTRICTS_WITH_CODES: DistrictInfo[] = [
     { name: "Kanniyakumari", code: "10" },
     { name: "Karur", code: "11" },
     { name: "Krishnagiri", code: "12" },
-    { name: "Madurai", code: "13" },
+    { name: 'Madurai', code: '13' },
     { name: "Mayiladuthurai", code: "14" },
     { name: "Nagapattinam", code: "15" },
     { name: "Namakkal", code: "16" },
@@ -154,5 +154,3 @@ export const useDistrictOffices = () => {
 
     return { offices, loading, addOffice, updateOffice, deleteOffice };
 };
-
-    
