@@ -89,6 +89,8 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
 ].map(p => ({ ...p, name: p.name.toUpperCase(), district: p.district.toUpperCase(), block: p.block.toUpperCase() }));
 
 
+const PANCHAYAT_STORAGE_KEY = 'sasta-panchayats';
+
 // Since the panchayat data is static and large, we will not use localStorage for it.
 // We will just return the mock data directly.
 const getInitialPanchayats = (): Panchayat[] => {
