@@ -268,3 +268,4 @@ export const TIRUVANNAMALAI_PANCHAYATS: Panchayat[] = [
     { district: 'TIRUVANNAMALAI', block: 'ANAKKAVOOR', name: 'Vellai', lgdCode: '230963' },
     { district: 'TIRUVANNAMALAI', block: 'ANAKKAVOOR', name: 'Venkodu', lgdCode: '230964' }
 ];
+
