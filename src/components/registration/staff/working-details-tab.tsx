@@ -6,8 +6,7 @@ import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
 import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import { CalendarIcon, PlusCircle, Trash2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts } from '@/lib/utils';
+import { usePanchayats } from '@/services/panchayats';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,8 +22,11 @@ interface TabProps {
 
 export function WorkingDetailsTab({ form }: TabProps) {
     const { control, watch } = form;
+    const { panchayats } = usePanchayats();
     const selectedRole = watch('designation');
     const watchedWorkedAsDrpIc = watch("workedAsDrpIc");
+
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
 
     const { fields: brpWorkFields, append: appendBrpWork, remove: removeBrpWork } = useFieldArray({ control, name: "brpWorkHistory" });
     const { fields: drpWorkFields, append: appendDrpWork, remove: removeDrpWork } = useFieldArray({ control, name: "drpWorkHistory" });
@@ -61,7 +63,7 @@ export function WorkingDetailsTab({ form }: TabProps) {
                                         <TableRow key={item.id}>
                                             <TableCell><FormField control={control} name={`brpWorkHistory.${index}.station`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="worked">Worked</SelectItem><SelectItem value="present">Present</SelectItem></SelectContent></Select>}/></TableCell>
                                             <TableCell><FormField control={control} name={`brpWorkHistory.${index}.district`} render={({field}) => <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>}/></TableCell>
-                                            <TableCell><FormField control={control} name={`brpWorkHistory.${index}.block`} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value || ""} disabled={!watch(`brpWorkHistory.${index}.district`)}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{MOCK_PANCHAYATS.filter(p=>p.district === watch(`brpWorkHistory.${index}.district`)).map(p => p.block).filter((v, i, a) => a.indexOf(v) === i).map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select>)} /></TableCell>
+                                            <TableCell><FormField control={control} name={`brpWorkHistory.${index}.block`} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value || ""} disabled={!watch(`brpWorkHistory.${index}.district`)}><FormControl><SelectTrigger><SelectValue placeholder="Select Block" /></SelectTrigger></FormControl><SelectContent>{panchayats.filter(p=>p.district === watch(`brpWorkHistory.${index}.district`)).map(p => p.block).filter((v, i, a) => a.indexOf(v) === i).map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select>)} /></TableCell>
                                             <TableCell><FormField control={control} name={`brpWorkHistory.${index}.fromDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(new Date(field.value), 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={new Date(field.value)} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
                                             <TableCell><FormField control={control} name={`brpWorkHistory.${index}.toDate`} render={({ field }) => <Popover><PopoverTrigger asChild><Button variant="outline">{field.value ? format(new Date(field.value), 'PPP') : 'Date'}</Button></PopoverTrigger><PopoverContent><Calendar mode="single" selected={new Date(field.value)} onSelect={field.onChange} /></PopoverContent></Popover>} /></TableCell>
                                             <TableCell><Input value={calculateDuration(watch(`brpWorkHistory.${index}.fromDate`), watch(`brpWorkHistory.${index}.toDate`))} readOnly className="bg-muted"/></TableCell>
@@ -135,3 +137,4 @@ export function WorkingDetailsTab({ form }: TabProps) {
     );
 }
 
+    

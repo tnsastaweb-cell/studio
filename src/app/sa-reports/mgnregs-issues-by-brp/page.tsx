@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
 import { useUsers, User } from '@/services/users';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { toTitleCase, cn } from '@/lib/utils';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -33,14 +33,7 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
 
     const totalRow = useMemo(() => data.reduce((acc, row) => ({
         ...acc,
-        pvtIndividualLandWorks: acc.pvtIndividualLandWorks + (row.pvtIndividualLandWorks || 0),
-        pvtIndividualLandAmount: acc.pvtIndividualLandAmount + (row.pvtIndividualLandAmount || 0),
-        pvtIndividualAssetsWorks: acc.pvtIndividualAssetsWorks + (row.pvtIndividualAssetsWorks || 0),
-        pvtIndividualAssetsAmount: acc.pvtIndividualAssetsAmount + (row.pvtIndividualAssetsAmount || 0),
-        pubCommunityLandWorks: acc.pubCommunityLandWorks + (row.pubCommunityLandWorks || 0),
-        pubCommunityLandAmount: acc.pubCommunityLandAmount + (row.pubCommunityLandAmount || 0),
-        pubCommunityAssetsWorks: acc.pubCommunityAssetsWorks + (row.pubCommunityAssetsWorks || 0),
-        pubCommunityAssetsAmount: acc.pubCommunityAssetsAmount + (row.pubCommunityAssetsAmount || 0),
+        unskilledAmount: (acc.unskilledAmount || 0) + (row.unskilledAmount || 0),
         skilledSemiSkilledAmount: acc.skilledSemiSkilledAmount + (row.skilledSemiSkilledAmount || 0),
         materialAmount: acc.materialAmount + (row.materialAmount || 0),
         totalWorks: acc.totalWorks + (row.totalWorks || 0),
@@ -55,9 +48,7 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
         grAmount: acc.grAmount + row.grAmount,
         totalIssues: acc.totalIssues + row.totalIssues,
     }), {
-        pvtIndividualLandWorks: 0, pvtIndividualLandAmount: 0, pvtIndividualAssetsWorks: 0, pvtIndividualAssetsAmount: 0,
-        pubCommunityLandWorks: 0, pubCommunityLandAmount: 0, pubCommunityAssetsWorks: 0, pubCommunityAssetsAmount: 0,
-        skilledSemiSkilledAmount: 0, materialAmount: 0, totalWorks: 0, totalAmount: 0,
+        unskilledAmount: 0, skilledSemiSkilledAmount: 0, materialAmount: 0, totalWorks: 0, totalAmount: 0,
         fmIssues: 0, fmAmount: 0, fdIssues: 0, fdAmount: 0, pvIssues: 0, pvAmount: 0, grIssues: 0, grAmount: 0, totalIssues: 0
     }), [data]);
     
@@ -73,11 +64,7 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
                         <TableHead rowSpan={2}>District</TableHead>
                         <TableHead rowSpan={2}>Block</TableHead>
                         <TableHead rowSpan={2}>Panchayat</TableHead>
-                        <TableHead colSpan={4} className="text-center border-l">Private</TableHead>
-                        <TableHead colSpan={4} className="text-center border-l">Public</TableHead>
-                        <TableHead rowSpan={2} className="border-l">Skilled/Semi Skilled Amt.</TableHead>
-                        <TableHead rowSpan={2}>Material Exp. Amt.</TableHead>
-                        <TableHead colSpan={2} className="text-center border-l">Total</TableHead>
+                        <TableHead colSpan={4} className="text-center border-l">Expenditure</TableHead>
                         <TableHead colSpan={2} className="text-center border-l">FM</TableHead>
                         <TableHead colSpan={2} className="text-center border-l">FD</TableHead>
                         <TableHead colSpan={2} className="text-center border-l">PV</TableHead>
@@ -85,11 +72,10 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
                         <TableHead colSpan={2} className="text-center border-l">Grand Total</TableHead>
                     </TableRow>
                      <TableRow>
-                        <TableHead className="border-l">Ind. Land (Works)</TableHead><TableHead>Ind. Land (Amt)</TableHead>
-                        <TableHead>Ind. Assets (Works)</TableHead><TableHead>Ind. Assets (Amt)</TableHead>
-                        <TableHead className="border-l">Comm. Land (Works)</TableHead><TableHead>Comm. Land (Amt)</TableHead>
-                        <TableHead>Comm. Assets (Works)</TableHead><TableHead>Comm. Assets (Amt)</TableHead>
-                        <TableHead className="border-l">Total Works</TableHead><TableHead>Total Exp. Amt</TableHead>
+                        <TableHead className="border-l">Unskilled</TableHead>
+                        <TableHead>Skilled/Semi</TableHead>
+                        <TableHead>Material</TableHead>
+                        <TableHead>Total Exp. Amt</TableHead>
                         <TableHead className="border-l">Issues</TableHead><TableHead>Amt</TableHead>
                         <TableHead className="border-l">Issues</TableHead><TableHead>Amt</TableHead>
                         <TableHead className="border-l">Issues</TableHead><TableHead>Amt</TableHead>
@@ -99,9 +85,9 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
                 </TableHeader>
                 <TableBody>
                     {loading ? (
-                         <TableRow><TableCell colSpan={27} className="text-center h-24"><Loader2 className="mx-auto animate-spin" /></TableCell></TableRow>
+                         <TableRow><TableCell colSpan={22} className="text-center h-24"><Loader2 className="mx-auto animate-spin" /></TableCell></TableRow>
                     ) : data.length === 0 ? (
-                        <TableRow><TableCell colSpan={27} className="text-center h-24">No issues found for the selected filters.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={22} className="text-center h-24">No issues found for the selected filters.</TableCell></TableRow>
                     ) : (
                         <>
                         {data.map((row, index) => (
@@ -109,13 +95,10 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell>{row.brpName}</TableCell><TableCell>{row.brpEmployeeCode}</TableCell>
                                 <TableCell>{toTitleCase(row.district)}</TableCell><TableCell>{toTitleCase(row.block)}</TableCell><TableCell>{toTitleCase(row.panchayatName)}</TableCell>
-                                <TableCell className="border-l">{row.pvtIndividualLandWorks}</TableCell><TableCell>{row.pvtIndividualLandAmount?.toLocaleString()}</TableCell>
-                                <TableCell>{row.pvtIndividualAssetsWorks}</TableCell><TableCell>{row.pvtIndividualAssetsAmount?.toLocaleString()}</TableCell>
-                                <TableCell className="border-l">{row.pubCommunityLandWorks}</TableCell><TableCell>{row.pubCommunityLandAmount?.toLocaleString()}</TableCell>
-                                <TableCell>{row.pubCommunityAssetsWorks}</TableCell><TableCell>{row.pubCommunityAssetsAmount?.toLocaleString()}</TableCell>
-                                <TableCell className="border-l">{row.skilledSemiSkilledAmount?.toLocaleString()}</TableCell>
+                                <TableCell className="border-l">{row.unskilledAmount?.toLocaleString()}</TableCell>
+                                <TableCell>{row.skilledSemiSkilledAmount?.toLocaleString()}</TableCell>
                                 <TableCell>{row.materialAmount?.toLocaleString()}</TableCell>
-                                <TableCell className="border-l">{row.totalWorks}</TableCell><TableCell>{row.totalAmount?.toLocaleString()}</TableCell>
+                                <TableCell>{row.totalAmount?.toLocaleString()}</TableCell>
                                 <TableCell className="border-l">{row.fmIssues}</TableCell><TableCell>{row.fmAmount.toLocaleString()}</TableCell>
                                 <TableCell className="border-l">{row.fdIssues}</TableCell><TableCell>{row.fdAmount.toLocaleString()}</TableCell>
                                 <TableCell className="border-l">{row.pvIssues}</TableCell><TableCell>{row.pvAmount.toLocaleString()}</TableCell>
@@ -125,13 +108,10 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
                         ))}
                         <TableRow className="font-bold bg-muted">
                             <TableCell colSpan={6} className="text-right">Total</TableCell>
-                            <TableCell className="border-l">{totalRow.pvtIndividualLandWorks}</TableCell><TableCell>{totalRow.pvtIndividualLandAmount.toLocaleString()}</TableCell>
-                            <TableCell>{totalRow.pvtIndividualAssetsWorks}</TableCell><TableCell>{totalRow.pvtIndividualAssetsAmount.toLocaleString()}</TableCell>
-                            <TableCell className="border-l">{totalRow.pubCommunityLandWorks}</TableCell><TableCell>{totalRow.pubCommunityLandAmount.toLocaleString()}</TableCell>
-                            <TableCell>{totalRow.pubCommunityAssetsWorks}</TableCell><TableCell>{totalRow.pubCommunityAssetsAmount.toLocaleString()}</TableCell>
-                            <TableCell className="border-l">{totalRow.skilledSemiSkilledAmount.toLocaleString()}</TableCell>
+                            <TableCell className="border-l">{totalRow.unskilledAmount.toLocaleString()}</TableCell>
+                            <TableCell>{totalRow.skilledSemiSkilledAmount.toLocaleString()}</TableCell>
                             <TableCell>{totalRow.materialAmount.toLocaleString()}</TableCell>
-                            <TableCell className="border-l">{totalRow.totalWorks}</TableCell><TableCell>{totalRow.totalAmount.toLocaleString()}</TableCell>
+                            <TableCell>{totalRow.totalAmount.toLocaleString()}</TableCell>
                             <TableCell className="border-l">{totalRow.fmIssues}</TableCell><TableCell>{totalRow.fmAmount.toLocaleString()}</TableCell>
                             <TableCell className="border-l">{totalRow.fdIssues}</TableCell><TableCell>{totalRow.fdAmount.toLocaleString()}</TableCell>
                             <TableCell className="border-l">{totalRow.pvIssues}</TableCell><TableCell>{totalRow.pvAmount.toLocaleString()}</TableCell>
@@ -149,6 +129,7 @@ const ReportTable = ({ data, loading }: { data: ReportRow[], loading: boolean })
 export default function MgnregsIssuesByBrpPage() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
     const { users } = useUsers();
+    const { panchayats } = usePanchayats();
     
     const [filters, setFilters] = useState({
         expenditureYear: 'all',
@@ -182,11 +163,11 @@ export default function MgnregsIssuesByBrpPage() {
 
             return {
                 ...entry,
-                panchayatName: MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '',
+                panchayatName: panchayats.find(p => p.lgdCode === entry.panchayat)?.name || '',
                 ...paraSummary,
             };
         });
-    }, [mgnregsEntries, filters, isReportGenerated]);
+    }, [mgnregsEntries, filters, isReportGenerated, panchayats]);
     
     return (
         <div className="flex flex-col min-h-screen">

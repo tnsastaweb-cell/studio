@@ -10,12 +10,11 @@ import { format, getYear, isWithinInterval, parseISO } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
 import { useUsers, User as StaffUser } from '@/services/users';
 import { useToast } from '@/hooks/use-toast';
-import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+import { usePanchayats, Panchayat } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 import { useHlc } from '@/services/hlc';
 import { usePmaygIssues, PmaygIssue } from '@/services/pmayg-issues';
 import { usePmayg, pmaygFormSchema } from '@/services/pmayg-data';
-import { uniqueDistricts } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 import { Header } from '@/components/header';
@@ -127,8 +126,11 @@ export default function PmaygDataEntryPage() {
     const { hlcItems } = useHlc();
     const { getNextIssueSerialNumber, addIssue: saveIssue } = usePmaygIssues();
     const { addPmaygEntry } = usePmayg();
+    const { panchayats } = usePanchayats();
     const [file, setFile] = useState<File | null>(null);
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
+
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
 
     const form = useForm<PmaygFormValues>({
         resolver: zodResolver(pmaygFormSchema),
@@ -178,23 +180,23 @@ export default function PmaygDataEntryPage() {
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict]);
+        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
-    }, [watchedBlock]);
+        return panchayats.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedBlock, panchayats]);
     
     // Auto-fill LGD Code
     useEffect(() => {
         if (watchedPanchayat) {
-            const lgdCode = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
+            const lgdCode = panchayats.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
             form.setValue('lgdCode', lgdCode);
         } else {
             form.setValue('lgdCode', '');
         }
-    }, [watchedPanchayat, form]);
+    }, [watchedPanchayat, form, panchayats]);
 
     // Auto-fill Audit Year
     const watchedSgsDate = form.watch("sgsDate");
@@ -470,3 +472,5 @@ export default function PmaygDataEntryPage() {
       </div>
     );
 }
+
+    

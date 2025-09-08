@@ -5,8 +5,8 @@ import React, { useState, useMemo, FC } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useMgnregs } from '@/services/mgnregs-data';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { usePanchayats } from '@/services/panchayats';
+import { toTitleCase } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Header } from '@/components/header';
@@ -122,6 +122,7 @@ const ReportTable = ({ title, data, viewType }: { title: string; data: ReportRow
 
 export default function MgnregsIssuesByCategoryPage() {
     const { entries, loading } = useMgnregs();
+    const { panchayats } = usePanchayats();
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -129,6 +130,9 @@ export default function MgnregsIssuesByCategoryPage() {
     const name = searchParams.get('name');
     
     const [expenditureYear, setExpenditureYear] = useState('all');
+
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const reportData = useMemo(() => {
         const yearFilteredEntries = expenditureYear === 'all' 
@@ -142,9 +146,9 @@ export default function MgnregsIssuesByCategoryPage() {
             geoList.forEach(geoName => {
                  let totalGps = 0;
                  if (groupBy === 'district') {
-                    totalGps = MOCK_PANCHAYATS.filter(p => p.district === geoName).length;
+                    totalGps = panchayats.filter(p => p.district === geoName).length;
                 } else if (groupBy === 'block') {
-                    totalGps = MOCK_PANCHAYATS.filter(p => p.block === geoName).length;
+                    totalGps = panchayats.filter(p => p.block === geoName).length;
                 } else if (groupBy === 'panchayat') {
                     totalGps = 1;
                 }
@@ -161,7 +165,7 @@ export default function MgnregsIssuesByCategoryPage() {
             yearFilteredEntries.forEach(entry => {
                 let key;
                 if(groupBy === 'panchayat') {
-                    const panchayat = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat);
+                    const panchayat = panchayats.find(p => p.lgdCode === entry.panchayat);
                     key = panchayat ? panchayat.name : entry.panchayat; // Fallback to LGD code
                 } else {
                     key = entry[groupBy];
@@ -187,7 +191,7 @@ export default function MgnregsIssuesByCategoryPage() {
             aggregation.forEach((value, key) => {
                 const auditedInGroup = yearFilteredEntries.filter(e => {
                     if (groupBy === 'panchayat') {
-                         const pName = MOCK_PANCHAYATS.find(p => p.lgdCode === e.panchayat)?.name || e.panchayat;
+                         const pName = panchayats.find(p => p.lgdCode === e.panchayat)?.name || e.panchayat;
                          return pName === key;
                     }
                     return e[groupBy] === key;
@@ -203,15 +207,15 @@ export default function MgnregsIssuesByCategoryPage() {
             const allDistricts = uniqueDistricts.filter(d => d.toUpperCase() !== 'CHENNAI');
             return processEntries(allDistricts, 'district');
         } else if (view === 'block' && name) {
-             const blocksInDistrict = Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === name).map(p => p.block)));
+             const blocksInDistrict = Array.from(new Set(panchayats.filter(p => p.district === name).map(p => p.block)));
              return processEntries(blocksInDistrict, 'block');
         } else if (view === 'panchayat' && name) {
-             const panchayatsInBlock = MOCK_PANCHAYATS.filter(p => p.block === name).map(p => p.name);
+             const panchayatsInBlock = panchayats.filter(p => p.block === name).map(p => p.name);
              return processEntries(panchayatsInBlock, 'panchayat');
         }
         return [];
 
-    }, [entries, expenditureYear, view, name]);
+    }, [entries, expenditureYear, view, name, uniqueDistricts, panchayats]);
 
     const getTitle = () => {
         if (view === 'panchayat' && name) return `Panchayat-wise Report for ${toTitleCase(name)} Block`;

@@ -5,9 +5,9 @@ import React, { useState, useMemo, FC, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { format, parseISO } from 'date-fns';
 
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { useMgnregs, MgnregsEntry } from '@/services/mgnregs-data';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { toTitleCase } from '@/lib/utils';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
 
 import { Header } from '@/components/header';
@@ -36,8 +36,8 @@ const InfoRow: FC<{label: string, value: React.ReactNode | undefined | null}> = 
     </div>
 );
 
-const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
-    const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat)?.name || '';
+const MgnregsReportViewer = ({ entry, panchayats }: { entry: MgnregsEntry, panchayats: any[] }) => {
+    const panchayatName = panchayats.find(p => p.lgdCode === entry.panchayat)?.name || '';
 
     const summaryOfIssues = useMemo(() => {
         const summary = {
@@ -230,6 +230,7 @@ const MgnregsReportViewer = ({ entry }: { entry: MgnregsEntry }) => {
 
 export default function MgnregsGramaPanchayatSocialAuditReport() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
+    const { panchayats } = usePanchayats();
     const printRef = useRef(null);
 
     const [filters, setFilters] = useState({
@@ -241,15 +242,17 @@ export default function MgnregsGramaPanchayatSocialAuditReport() {
     
     const [selectedReport, setSelectedReport] = useState<MgnregsEntry | null>(null);
 
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
     const blocksForDistrict = useMemo(() => {
         if (filters.district === 'all') return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === filters.district).map(p => p.block))).sort();
-    }, [filters.district]);
+        return Array.from(new Set(panchayats.filter(p => p.district === filters.district).map(p => p.block))).sort();
+    }, [filters.district, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (filters.block === 'all') return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
-    }, [filters.block]);
+        return panchayats.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
+    }, [filters.block, panchayats]);
 
     const sgsDatesForPanchayat = useMemo(() => {
         if (filters.panchayat === 'all') return [];
@@ -337,7 +340,7 @@ export default function MgnregsGramaPanchayatSocialAuditReport() {
                             {loading && <div className="text-center p-8"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             {!loading && selectedReport && (
                                 <div ref={printRef}>
-                                    <MgnregsReportViewer entry={selectedReport} />
+                                    <MgnregsReportViewer entry={selectedReport} panchayats={panchayats} />
                                 </div>
                             )}
                             {!loading && !selectedReport && (

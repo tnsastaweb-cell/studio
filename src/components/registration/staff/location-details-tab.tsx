@@ -4,9 +4,8 @@
 import React, { useMemo, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { cn } from "@/lib/utils";
-import { MOCK_PANCHAYATS, Panchayat } from '@/services/panchayats';
+import { usePanchayats, Panchayat } from '@/services/panchayats';
 import { MOCK_ULBS, UrbanLocalBody, ULB_TYPES } from '@/services/ulb';
-import { uniqueDistricts } from '@/lib/utils';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,7 +19,10 @@ interface TabProps {
 
 export function LocationDetailsTab({ form }: TabProps) {
     const { control, watch, setValue } = form;
+    const { panchayats } = usePanchayats();
     
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
     const watchedLocationType = watch("locationType");
     const watchedDistrict = watch("district");
     const watchedBlock = watch("block");
@@ -29,13 +31,13 @@ export function LocationDetailsTab({ form }: TabProps) {
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict]);
+        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
-    }, [watchedBlock]);
+        return panchayats.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedBlock, panchayats]);
     
     const urbanBodiesForDistrictAndType = useMemo(() => {
         if(!watchedDistrict || !watchedUrbanBodyType) return [];
@@ -58,12 +60,12 @@ export function LocationDetailsTab({ form }: TabProps) {
     
      useEffect(() => {
         if(watchedPanchayat){
-            const lgdCode = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
+            const lgdCode = panchayats.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
             setValue('lgdCode', lgdCode);
         } else {
             setValue('lgdCode', '');
         }
-    }, [watchedPanchayat, setValue]);
+    }, [watchedPanchayat, setValue, panchayats]);
 
     useEffect(() => {
         if (watchedUrbanBodyType) {
@@ -105,4 +107,3 @@ export function LocationDetailsTab({ form }: TabProps) {
         </div>
     );
 }
-

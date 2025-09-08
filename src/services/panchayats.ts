@@ -5,6 +5,7 @@
  * in the application. It imports data from individual district files
  * and combines them into a single list.
  */
+import { useState, useCallback, useEffect } from 'react';
 import type { Panchayat } from './panchayat-data/types';
 import { KANCHEEPURAM_PANCHAYATS } from './panchayat-data/kancheepuram';
 import { TIRUVALLUR_PANCHAYATS } from './panchayat-data/tiruvallur';
@@ -86,3 +87,50 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
     ...RANIPET_PANCHAYATS,
     ...TIRUPATHUR_PANCHAYATS,
 ].map(p => ({ ...p, name: p.name.toUpperCase(), district: p.district.toUpperCase(), block: p.block.toUpperCase() }));
+
+
+const PANCHAYAT_STORAGE_KEY = 'sasta-panchayats';
+
+const getInitialPanchayats = (): Panchayat[] => {
+    if (typeof window === 'undefined') return MOCK_PANCHAYATS;
+    try {
+        const stored = localStorage.getItem(PANCHAYAT_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        } else {
+            localStorage.setItem(PANCHAYAT_STORAGE_KEY, JSON.stringify(MOCK_PANCHAYATS));
+            return MOCK_PANCHAYATS;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage for panchayats:", error);
+        return MOCK_PANCHAYATS;
+    }
+};
+
+export const usePanchayats = () => {
+  const [panchayats, setPanchayats] = useState<Panchayat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadPanchayats = useCallback(() => {
+    setLoading(true);
+    const data = getInitialPanchayats();
+    setPanchayats(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadPanchayats();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === PANCHAYAT_STORAGE_KEY) {
+        loadPanchayats();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [loadPanchayats]);
+
+  // Add/Update/Delete functions can be added here if needed in the future
+
+  return { panchayats, loading };
+};

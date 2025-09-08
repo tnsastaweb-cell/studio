@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { DISTRICTS_WITH_CODES } from '@/services/district-offices';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 
 const toTitleCase = (str: string) => {
     if (!str) return '';
@@ -18,6 +18,7 @@ const toTitleCase = (str: string) => {
 };
 
 export function LocalBodiesTab() {
+    const { panchayats, loading } = usePanchayats();
     const [panchayatCurrentPage, setPanchayatCurrentPage] = useState(1);
     const [panchayatsPerPage, setPanchayatsPerPage] = useState(100);
     const [panchayatFilters, setPanchayatFilters] = useState({
@@ -28,14 +29,14 @@ export function LocalBodiesTab() {
     });
 
     const filteredPanchayats = useMemo(() => {
-        return MOCK_PANCHAYATS.filter(
+        return panchayats.filter(
             (p) =>
                 p.district.toLowerCase().includes(panchayatFilters.district.toLowerCase()) &&
                 p.block.toLowerCase().includes(panchayatFilters.block.toLowerCase()) &&
                 p.name.toLowerCase().includes(panchayatFilters.panchayat.toLowerCase()) &&
                 p.lgdCode.toString().includes(panchayatFilters.lgdCode)
         );
-    }, [panchayatFilters]);
+    }, [panchayatFilters, panchayats]);
 
     const panchayatTotalPages = Math.ceil(filteredPanchayats.length / panchayatsPerPage);
 
@@ -107,7 +108,7 @@ export function LocalBodiesTab() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Panchayat List</CardTitle>
-                        <CardDescription>List of all Panchayats with their respective codes and districts. Total: {filteredPanchayats.length}</CardDescription>
+                        <CardDescription>List of all Panchayats with their respective codes and districts. Total: {loading ? '...' : filteredPanchayats.length}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4 p-4 border rounded-lg">

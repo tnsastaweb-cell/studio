@@ -3,9 +3,9 @@
 
 import React, { useState, useMemo, FC } from 'react';
 import { useMgnregs } from '@/services/mgnregs-data';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { MOCK_MGNREGS_DATA } from '@/services/mgnregs';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { toTitleCase } from '@/lib/utils';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -22,7 +22,7 @@ const years = ["all", "2022-2023", "2023-2024", "2024-2025"];
 const statuses = ["all", "PENDING", "CLOSED"];
 const mgnregsTypes = ["all", ...Array.from(new Set(MOCK_MGNREGS_DATA.map(d => d.type)))];
 
-const MgnregsReportTable = ({ data, loading }: { data: any[], loading: boolean }) => {
+const MgnregsReportTable = ({ data, loading, panchayats }: { data: any[], loading: boolean, panchayats: any[] }) => {
     return (
         <div className="border rounded-lg mt-4 overflow-x-auto">
             <Table>
@@ -53,7 +53,7 @@ const MgnregsReportTable = ({ data, loading }: { data: any[], loading: boolean }
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell>{item.district}</TableCell>
                                 <TableCell>{item.block}</TableCell>
-                                <TableCell>{MOCK_PANCHAYATS.find(p => p.lgdCode === item.panchayat)?.name || ''}</TableCell>
+                                <TableCell>{panchayats.find(p => p.lgdCode === item.panchayat)?.name || ''}</TableCell>
                                 <TableCell>{format(new Date(item.sgsDate), 'dd/MM/yyyy')}</TableCell>
                                 <TableCell>{item.para.issueNumber}</TableCell>
                                 <TableCell>{item.para.type}</TableCell>
@@ -74,6 +74,7 @@ const MgnregsReportTable = ({ data, loading }: { data: any[], loading: boolean }
 
 export default function MgnregsIndividualIssuesListingPage() {
     const { entries: mgnregsEntries, loading: mgnregsLoading } = useMgnregs();
+    const { panchayats } = usePanchayats();
     
     const [filters, setFilters] = useState({
         auditYear: 'all', district: 'all', block: 'all', panchayat: 'all',
@@ -111,15 +112,17 @@ export default function MgnregsIndividualIssuesListingPage() {
         setIsReportGenerated(false);
     }
     
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
     const blocksForDistrict = useMemo(() => {
         if (filters.district === 'all') return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === filters.district).map(p => p.block))).sort();
-    }, [filters.district]);
+        return Array.from(new Set(panchayats.filter(p => p.district === filters.district).map(p => p.block))).sort();
+    }, [filters.district, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (filters.block === 'all') return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
-    }, [filters.block]);
+        return panchayats.filter(p => p.block === filters.block).sort((a,b) => a.name.localeCompare(b.name));
+    }, [filters.block, panchayats]);
     
     const categoriesForType = useMemo(() => {
         if (filters.type === 'all') return [];
@@ -175,7 +178,7 @@ export default function MgnregsIndividualIssuesListingPage() {
                                 <Button variant="outline" onClick={resetFilters}><RefreshCw className="h-4 w-4" /></Button>
                             </div>
                         </div>
-                        {isReportGenerated && <MgnregsReportTable data={filteredReportData} loading={mgnregsLoading} />}
+                        {isReportGenerated && <MgnregsReportTable data={filteredReportData} loading={mgnregsLoading} panchayats={panchayats} />}
                     </CardContent>
                 </Card>
             </main>

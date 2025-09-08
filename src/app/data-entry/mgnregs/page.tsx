@@ -12,12 +12,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useUsers, User } from '@/services/users';
 import { useVRPs, Vrp } from '@/services/vrp';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { MOCK_MGNREGS_DATA, MgnregsData } from '@/services/mgnregs';
 import { useHlc } from '@/services/hlc';
 import { useActivity } from '@/services/activity';
 import { useMgnregs, mgnregsFormSchema } from '@/services/mgnregs-data';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { toTitleCase } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 import { Header } from '@/components/header';
@@ -48,10 +48,14 @@ export default function MgnregsDataEntryPage() {
     const { hlcItems } = useHlc();
     const { logActivity } = useActivity();
     const { addMgnregsEntry } = useMgnregs();
+    const { panchayats } = usePanchayats();
 
     const [isBrpEmployeeCodeOpen, setBrpEmployeeCodeOpen] = useState(false);
     const [isDrpEmployeeCodeOpen, setDrpEmployeeCodeOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const mgnregsHlcItems = useMemo(() => hlcItems.filter(item => item.scheme === 'MGNREGS'), [hlcItems]);
 
@@ -205,22 +209,22 @@ export default function MgnregsDataEntryPage() {
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict]);
+        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
-    }, [watchedBlock]);
+        return panchayats.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedBlock, panchayats]);
     
     useEffect(() => {
         if(watchedPanchayat){
-            const lgdCode = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
+            const lgdCode = panchayats.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
             form.setValue('lgdCode', lgdCode);
         } else {
             form.setValue('lgdCode', '');
         }
-    }, [form, watchedPanchayat]);
+    }, [form, watchedPanchayat, panchayats]);
     
     useEffect(() => {
         if (watchedSgsDate) {
@@ -531,5 +535,7 @@ export default function MgnregsDataEntryPage() {
 
 
 
+
+    
 
     

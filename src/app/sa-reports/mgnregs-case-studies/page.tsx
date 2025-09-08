@@ -11,7 +11,7 @@ import { useCaseStudies, CaseStudy } from '@/services/case-studies';
 import { useUsers } from '@/services/users';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { uniqueDistricts } from '@/lib/utils';
+import { usePanchayats } from '@/services/panchayats';
 import Image from 'next/image';
 
 import { Header } from '@/components/header';
@@ -115,10 +115,14 @@ const ReportViewer = ({ report }: { report: CaseStudy }) => {
 
 export default function MgnregsCaseStudiesPage() {
     const { caseStudies, loading, deleteCaseStudy } = useCaseStudies();
+    const { panchayats } = usePanchayats();
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const printRef = useRef(null);
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const mgnregsCaseStudies = useMemo(() => {
         return caseStudies.filter(cs => cs.scheme === 'MGNREGS');
@@ -226,7 +230,7 @@ export default function MgnregsCaseStudiesPage() {
                                  <PopoverContent className="w-[300px] p-0">
                                      <Command><CommandInput placeholder="Search Case Study No..."/><CommandEmpty>No Case Study found.</CommandEmpty>
                                          <CommandList>
-                                             <CommandItem onSelect={() => setFilters(f => ({...f, caseStudyNo: 'all'}))}>All Case Studies</CommandItem>
+                                             <CommandItem onSelect={() => {setFilters(f => ({...f, caseStudyNo: 'all'})); setOpenCSNoPopover(false);}}>All Case Studies</CommandItem>
                                              {uniqueCaseStudyNos.map((csNo) => (
                                                 <CommandItem key={csNo} value={csNo} onSelect={() => {setFilters(f => ({...f, caseStudyNo: csNo})); setOpenCSNoPopover(false);}}>
                                                      <Check className={cn("mr-2 h-4 w-4", filters.caseStudyNo === csNo ? "opacity-100" : "opacity-0")} />{csNo}

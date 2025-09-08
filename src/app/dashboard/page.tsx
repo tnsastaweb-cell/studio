@@ -23,8 +23,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useAudits, AuditEntry, NIRNAY_STATUSES } from '@/services/audits';
 import { MOCK_SCHEMES } from '@/services/schemes';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { usePanchayats, Panchayat } from '@/services/panchayats';
+import { toTitleCase } from '@/lib/utils';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -74,6 +74,7 @@ export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
     const { audits, addAudit, updateAudit, deleteAudit, loading: auditsLoading } = useAudits();
+    const { panchayats, loading: panchayatsLoading } = usePanchayats();
 
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingAudit, setEditingAudit] = useState<AuditEntry | null>(null);
@@ -85,6 +86,8 @@ export default function DashboardPage() {
         panchayat: 'all',
     });
 
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
     const form = useForm<AuditFormValues>({
         resolver: zodResolver(auditFormSchema),
         defaultValues: { scheme: 'MGNREGS', nirnayStatus: 'No' },
@@ -95,13 +98,13 @@ export default function DashboardPage() {
 
     const blocksForDistrict = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict]);
+        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
-    }, [watchedBlock]);
+        return panchayats.filter(p => p.block === watchedBlock).sort((a, b) => a.name.localeCompare(b.name));
+    }, [watchedBlock, panchayats]);
     
     useEffect(() => {
         if (watchedDistrict) form.setValue("block", "");
@@ -114,9 +117,9 @@ export default function DashboardPage() {
     const selectedLgdCode = useMemo(() => {
         const panchayatLgd = form.watch("panchayat");
         if (!panchayatLgd) return '';
-        const panchayat = MOCK_PANCHAYATS.find(p => p.lgdCode === panchayatLgd);
+        const panchayat = panchayats.find(p => p.lgdCode === panchayatLgd);
         return panchayat ? panchayat.lgdCode : '';
-    }, [form.watch("panchayat")]);
+    }, [form.watch("panchayat"), panchayats]);
 
 
     const summaryStats = useMemo(() => {
@@ -178,7 +181,7 @@ export default function DashboardPage() {
     };
 
     const onSubmit = (data: AuditFormValues) => {
-        const panchayat = MOCK_PANCHAYATS.find(p => p.lgdCode === data.panchayat);
+        const panchayat = panchayats.find(p => p.lgdCode === data.panchayat);
         if (!panchayat) {
             toast({ variant: 'destructive', title: 'Error', description: 'Invalid Panchayat selected.' });
             return;
@@ -407,4 +410,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-

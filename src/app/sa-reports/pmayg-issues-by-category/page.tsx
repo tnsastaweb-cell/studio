@@ -5,16 +5,18 @@ import React, { useState, useMemo, FC } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePmayg } from '@/services/pmayg-data';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
-
+import { usePanchayats } from '@/services/panchayats';
+import { toTitleCase } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 const PMAYG_EXPENDITURE_YEAR = "2016-2022";
 
@@ -128,10 +130,14 @@ const ReportTable = ({ title, data, viewType }: { title: string; data: ReportRow
 
 export default function PmaygIssuesByCategoryPage() {
     const { entries, loading } = usePmayg();
+    const { panchayats } = usePanchayats();
     const searchParams = useSearchParams();
     
     const view = searchParams.get('view') || 'district';
     const name = searchParams.get('name');
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const reportData = useMemo(() => {
         const yearFilteredEntries = entries.filter(e => e.expenditureYear === PMAYG_EXPENDITURE_YEAR);
@@ -143,9 +149,9 @@ export default function PmaygIssuesByCategoryPage() {
             geoList.forEach(geoName => {
                  let totalGps = 0;
                  if (groupBy === 'district') {
-                    totalGps = MOCK_PANCHAYATS.filter(p => p.district === geoName).length;
+                    totalGps = panchayats.filter(p => p.district === geoName).length;
                 } else if (groupBy === 'block') {
-                    totalGps = MOCK_PANCHAYATS.filter(p => p.block === geoName).length;
+                    totalGps = panchayats.filter(p => p.block === geoName).length;
                 } else if (groupBy === 'panchayat') {
                     totalGps = 1;
                 }
@@ -160,7 +166,7 @@ export default function PmaygIssuesByCategoryPage() {
 
             yearFilteredEntries.forEach(entry => {
                 let key: string | undefined;
-                const panchayatInfo = MOCK_PANCHAYATS.find(p => p.lgdCode === entry.panchayat);
+                const panchayatInfo = panchayats.find(p => p.lgdCode === entry.panchayat);
                 
                 if (groupBy === 'district') key = entry.district;
                 else if (groupBy === 'block') key = entry.block;
@@ -203,15 +209,15 @@ export default function PmaygIssuesByCategoryPage() {
             const allDistricts = uniqueDistricts.filter(d => d.toUpperCase() !== 'CHENNAI');
             return processEntries(allDistricts, 'district');
         } else if (view === 'block' && name) {
-             const blocksInDistrict = Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === name).map(p => p.block)));
+             const blocksInDistrict = Array.from(new Set(panchayats.filter(p => p.district === name).map(p => p.block)));
              return processEntries(blocksInDistrict, 'block');
         } else if (view === 'panchayat' && name) {
-             const panchayatsInBlock = MOCK_PANCHAYATS.filter(p => p.block === name).map(p => p.name);
+             const panchayatsInBlock = panchayats.filter(p => p.block === name).map(p => p.name);
              return processEntries(panchayatsInBlock, 'panchayat');
         }
         return [];
 
-    }, [entries, view, name]);
+    }, [entries, view, name, uniqueDistricts, panchayats]);
 
     const getTitle = () => {
         if (view === 'panchayat' && name) return `Panchayat-wise Report for ${toTitleCase(name)} Block`;

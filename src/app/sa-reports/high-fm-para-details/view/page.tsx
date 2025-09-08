@@ -6,12 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useReactToPrint } from 'react-to-print';
 import { Edit, Trash2, Printer, Search, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { useMgnregs, MgnregsEntry, ParaParticulars } from '@/services/mgnregs-data';
 import { useUsers } from '@/services/users';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { uniqueDistricts } from '@/lib/utils';
 import Image from 'next/image';
 
 import { Header } from '@/components/header';
@@ -31,8 +30,8 @@ type HighFmPara = MgnregsEntry & {
     paraDetails: ParaParticulars
 }
 
-const ReportViewer = ({ report }: { report: HighFmPara }) => {
-    const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === report.panchayat)?.name || '';
+const ReportViewer = ({ report, panchayats }: { report: HighFmPara, panchayats: any[] }) => {
+    const panchayatName = panchayats.find(p => p.lgdCode === report.panchayat)?.name || '';
 
     return (
         <div className="bg-white text-black p-8 border rounded-md font-sans">
@@ -82,6 +81,7 @@ const ReportViewer = ({ report }: { report: HighFmPara }) => {
 
 export default function ViewHighFmReportPage() {
     const { entries, loading, updateMgnregsEntry } = useMgnregs();
+    const { panchayats } = usePanchayats();
     const { user } = useAuth();
     const { users } = useUsers();
     const router = useRouter();
@@ -94,6 +94,9 @@ export default function ViewHighFmReportPage() {
     const [selectedRound, setSelectedRound] = useState<string>('all');
     const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
     const [selectedBRP, setSelectedBRP] = useState<string>('all');
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
@@ -244,7 +247,7 @@ export default function ViewHighFmReportPage() {
                                 {!loading && displayData.length === 0 && <p className="text-center p-8 text-muted-foreground">No submitted reports match the selected criteria. Click "Get Reports" to view data.</p>}
                                 {!loading && displayData.map(report => (
                                     <div key={`${report.id}-${report.paraDetails.issueNumber}`} className="report-item space-y-2 break-after-page">
-                                        <ReportViewer report={report} />
+                                        <ReportViewer report={report} panchayats={panchayats} />
                                         {canEdit && (
                                             <div className="flex justify-end gap-2 no-print">
                                                 <Button variant="outline" size="sm" onClick={() => router.push(`/sa-reports/high-fm-para-details/edit?id=${report.id}&issueNo=${report.paraDetails.issueNumber}`)}>
