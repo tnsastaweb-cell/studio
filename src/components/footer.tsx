@@ -63,7 +63,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-12 pt-8 border-t border-dotted border-white/30 text-center text-sm text-primary-foreground/70 font-normal">
-          <p>&copy; {new Date().getFullYear()} Sasta. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SOCIAL AUDIT UNIT OF TAMIL NADU All rights reserved.</p>
         </div>
       </div>
     </footer>
