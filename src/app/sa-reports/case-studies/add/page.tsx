@@ -7,13 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { MOCK_SCHEMES } from '@/services/schemes';
 import { useUsers, User } from '@/services/users';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
+import { usePanchayats } from '@/services/panchayats';
 import { useCaseStudies, CaseStudy } from '@/services/case-studies';
 import { useMgnregs, MgnregsEntry, paraParticularsSchema as mgnregsParaSchema } from '@/services/mgnregs-data';
 import { usePmayg, PmaygEntry, pmaygFormSchema } from '@/services/pmayg-data';
 
 
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { toTitleCase } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -77,6 +77,9 @@ const caseStudySchema = z.object({
   otherAmount: z.coerce.number().optional(),
   
   description: z.string().optional(),
+  descriptionEnglish: z.string().optional(),
+  descriptionTamil: z.string().optional(),
+
 
   pastedTableData: z.string().optional(),
   tableData: z.array(z.array(z.string())).optional(),
@@ -179,6 +182,7 @@ export default function AddCaseStudyPage() {
     const { getNextCaseStudyNumber, addCaseStudy, caseStudies, updateCaseStudy } = useCaseStudies();
     const { entries: mgnregsEntries } = useMgnregs();
     const { entries: pmaygEntries } = usePmayg();
+    const { panchayats } = usePanchayats();
 
     const [caseStudyNo, setCaseStudyNo] = useState('');
 
@@ -233,22 +237,24 @@ export default function AddCaseStudyPage() {
     const watchedPanchayat = form.watch("panchayat");
     const watchedIssueNo = form.watch("issueNo");
 
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
     const blocks = useMemo(() => {
         if (!watchedDistrict) return [];
-        return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
-    }, [watchedDistrict]);
+        return Array.from(new Set(panchayats.filter(p => p.district === watchedDistrict).map(p => p.block))).sort();
+    }, [watchedDistrict, panchayats]);
 
     const panchayatsForBlock = useMemo(() => {
         if (!watchedBlock) return [];
-        return MOCK_PANCHAYATS.filter(p => p.block === watchedBlock).sort((a,b) => a.name.localeCompare(b.name));
-    }, [watchedBlock]);
+        return panchayats.filter(p => p.block === watchedBlock).sort((a,b) => a.name.localeCompare(b.name));
+    }, [watchedBlock, panchayats]);
 
     useEffect(() => {
         if (watchedPanchayat) {
-            const lgdCode = MOCK_PANCHAYATS.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
+            const lgdCode = panchayats.find(p => p.lgdCode === watchedPanchayat)?.lgdCode || '';
             form.setValue('lgdCode', lgdCode);
         }
-    }, [watchedPanchayat, form]);
+    }, [watchedPanchayat, form, panchayats]);
 
     useEffect(() => {
         if (watchedDistrict && !editId) {

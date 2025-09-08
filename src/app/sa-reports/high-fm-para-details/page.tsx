@@ -8,8 +8,7 @@ import { Edit, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useMgnregs } from '@/services/mgnregs-data';
-import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts } from '@/lib/utils';
+import { usePanchayats } from '@/services/panchayats';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Header } from '@/components/header';
@@ -25,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export default function HighFmParaDetailsPage() {
     const { entries, loading } = useMgnregs();
     const { user } = useAuth();
+    const { panchayats } = usePanchayats();
     const router = useRouter();
 
     const [filters, setFilters] = useState({
@@ -33,6 +33,8 @@ export default function HighFmParaDetailsPage() {
         block: 'all',
         panchayat: 'all'
     });
+
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
 
     const highFmParas = useMemo(() => {
         return entries.flatMap(entry => 
@@ -44,7 +46,7 @@ export default function HighFmParaDetailsPage() {
 
     const filteredData = useMemo(() => {
         return highFmParas.filter(item => {
-            const panchayatName = MOCK_PANCHAYATS.find(p => p.lgdCode === item.panchayat)?.name || '';
+            const panchayatName = panchayats.find(p => p.lgdCode === item.panchayat)?.name || '';
             const searchLower = filters.search.toLowerCase();
             
             const searchMatch = !filters.search ? true : (
@@ -58,7 +60,7 @@ export default function HighFmParaDetailsPage() {
 
             return searchMatch && districtMatch && blockMatch && panchayatMatch;
         });
-    }, [highFmParas, filters]);
+    }, [highFmParas, filters, panchayats]);
 
     const canEdit = user && ['ADMIN', 'CREATOR', 'CONSULTANT'].includes(user.designation);
 
@@ -122,7 +124,7 @@ export default function HighFmParaDetailsPage() {
                                                 <TableCell>{format(new Date(item.sgsDate), 'dd/MM/yyyy')}</TableCell>
                                                 <TableCell>{item.district}</TableCell>
                                                 <TableCell>{item.block}</TableCell>
-                                                <TableCell>{MOCK_PANCHAYATS.find(p => p.lgdCode === item.panchayat)?.name || ''}</TableCell>
+                                                <TableCell>{panchayats.find(p => p.lgdCode === item.panchayat)?.name || ''}</TableCell>
                                                 <TableCell>{item.paraDetails.issueNumber}</TableCell>
                                                 <TableCell>{item.brpName}</TableCell>
                                                 <TableCell>₹{item.paraDetails.amount?.toLocaleString()}</TableCell>
