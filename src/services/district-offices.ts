@@ -57,7 +57,7 @@ export const DISTRICTS_WITH_CODES: DistrictInfo[] = [
     { name: "Tirupathur", code: "30" },
     { name: "Tiruppur", code: "31" },
     { name: 'Tiruvallur', code: '32' },
-    { name: 'Tiruvannamalai', code: '33' },
+    // { name: 'Tiruvannamalai', code: '33' },
     { name: 'Tiruvarur', code: '34' },
     { name: 'Vellore', code: '35' },
     { name: 'Viluppuram', code: '36' },

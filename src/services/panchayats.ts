@@ -12,7 +12,7 @@ import { TIRUVALLUR_PANCHAYATS } from './panchayat-data/tiruvallur';
 import { CUDDALORE_PANCHAYATS } from './panchayat-data/cuddalore';
 import { VILUPPURAM_PANCHAYATS } from './panchayat-data/viluppuram';
 import { VELLORE_PANCHAYATS } from './panchayat-data/vellore';
-import { TIRUVANNAMALAI_PANCHAYATS } from './panchayat-data/tiruvannamalai';
+// import { TIRUVANNAMALAI_PANCHAYATS } from './panchayat-data/tiruvannamalai';
 import { SALEM_PANCHAYATS } from './panchayat-data/salem';
 import { NAMAKKAL_PANCHAYATS } from './panchayat-data/namakkal';
 import { DHARMAPURI_PANCHAYATS } from './panchayat-data/dharmapuri';
@@ -54,7 +54,7 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
     ...CUDDALORE_PANCHAYATS,
     ...VILUPPURAM_PANCHAYATS,
     ...VELLORE_PANCHAYATS,
-    ...TIRUVANNAMALAI_PANCHAYATS,
+    // ...TIRUVANNAMALAI_PANCHAYATS,
     ...SALEM_PANCHAYATS,
     ...NAMAKKAL_PANCHAYATS,
     ...DHARMAPURI_PANCHAYATS,
