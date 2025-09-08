@@ -297,7 +297,7 @@ export const MOCK_USERS: User[] = [
   { id: 503, name: 'N.Senthil', employeeCode: 'TN-753', designation: 'DRP', mobileNumber: '9443074060', dateOfBirth: '1974-07-22', password: 'password123', status: 'active' },
   { id: 504, name: 'T.Rajinikanthan', employeeCode: 'TN-1197-IC', designation: 'DRP I/C', mobileNumber: '9843125659', dateOfBirth: '1977-06-01', password: 'password123', status: 'active' },
   { id: 505, name: 'P.Venkatesan', employeeCode: 'TN-889-IC', designation: 'DRP I/C', mobileNumber: '8220248808', dateOfBirth: '1982-03-01', password: 'password123', status: 'active' },
-  { id: 506, name: 'M.Pugalenthi', employeeCode: 'TN-998-IC', designation: 'DRP I/C', mobileNumber: '7010836348', dateOfBirth: '1977-07-04', password: 'password123', status: 'active' },
+  { id: 506, name: 'M.Pugalenthi', employeeCode: 'TN-998 -IC', designation: 'DRP I/C', mobileNumber: '7010836348', dateOfBirth: '1977-07-04', password: 'password123', status: 'active' },
   { id: 507, name: 'P.Govindarajan', employeeCode: 'TN-913', designation: 'DRP', mobileNumber: '9843843807', dateOfBirth: '1983-09-26', password: 'password123', status: 'active' },
   { id: 508, name: 'M.Subbaiah', employeeCode: 'TN-790', designation: 'DRP', mobileNumber: '7200002721', dateOfBirth: '1976-06-09', password: 'password123', status: 'active' },
   { id: 509, name: 'S.Ramesh', employeeCode: 'TN-1287-IC', designation: 'DRP I/C', mobileNumber: '8056328310', dateOfBirth: '1984-06-17', password: 'password123', status: 'active' },
