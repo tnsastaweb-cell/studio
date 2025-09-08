@@ -89,22 +89,10 @@ export const MOCK_PANCHAYATS: Panchayat[] = [
 ].map(p => ({ ...p, name: p.name.toUpperCase(), district: p.district.toUpperCase(), block: p.block.toUpperCase() }));
 
 
-const PANCHAYAT_STORAGE_KEY = 'sasta-panchayats';
-
+// Since the panchayat data is static and large, we will not use localStorage for it.
+// We will just return the mock data directly.
 const getInitialPanchayats = (): Panchayat[] => {
-    if (typeof window === 'undefined') return MOCK_PANCHAYATS;
-    try {
-        const stored = localStorage.getItem(PANCHAYAT_STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        } else {
-            localStorage.setItem(PANCHAYAT_STORAGE_KEY, JSON.stringify(MOCK_PANCHAYATS));
-            return MOCK_PANCHAYATS;
-        }
-    } catch (error) {
-        console.error("Failed to access localStorage for panchayats:", error);
-        return MOCK_PANCHAYATS;
-    }
+    return MOCK_PANCHAYATS;
 };
 
 export const usePanchayats = () => {
@@ -120,14 +108,6 @@ export const usePanchayats = () => {
 
   useEffect(() => {
     loadPanchayats();
-
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === PANCHAYAT_STORAGE_KEY) {
-        loadPanchayats();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, [loadPanchayats]);
 
   // Add/Update/Delete functions can be added here if needed in the future
