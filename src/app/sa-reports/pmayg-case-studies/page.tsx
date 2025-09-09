@@ -11,7 +11,7 @@ import { useCaseStudies, CaseStudy } from '@/services/case-studies';
 import { useUsers } from '@/services/users';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { uniqueDistricts } from '@/lib/utils';
+import { DISTRICTS } from '@/services/district-offices';
 import Image from 'next/image';
 
 import { Header } from '@/components/header';
@@ -115,10 +115,14 @@ const ReportViewer = ({ report }: { report: CaseStudy }) => {
 
 export default function PmaygCaseStudiesPage() {
     const { caseStudies, loading, deleteCaseStudy } = useCaseStudies();
+    const { panchayats } = usePanchayats();
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const printRef = useRef(null);
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
+
 
     const pmaygCaseStudies = useMemo(() => {
         return caseStudies.filter(cs => cs.scheme === 'PMAY-G');
@@ -193,7 +197,7 @@ export default function PmaygCaseStudiesPage() {
                                 <SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All Districts</SelectItem>
-                                    {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                              <Popover open={openBRPPopover} onOpenChange={setOpenBRPPopover}>

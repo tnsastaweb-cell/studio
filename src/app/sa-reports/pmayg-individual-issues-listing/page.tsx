@@ -5,7 +5,8 @@ import React, { useState, useMemo, FC } from 'react';
 import { usePmayg } from '@/services/pmayg-data';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { DISTRICTS } from '@/services/district-offices';
+import { toTitleCase } from '@/lib/utils';
 
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -114,6 +115,8 @@ export default function PmaygIndividualIssuesListingPage() {
         setIsReportGenerated(false);
     }
     
+    const uniqueDistricts = useMemo(() => Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort(), []);
+
     const blocksForDistrict = useMemo(() => {
         if (filters.district === 'all') return [];
         return Array.from(new Set(MOCK_PANCHAYATS.filter(p => p.district === filters.district).map(p => p.block))).sort();
@@ -164,7 +167,7 @@ export default function PmaygIndividualIssuesListingPage() {
                     </CardHeader>
                     <CardContent>
                          <div className="p-4 border rounded-lg bg-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end mt-4">
-                            <Select value={filters.auditYear} onValueChange={(v) => handleFilterChange('auditYear', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.filter(y => y !== 'all').map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
+                            <Select value={filters.auditYear} onValueChange={(v) => handleFilterChange('auditYear', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Years</SelectItem>{years.filter(y=>y!=='all').map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.district} onValueChange={(v) => handleFilterChange('district', v)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Districts</SelectItem>{uniqueDistricts.map(d => <SelectItem key={d} value={d}>{toTitleCase(d)}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.block} onValueChange={(v) => handleFilterChange('block', v)} disabled={filters.district === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Blocks</SelectItem>{blocksForDistrict.map(b => <SelectItem key={b} value={b}>{toTitleCase(b)}</SelectItem>)}</SelectContent></Select>
                             <Select value={filters.panchayat} onValueChange={(v) => handleFilterChange('panchayat', v)} disabled={filters.block === 'all'}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All Panchayats</SelectItem>{panchayatsForBlock.map(p => <SelectItem key={p.lgdCode} value={p.lgdCode}>{toTitleCase(p.name)}</SelectItem>)}</SelectContent></Select>

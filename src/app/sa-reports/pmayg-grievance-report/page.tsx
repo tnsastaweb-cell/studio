@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePmayg } from '@/services/pmayg-data';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
-import { uniqueDistricts, toTitleCase } from '@/lib/utils';
+import { DISTRICTS } from '@/services/district-offices';
+import { toTitleCase } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Header } from '@/components/header';
@@ -142,6 +143,8 @@ export default function PmaygGrievanceReportPage() {
     
     const [searchTerm, setSearchTerm] = useState('');
     const [perPage, setPerPage] = useState(10);
+    
+    const uniqueDistricts = useMemo(() => Array.from(new Set(MOCK_PANCHAYATS.map(p => p.district))).sort(), []);
 
     const reportData = useMemo(() => {
         const yearFilteredEntries = entries.filter(e => e.expenditureYear === EXPENDITURE_YEAR);
@@ -235,7 +238,7 @@ export default function PmaygGrievanceReportPage() {
         const searchLower = searchTerm.toLowerCase();
         return searchTerm ? data.filter(d => d.name.toLowerCase().includes(searchLower)) : data;
 
-    }, [entries, view, name, searchTerm]);
+    }, [entries, view, name, searchTerm, uniqueDistricts]);
 
     const getTitle = () => {
         if (view === 'panchayat' && name) return `Panchayat-wise Report for ${toTitleCase(name)} Block`;

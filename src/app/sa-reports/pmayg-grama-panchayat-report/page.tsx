@@ -8,7 +8,7 @@ import { format, parseISO } from 'date-fns';
 import { MOCK_PANCHAYATS } from '@/services/panchayats';
 import { usePmayg, PmaygEntry } from '@/services/pmayg-data';
 import { usePmaygIssues } from '@/services/pmayg-issues';
-import { uniqueDistricts } from '@/lib/utils';
+import { DISTRICTS } from '@/services/district-offices';
 import { MOCK_PMAYG_DATA } from '@/services/pmayg';
 
 import { Header } from '@/components/header';
@@ -116,6 +116,7 @@ const PmaygReportViewer = ({ entry }: { entry: PmaygEntry }) => {
 
 export default function PmaygGramaPanchayatSocialAuditReport() {
     const { entries: pmaygEntries, loading: pmaygLoading } = usePmayg();
+    const { panchayats } = usePanchayats();
     const printRef = useRef(null);
 
     const [filters, setFilters] = useState({
@@ -126,6 +127,8 @@ export default function PmaygGramaPanchayatSocialAuditReport() {
     });
     
     const [selectedReport, setSelectedReport] = useState<PmaygEntry | null>(null);
+
+    const uniqueDistricts = useMemo(() => Array.from(new Set(panchayats.map(p => p.district))).sort(), [panchayats]);
 
     const blocksForDistrict = useMemo(() => {
         if (filters.district === 'all') return [];
@@ -182,7 +185,7 @@ export default function PmaygGramaPanchayatSocialAuditReport() {
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All Districts</SelectItem>
-                                        {uniqueDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                        {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
