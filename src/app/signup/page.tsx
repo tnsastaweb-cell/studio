@@ -8,9 +8,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from "date-fns";
-import { Check, X, Eye, EyeOff } from 'lucide-react';
+import { Check, X, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 import { useUsers, User } from '@/services/users';
+import { sendOtp, verifyOtp } from '@/ai/flows/otp-flow';
 import { cn } from "@/lib/utils";
 
 import { Header } from '@/components/header';
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const passwordSchema = z.string()
   .min(8, "Must be at least 8 characters")
@@ -41,6 +43,7 @@ const signUpSchema = z.object({
   mobileNumber: z.string().regex(/^\d{10}$/, { message: "Mobile number must be 10 digits." }),
   dateOfBirth: z.date({ required_error: "Date of birth is required." }),
   email: z.string().email({ message: "Invalid email address." }),
+  otp: z.string().length(6, { message: "OTP must be 6 digits."}).optional(),
   password: passwordSchema,
 });
 
@@ -58,6 +61,12 @@ export default function SignUpPage() {
     const [employeeCodeQuery, setEmployeeCodeQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+    const [flowError, setFlowError] = useState<string | null>(null);
+
     const router = useRouter();
     const { toast } = useToast();
 
@@ -79,7 +88,6 @@ export default function SignUpPage() {
         form.setValue('employeeCode', query);
         setShowSuggestions(true);
 
-        // Clear other fields if query is empty
         if (!query) {
             form.reset({
                 ...form.getValues(),
@@ -103,8 +111,63 @@ export default function SignUpPage() {
             dateOfBirth: new Date(user.dateOfBirth),
         });
     };
+    
+    const handleSendOtp = async () => {
+        setFlowError(null);
+        const email = form.getValues('email');
+        const emailState = form.getFieldState('email');
+        if (!email || emailState.invalid) {
+            form.trigger('email');
+            return;
+        }
+        setIsSendingOtp(true);
+        try {
+            const result = await sendOtp({ email });
+            if (result.success) {
+                setIsOtpSent(true);
+                toast({ title: 'Success', description: 'OTP sent to your email address.' });
+            } else {
+                setFlowError(result.message);
+            }
+        } catch (error) {
+            console.error(error);
+            setFlowError('An unexpected error occurred.');
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        setFlowError(null);
+        const email = form.getValues('email');
+        const otp = form.getValues('otp');
+        if (!otp || otp.length !== 6) {
+            form.trigger('otp');
+            return;
+        }
+        setIsVerifyingOtp(true);
+        try {
+            const result = await verifyOtp({ email, otp });
+            if (result.success) {
+                setIsOtpVerified(true);
+                toast({ title: 'Success', description: 'Email verified successfully.' });
+            } else {
+                form.setError('otp', { type: 'manual', message: result.message });
+            }
+        } catch (error) {
+            console.error(error);
+            setFlowError('An unexpected error occurred.');
+        } finally {
+            setIsVerifyingOtp(false);
+        }
+    };
+
 
     const onSubmit = (values: SignUpFormValues) => {
+        if (!isOtpVerified) {
+            toast({ variant: 'destructive', title: "Email Not Verified", description: "Please verify your email with OTP first."});
+            return;
+        }
         const userToUpdate = users.find(u => u.employeeCode === values.employeeCode);
         if (userToUpdate) {
             updateUser({
@@ -133,7 +196,7 @@ export default function SignUpPage() {
     const filteredUsers = employeeCodeQuery && showSuggestions
         ? users.filter(user =>
             user.employeeCode.toLowerCase().includes(employeeCodeQuery.toLowerCase()) && !user.email
-          ).slice(0, 5) // Limit suggestions
+          ).slice(0, 5)
         : [];
 
     return (
@@ -148,139 +211,68 @@ export default function SignUpPage() {
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                {flowError && <Alert variant="destructive"><AlertDescription>{flowError}</AlertDescription></Alert>}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                    {/* Column 1 */}
                                     <div className="space-y-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="employeeCode"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Employee Code</FormLabel>
-                                                    <FormControl>
-                                                        <div className="relative">
-                                                            <Input 
-                                                                placeholder="Type to search your employee code" 
-                                                                value={form.getValues('employeeCode')}
-                                                                onChange={handleEmployeeCodeChange}
-                                                                autoComplete="off"
-                                                            />
-                                                            {filteredUsers.length > 0 && (
-                                                                <div className="absolute z-10 w-full bg-background border rounded-md mt-1 shadow-lg">
-                                                                    {filteredUsers.map(user => (
-                                                                        <div
-                                                                            key={user.id}
-                                                                            className="p-2 hover:bg-accent cursor-pointer"
-                                                                            onClick={() => handleEmployeeSelect(user)}
-                                                                        >
-                                                                            {user.employeeCode}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Full Name" {...field} readOnly className="bg-muted"/>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        
-                                        <FormField
-                                            control={form.control}
-                                            name="designation"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Designation</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Designation" value={field.value || ''} readOnly className="bg-muted"/>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="mobileNumber"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Mobile Number</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="10-digit number" {...field} readOnly className="bg-muted"/>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="dateOfBirth"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Date of Birth</FormLabel>
-                                                     <FormControl>
-                                                        <Input 
-                                                            placeholder="Date of Birth" 
-                                                            value={field.value ? format(field.value, "dd/MM/yyyy") : ''} 
-                                                            readOnly 
-                                                            className="bg-muted"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <FormField control={form.control} name="employeeCode" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Employee Code</FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Input placeholder="Type to search your employee code" value={form.getValues('employeeCode')} onChange={handleEmployeeCodeChange} autoComplete="off" />
+                                                        {filteredUsers.length > 0 && (
+                                                            <div className="absolute z-10 w-full bg-background border rounded-md mt-1 shadow-lg">
+                                                                {filteredUsers.map(user => (
+                                                                    <div key={user.id} className="p-2 hover:bg-accent cursor-pointer" onClick={() => handleEmployeeSelect(user)}>
+                                                                        {user.employeeCode} - {user.name}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </FormControl><FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="designation" render={({ field }) => (<FormItem><FormLabel>Designation</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="mobileNumber" render={({ field }) => (<FormItem><FormLabel>Mobile Number</FormLabel><FormControl><Input {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="dateOfBirth" render={({ field }) => (<FormItem><FormLabel>Date of Birth</FormLabel><FormControl><Input value={field.value ? format(field.value, "dd/MM/yyyy") : ''} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    
-                                    {/* Column 2 */}
                                     <div className="space-y-4">
-                                       <FormField
-                                            control={form.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Email ID</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="your.email@example.com" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="password"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Password</FormLabel>
-                                                    <FormControl>
-                                                        <div className="relative">
-                                                            <Input type={showPassword ? "text" : "password"} {...field} />
-                                                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
-                                                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                            </Button>
-                                                        </div>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                       <FormField control={form.control} name="email" render={({ field }) => (
+                                            <FormItem><FormLabel>Email ID</FormLabel>
+                                                <div className="flex gap-2">
+                                                    <FormControl><Input type="email" placeholder="your.email@example.com" {...field} disabled={isOtpSent} /></FormControl>
+                                                    <Button type="button" onClick={handleSendOtp} disabled={isSendingOtp || isOtpSent}>
+                                                        {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Send OTP
+                                                    </Button>
+                                                </div><FormMessage />
+                                            </FormItem>
+                                       )} />
+                                       
+                                       {isOtpSent && !isOtpVerified && (
+                                           <FormField control={form.control} name="otp" render={({ field }) => (
+                                               <FormItem><FormLabel>Enter OTP</FormLabel>
+                                                <div className="flex gap-2">
+                                                    <FormControl><Input placeholder="6-digit OTP" {...field} /></FormControl>
+                                                     <Button type="button" onClick={handleVerifyOtp} disabled={isVerifyingOtp}>
+                                                        {isVerifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Verify OTP
+                                                    </Button>
+                                                </div><FormMessage />
+                                               </FormItem>
+                                           )} />
+                                       )}
+                                       {isOtpVerified && <div className="p-2 text-center rounded-md bg-green-100 text-green-700 font-medium">Email Verified!</div>}
+                                        <FormField control={form.control} name="password" render={({ field }) => (
+                                            <FormItem><FormLabel>Password</FormLabel>
+                                                <FormControl><div className="relative">
+                                                    <Input type={showPassword ? "text" : "password"} {...field} />
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                    </Button>
+                                                </div></FormControl><FormMessage />
+                                            </FormItem>
+                                        )} />
 
                                         <div className="p-4 border rounded-md space-y-2 bg-background">
                                             <h4 className="font-semibold text-sm">Password must contain:</h4>
@@ -291,12 +283,17 @@ export default function SignUpPage() {
                                         </div>
                                     </div>
                                 </div>
-                                
                                 <div className="flex justify-end pt-4">
-                                    <Button type="submit" size="lg" className="w-full md:w-auto">Create Account</Button>
+                                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={!isOtpVerified}>Create Account</Button>
                                 </div>
                             </form>
                         </Form>
+                         <div className="mt-6 text-center text-sm">
+                            Already have an account?{" "}
+                            <Link href="/signin" className="underline font-medium">
+                                Sign in
+                            </Link>
+                        </div>
                     </CardContent>
                 </Card>
             </main>
