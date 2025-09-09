@@ -6,8 +6,7 @@
  * - verifyOtp - Verifies a submitted OTP.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 // In a real application, this would be stored in a database or a secure cache like Redis.
 // For this prototype, we'll store it in memory. This will not persist across server restarts.
