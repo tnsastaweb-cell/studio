@@ -57,8 +57,9 @@ export default function DirectoryPage() {
 
         // Process registered users first
         users.forEach(user => {
+            if (!user.employeeCode) return;
             let district: string | undefined;
-            const targetRoles: User['designation'][] = ['BRP', 'DRP', 'DRP I/C'];
+            const targetRoles: (User['designation'] | undefined)[] = ['BRP', 'DRP', 'DRP I/C'];
 
             if (targetRoles.includes(user.designation)) {
                  if (user.designation === 'BRP' && user.brpWorkHistory?.length) {

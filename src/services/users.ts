@@ -337,45 +337,60 @@ export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // In a real app, you might fetch this from an API.
-    // For now, we use localStorage to persist changes during a session.
-    try {
-      const storedUsers = localStorage.getItem(USER_STORAGE_KEY);
-      if (storedUsers) {
-        setUsers(JSON.parse(storedUsers));
-      } else {
-        // Initialize localStorage with the mock data if it's empty.
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(MOCK_USERS));
-        setUsers(MOCK_USERS);
-      }
-    } catch (error) {
-      console.error("Failed to access localStorage:", error);
-      setUsers(MOCK_USERS); // Fallback to in-memory mock data
-    } finally {
-      setLoading(false);
+  const loadUsers = useCallback(() => {
+    setLoading(true);
+    if (typeof window !== 'undefined') {
+        try {
+            const storedUsers = localStorage.getItem(USER_STORAGE_KEY);
+            if (storedUsers) {
+                setUsers(JSON.parse(storedUsers));
+            } else {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(MOCK_USERS));
+                setUsers(MOCK_USERS);
+            }
+        } catch (error) {
+            console.error("Failed to access localStorage:", error);
+            setUsers(MOCK_USERS);
+        }
     }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadUsers();
+    
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === USER_STORAGE_KEY) {
+            loadUsers();
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+
+  }, [loadUsers]);
   
   const syncUsers = (updatedUsers: User[]) => {
      setUsers(updatedUsers);
-     try {
-         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUsers));
-         window.dispatchEvent(new StorageEvent('storage', { key: USER_STORAGE_KEY, newValue: JSON.stringify(updatedUsers) }));
-     } catch (error) {
-         console.error("Failed to save users to localStorage:", error);
+     if (typeof window !== 'undefined') {
+         try {
+             localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUsers));
+             window.dispatchEvent(new StorageEvent('storage', { key: USER_STORAGE_KEY, newValue: JSON.stringify(updatedUsers) }));
+         } catch (error) {
+             console.error("Failed to save users to localStorage:", error);
+         }
      }
   };
 
 
   const addUser = useCallback((user: Omit<User, 'id' | 'status'>) => {
     setUsers(prevUsers => {
-      const newUser = {
+      const newUsers = [...prevUsers, {
         ...user,
         id: (prevUsers[prevUsers.length -1]?.id ?? 0) + 1,
         status: 'active' as const,
-      };
-      const newUsers = [...prevUsers, newUser];
+      }];
       syncUsers(newUsers);
       return newUsers;
     });
