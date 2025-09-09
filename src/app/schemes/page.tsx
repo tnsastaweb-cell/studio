@@ -7,11 +7,11 @@ import { MainNavigation } from '@/components/main-navigation';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MgnregsSchemeContent } from './mgnregs/page';
-import { PmaygSchemeContent } from './pamy-g/page';
-import { CfcGrantSchemeContent } from './15th-cfc-grant/page';
-import { NmpSchemeContent } from './nmp/page';
-import { DsjeSchemeContent } from './dsje/page';
+import { MgnregsSchemeContent } from '@/app/schemes/mgnregs/page';
+import { PmaygSchemeContent } from '@/app/schemes/pamy-g/page';
+import { CfcGrantSchemeContent } from '@/app/schemes/15th-cfc-grant/page';
+import { NmpSchemeContent } from '@/app/schemes/nmp/page';
+import { DsjeSchemeContent } from '@/app/schemes/dsje/page';
 
 
 const schemes = [
